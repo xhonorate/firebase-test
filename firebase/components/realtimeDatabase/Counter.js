@@ -21,6 +21,8 @@ const Counter = ({ id }) => {
 
   const increaseCount = async () => {
     firebase.database().ref('counts').child(id).set(count + 1);
+      // I think the reason to do this as an api endpoint is to avoid hacking...
+
       //const registerCount = () => fetch(`/api/incrementCount?id=${encodeURIComponent(id)}`)
       //registerCount()
   }
