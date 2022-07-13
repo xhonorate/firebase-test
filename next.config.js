@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, //have to disable until react-firebaseui gets an update...
   swcMinify: true,
 }
 
