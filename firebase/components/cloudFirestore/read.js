@@ -1,15 +1,13 @@
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/firestore'
 import { useUser } from '../auth/useUser'
+import db from './db'
 
 const ReadDataFromCloudFirestore = () => {
   const { user } = useUser()
 
   const readData = () => {
     try {
-      firebase
-        .firestore()
-        .collection('userData')
+      db
+        .collection('user_data')
         .doc(user.id)
         .onSnapshot(function (doc) {
             console.log(doc.data())

@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/database'
 
+
+///// NAAH we want to use cloudFirestore instead!!
+// basically strictly better, and realtimeDB will lose support in the future
+
+
 const Counter = ({ id }) => {
   const [count, setCount] = useState(0)
 
