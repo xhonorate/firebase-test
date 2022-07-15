@@ -1,26 +1,34 @@
-import ReadDataFromCloudFirestore from '../firebase/components/cloudFirestore/read'
-import WriteToCloudFirestore from '../firebase/components/cloudFirestore/write'
-import styles from '../styles/Home.module.css'
-import { useUser } from '../firebase/components/auth/useUser'
+import ReadDataFromCloudFirestore from '../components/cloudFirestore/read'
+import WriteToCloudFirestore from '../components/cloudFirestore/write'
+import { useUser } from '../components/auth/useUser'
 import NextLink from 'next/link'
-import { useUserData } from '../firebase/components/cloudFirestore/useUserData'
-import CreateUser from '../firebase/components/cloudFirestore/CreateUser';
+import CreateUser from '../components/cloudFirestore/CreateUser';
+import { useDocument } from '@nandorojo/swr-firestore'
+import { Button } from '@chakra-ui/button';
+import { UserData } from '../components/cloudFirestore/CreateUser';
+import LobbyBrowser from '../components/cloudFirestore/LobbyBrowser';
 
 export default function Home() {
+  // TODO: Should use SWR or fuego somehow for auth...
   const { user, logout } = useUser();
-  // normally we should probably use this hook within a subcomponent that only gets rendered
-  // after user has fully loaded, and just pass user id as a param
-  const { userData } = useUserData(user ? user.id : null);
+
+  // SWR to pull user data
+  const { data: userData, update, error } = useDocument(`user_data/${user?.id}`, {
+    parseDates: ['created'],
+    listen: true,
+    onError: console.error
+  })
+
 
   if (user) {
-    if (userData === null) {
+    if (!userData) {
       return <div>loading...</div>
     } else {
       return (
         <div>
-          <h5>{JSON.stringify(user)}</h5>
-          { userData ? 
-            userData.active_game ?
+          <h5>{JSON.stringify(user)}</h5>          
+          { userData.exists ? 
+            userData['active_game'] ?
               <h5>{/* load game data here... */ JSON.stringify(userData)}</h5>
               /* check if game exists -> check exists -> check finished -> check started (not in lobby) -> check age -> 
                     rejoin or throw err message and update user */
@@ -28,7 +36,7 @@ export default function Home() {
               // we can worry about host migration in the future...
               <>
                 <h1>Select from list:</h1>
-                <h5>{/* host/join game here... */ JSON.stringify(userData)}</h5>
+                <h5><LobbyBrowser /></h5>
               </>
             :
             // If user account is not set up, prompt them with a form to set username, etc.
@@ -36,14 +44,14 @@ export default function Home() {
           }
           <WriteToCloudFirestore />
           <ReadDataFromCloudFirestore />
-          <button onClick={() => logout()}>Log Out</button>
+          <Button onClick={() => logout()}>Log Out</Button>
         </div>
       )
     }
   }
   else {
     return (
-      <div className={styles.container}>
+      <div>
         <p><NextLink href="/auth"><a>Log In!</a></NextLink></p>
       </div>
     )

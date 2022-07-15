@@ -1,12 +1,12 @@
-import initFirebase from '../../initFirebase'
+import initFirebase from '../../firebase/initFirebase'
 import { useEffect, useState } from 'react'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
+import firebase from 'firebase/app'
+import 'firebase/auth'
 import { setUserCookie } from './userCookies'
 import { mapUserData } from './mapUserData'
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
 
-initFirebase() // initialize firebase
+//initFirebase() // initialize firebase
 
 //var anonymousUser = firebase.auth().currentUser;
 

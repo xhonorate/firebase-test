@@ -1,16 +1,14 @@
 import { useEffect, useState, useRef, Dispatch } from 'react'
-import firebase from 'firebase/compat/app'
-import db from './db';
 
 export interface UserData {
-  created: firebase.firestore.Timestamp,
+  created: Date,
   username: string,
   active_game: string,
   past_games: string[]
 }
 
 export const defaultUserData: UserData = {
-  created: firebase.firestore.Timestamp.fromDate(new Date()),
+  created: new Date(),
   username: '',
   active_game: null,
   past_games: []
@@ -28,7 +26,7 @@ const useUserData = (id: string) => {
 
   // Update doc for this user, only if the doc actually exists (userData !== null/false)
   const updateUser = async (data: object) => {
-    if (userData) {
+  /*  if (userData) {
       // NOTE: probably should use Update instead of set, for less writes
       // https://firebase.google.com/docs/firestore/manage-data/add-data#node.js_11
       db.collection('user_data').doc(id)
@@ -68,7 +66,7 @@ const useUserData = (id: string) => {
       cancelDataListener.current();
     }
   }, [id])
-
+*/}
   return { userData, updateUser }
 }
 

@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, Dispatch } from 'react'
-import firebase from 'firebase/compat/app'
-import db from './db';
+import firebase from 'firebase/app'
 
 export interface GameData {
   created: firebase.firestore.Timestamp,
@@ -27,7 +26,7 @@ const useGameData = (id: string) => {
 
   // Begin hosting a new game, set passed user id as only current participant
   const createGame = async (userId: string) => {
-    db.collection('user_data').doc(id)
+    /*db.collection('user_data').doc(id)
       .set({
         ...defaultGameData,
         participants: [userId]
@@ -66,7 +65,7 @@ const useGameData = (id: string) => {
       cancelDataListener.current();
     }
   }, [id])
-
+*/}
   return { gameData, createGame }
 }
 

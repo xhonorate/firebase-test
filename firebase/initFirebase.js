@@ -1,10 +1,10 @@
-import firebase from 'firebase/compat/app'
+import firebase from 'firebase/app'
 // the below imports are option - comment out what you don't need
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
-import 'firebase/compat/storage'
-import 'firebase/compat/analytics'
-import 'firebase/compat/performance'
+import 'firebase/auth'
+import 'firebase/firestore'
+import 'firebase/storage'
+import 'firebase/analytics'
+import 'firebase/performance'
 
 const clientCredentials = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

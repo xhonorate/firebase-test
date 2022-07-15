@@ -1,4 +1,4 @@
-import FirebaseAuth from '../firebase/components/auth/FirebaseAuth'
+import FirebaseAuth from '../components/auth/FirebaseAuth'
 import NextLink from 'next/link';
 
 const Auth = () => {
