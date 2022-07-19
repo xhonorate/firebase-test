@@ -34,7 +34,7 @@ const CreateUser = ({ id, isAnonymous }) => {
   return (
       <form onSubmit={onSubmit}>
         <Input minLength={3} value={name} onChange={e => setName(e.target.value)} />
-        <Button role={'submit'}>Submit</Button>
+        <Button type={'submit'}>Submit</Button>
       </form>
   )
 }
