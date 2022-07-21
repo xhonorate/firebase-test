@@ -1,10 +1,9 @@
 import initFirebase from '../../firebase/initFirebase'
 import { useEffect, useState } from 'react'
-import firebase from 'firebase/app'
-import 'firebase/auth'
 import { setUserCookie } from './userCookies'
 import { mapUserData } from './mapUserData'
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
+import { fuego } from '@nandorojo/swr-firestore'
 
 //initFirebase() // initialize firebase
 
@@ -17,12 +16,12 @@ const firebaseAuthConfig = {
     autoUpgradeAnonymousUsers: true,
     signInOptions: [
         {
-            provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
+            provider: fuego.auth.EmailAuthProvider.PROVIDER_ID,
             requireDisplayName: false,
         },
         // add additional auth flows below
         {
-          provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          provider: fuego.auth.GoogleAuthProvider.PROVIDER_ID,
           customParameters: {
             // Forces account selection even when one account
             // is available.
@@ -52,7 +51,7 @@ const firebaseAuthConfig = {
           // user.
           // ...
           // Finish sign-in after data is copied.
-          return firebase.auth().signInWithCredential(cred);
+          return fuego.auth().signInWithCredential(cred);
         }
     },
 }
@@ -71,7 +70,7 @@ const FirebaseAuth = () => {
           {renderAuth ? (
               <StyledFirebaseAuth
                   uiConfig={firebaseAuthConfig}
-                  firebaseAuth={firebase.auth()}
+                  firebaseAuth={fuego.auth()}
               />
           ) : null}
       </div>

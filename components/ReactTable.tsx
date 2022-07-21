@@ -19,6 +19,7 @@ import {
   NumberDecrementStepper,
   Flex,
   IconButton,
+  Stack,
   Tooltip,
 } from '@chakra-ui/react'
 import {
@@ -31,7 +32,6 @@ import {
 } from "@chakra-ui/icons";
 import { useTable, useSortBy, usePagination, useGlobalFilter, useAsyncDebounce } from 'react-table'
 import React from "react"
-import { Stack } from '@chakra-ui/layout';
 
 // Define a default UI for filtering
 function GlobalFilter({

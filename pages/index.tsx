@@ -4,10 +4,10 @@ import { useUser } from '../components/auth/useUser'
 import NextLink from 'next/link'
 import CreateUser from '../components/cloudFirestore/CreateUser';
 import { useDocument } from '@nandorojo/swr-firestore'
-import { Button } from '@chakra-ui/button';
-import { UserData } from '../components/cloudFirestore/CreateUser';
+import { Button } from '@chakra-ui/react';
 import LobbyBrowser from '../components/cloudFirestore/LobbyBrowser';
 import GameLobby from '../components/cloudFirestore/GameLobby';
+import Counter from '../components/realtimeDatabase/Counter'
 
 export default function Home() {
   // TODO: Should use SWR or fuego somehow for auth...
@@ -26,8 +26,8 @@ export default function Home() {
     } else {
       return (
         <div>
-          <h5>{JSON.stringify(user)}</h5>          
-          { userData.exists ? 
+          <h5>{JSON.stringify(user)}</h5>        
+          { userData.exists ?
             userData['active_game'] ?
               <><h5>{/* load game data here... */ JSON.stringify(userData)}</h5>
                    {/* check if game exists -> check exists -> check finished -> check started (not in lobby) -> check age -> 
@@ -39,6 +39,7 @@ export default function Home() {
               <>
                 <h1>Select from list:</h1>
                 <h5><LobbyBrowser userData={userData} /></h5>
+                <Counter id={1} />
               </>
             :
             // If user account is not set up, prompt them with a form to set username, etc.

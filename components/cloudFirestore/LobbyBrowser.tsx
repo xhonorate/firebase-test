@@ -92,7 +92,7 @@ const LobbyBrowser = ({userData}) => {
   const joinLobby = useCallback(
     (id: string) => {
       update('user_data/' + userData?.id, {active_game: id});
-      update('games/' + id, { participants: firebase.firestore.FieldValue.arrayUnion({id: userData.id, connected: true})})
+      update('games/' + id, { participants: firebase.firestore.FieldValue.arrayUnion({id: userData.id, name: userData.username ?? null, connected: true})})
       unsubscribe();
     },
     [userData, unsubscribe],
@@ -108,16 +108,13 @@ const LobbyBrowser = ({userData}) => {
         started: false,
         name: name,
         password: !!password ? password : null,
-        participants: [{
-          id: userData.id,
-          connected: true,
-        }]
+        participants: []
       }).then((id) => {
         console.log('New game lobby created!');
         joinLobby(id);
       })
     },
-    [add, userData, joinLobby]
+    [add, joinLobby]
   );
 
   // stored in memory for react-table
