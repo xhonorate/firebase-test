@@ -39,7 +39,6 @@ export default function Home() {
               <>
                 <h1>Select from list:</h1>
                 <h5><LobbyBrowser userData={userData} /></h5>
-                <Counter id={1} />
               </>
             :
             // If user account is not set up, prompt them with a form to set username, etc.

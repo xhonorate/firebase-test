@@ -82,7 +82,8 @@ export const useRealtime = <
   path: string | null,
   onChange?: (data: Data) => void | null
 ) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<Data>(null);
+  const [loading, setLoading] = useState(true);
   const unsubscribeRef = useRef(null);
   const onChangeRef = useRef(onChange);
 
@@ -105,7 +106,10 @@ export const useRealtime = <
   // Documents with the same path.
   useEffect(() => {
     unsubscribeRef.current = () => ref.off()
-    ref.on('value', res => setData(res.val()));
+    ref.on('value', res => {
+      if (loading) setLoading(false);
+      setData(res.val());
+    });
 
     return () => {
       // clean up listener on unmount if it exists
@@ -155,7 +159,7 @@ export const useRealtime = <
     data,
     set,
     update,
-    loading: !data,
+    loading: loading,
     deleteReference,
     /**
      * A function that, when called, unsubscribes the Firestore listener.

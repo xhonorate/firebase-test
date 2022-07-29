@@ -9,7 +9,7 @@ const Counter = ({ id }) => {
   // -- then pass unitData / resourceData / whateverData as props to components
   // uuuh would be good to do specific functions on update tho, so probs not hooks...
   // rip
-  const {data, set, unsubscribe} = useRealtime(`counts/${id}`, console.log);
+  const {data, set, unsubscribe} = useRealtime(`counts/${id}`);
 
   return (
     <>

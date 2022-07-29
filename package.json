@@ -14,6 +14,7 @@
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
     "@nandorojo/swr-firestore": "github:nandorojo/swr-firestore",
+    "@react-spring/three": "^9.5.2",
     "@react-three/drei": "^9.17.1",
     "@react-three/fiber": "^8.2.0",
     "@react-three/postprocessing": "^2.5.0",

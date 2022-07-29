@@ -56,7 +56,7 @@ const CreateLobbyPopup = ({username, isOpen, onClose, onSubmit}) => {
                 </FormControl>
                 <FormControl mt={4}>
                   <FormLabel>Password (optional)</FormLabel>
-                  <Input type={'password'} size={'lg'} value={password} onChange={e => setPassword(e.target.value)} />
+                  <Input autoComplete={'current-password'} type={'password'} size={'lg'} value={password} onChange={e => setPassword(e.target.value)} />
                 </FormControl>
               </AlertDialogBody>
 
@@ -65,7 +65,7 @@ const CreateLobbyPopup = ({username, isOpen, onClose, onSubmit}) => {
                   Cancel
                 </Button>
                 <Button type={'submit'} colorScheme='blue' onClick={onClose} ml={3}>
-                  Delete
+                  Create
                 </Button>
               </AlertDialogFooter>
             </form>
@@ -106,6 +106,7 @@ const LobbyBrowser = ({userData}) => {
         created: new Date(),
         finished: false,
         started: false,
+        settings: {},
         name: name,
         password: !!password ? password : null,
         participants: []
