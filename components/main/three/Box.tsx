@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import React, { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 
-export default function Box(props: JSX.IntrinsicElements['mesh']) {
+export default function Box(props: JSX.IntrinsicElements['mesh'] & { color: string }) {
   const ref = useRef<THREE.Mesh>(null!)
   const [hovered, hover] = useState(false)
   const [clicked, click] = useState(false)
@@ -16,7 +16,8 @@ export default function Box(props: JSX.IntrinsicElements['mesh']) {
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
+      <edgesGeometry />
+      <meshStandardMaterial color={props.color} />
     </mesh>
   )
 }

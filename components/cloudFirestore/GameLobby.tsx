@@ -3,7 +3,7 @@ import { Text, Button, VStack } from '@chakra-ui/react'
 import { update, useDocument } from "@nandorojo/swr-firestore"
 import { useCallback, useState, useEffect } from "react";
 import firebase from 'firebase/app';
-import Room from '../main/room';
+import Room from '../main/Room';
 
 export interface GameSettings {
   maxPlayers: number,
@@ -22,11 +22,12 @@ const minPlayers = 1;
 
 const GameLobby = ({userData}) => {
   const { data, update: updateGame, deleteDocument } = useDocument<GameData>('games/' + userData?.active_game, { listen: true });
-  const [isHost, setIsHost] = useState(false);
+  const [playerIndex, setPlayerIndex] = useState(-1); // Index of player in participants (0 is host, -1 means not found or loading)
 
   useEffect(() => {
-    setIsHost(data?.participants?.[0]?.id === userData.id);
-  }, [data, userData.id])
+    if (!data?.participants || !Array.isArray(data.participants)) return;
+    setPlayerIndex(data?.participants.findIndex((participant) => participant.id === userData.id ));
+  }, [data, userData.id]);
 
   // Remove use from game participants, and set current_game to null. If last to leave, delete the room
   const leaveLobby = useCallback(
@@ -55,7 +56,7 @@ const GameLobby = ({userData}) => {
   return (
     <VStack m={4} align={'start'}>
       { data?.started ?
-      <Room host={isHost} id={data.id} participants={data.participants} />
+      <Room playerIndex={playerIndex} id={data.id} participants={data.participants} />
       :
       <>{data?.participants?.length && data?.participants.map((participant, idx) => {
         const me = participant.id === userData.id;
@@ -65,7 +66,7 @@ const GameLobby = ({userData}) => {
       )}
       <Button 
         colorScheme={'green'} 
-        isDisabled={(!isHost) || data.participants.length < minPlayers}
+        isDisabled={(playerIndex !== 0) || data.participants.length < minPlayers}
         onClick={startGame}
       >Start</Button>
       </>}

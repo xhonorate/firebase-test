@@ -140,7 +140,7 @@ export const useRealtime = <
    * - It also updates the local cache using SWR's `mutate`. This will prove highly convenient over the regular `set` function.
    */
   const update = useCallback(
-    (data: Data) => {
+    (data: Partial<Data>) => {
       if (!path) return null
       return ref.update(data)
     },

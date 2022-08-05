@@ -1,15 +1,21 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
-import { GameContext } from './room';
-import { TileData } from './three/Tile';
+import { GameContext, GameState } from './Room';
+import { TileData, tileTypes } from './three/Tile';
 
-function procTiles(tiles: TileData[]) {
+function procTiles(state: GameState) {
   // TODO: something with this number
-  const multiplier = 10;
-  tiles.forEach((tile) => {
+  const multiplier = 20;
+
+  // Update tiles with number of times proc'd and assign resources to owners
+  state.board.tiles.forEach((tile) => {
     if (tile.odds > Math.random()*multiplier) {
-      console.log('Proc!' + JSON.stringify(tile));
       tile.procs = (tile.procs ?? 0) + 1;
-      //TODO: assign resources on proc
+      if ('owner' in tile) {
+        // If the tile is owned by a player, assign its resources
+        // TODO: check for city or tile upgrades, assign more/less resources
+        const type = tileTypes[tile.type].name; // convert index to text name
+        state.players[tile.owner].resources[type] += 1; // give 1 of related resource
+      }
     } 
   })    
 }
@@ -24,18 +30,9 @@ export default function HostControl() {
   }, [data])
 
   const hostTick = useCallback(() => {
-    // do some magic
-    // give resources and stuff
-    // update tiles[] with number of times proc'd
-    let state = dataRef.current;
-    const tiles = state.board.tiles;
-    procTiles(tiles);
-    update({
-      board: {
-        tiles: tiles,
-        size: state.board.size
-      }
-    })
+    const state = dataRef.current;
+    procTiles(state); // Update state information -- tile procs and resources
+    update(state)
     //update({turn: (state.turn ?? 0) + 1 })
   }, [update]);
 
