@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
-import { GameContext, GameState } from './Room';
+import { GameContext, GameState } from './room';
 import { TileData, tileTypes } from './three/Tile';
 
 function procTiles(state: GameState) {

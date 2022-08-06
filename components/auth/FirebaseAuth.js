@@ -16,12 +16,12 @@ const firebaseAuthConfig = {
     autoUpgradeAnonymousUsers: true,
     signInOptions: [
         {
-            provider: fuego.auth.EmailAuthProvider.PROVIDER_ID,
+            provider: fuego?.auth.EmailAuthProvider.PROVIDER_ID,
             requireDisplayName: false,
         },
         // add additional auth flows below
         {
-          provider: fuego.auth.GoogleAuthProvider.PROVIDER_ID,
+          provider: fuego?.auth.GoogleAuthProvider.PROVIDER_ID,
           customParameters: {
             // Forces account selection even when one account
             // is available.

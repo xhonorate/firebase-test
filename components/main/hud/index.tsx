@@ -7,7 +7,7 @@ import {
   ChakraProps
 } from "@chakra-ui/react";
 import { useContext, useRef, useEffect, useMemo } from "react";
-import { GameContext, ResourceStates } from '../Room';
+import { GameContext, ResourceStates } from '../room';
 import { tileTypes, TileData } from '../three/Tile';
 
 const HUDContainer = ({children}) => <Flex 
