@@ -77,8 +77,8 @@ export default function Room({id, settings={size: 6}, playerIndex, participants}
         <Button onClick={() => setPaused(!paused)}>{paused ? 'Unpause' : 'Pause'}</Button>
         <HostControl />
       </> }
-      <Box w={'500px'} h={'500px'} border={'1px solid darkblue'}>
-        <HUD playerIndex={playerIndex} w={'500px'} h={'500px'} target={target} />
+      <Box w={'650px'} h={'650px'} border={'1px solid darkblue'}>
+        <HUD playerIndex={playerIndex} w={'650px'} h={'650px'} target={target} />
         <Canvas orthographic={true} camera={{fov: 100, near: 0.1, far: 1000, position: [0, 5, 10], zoom: 100}}>
           <ambientLight />
           <pointLight position={[10, 10, 10]} />

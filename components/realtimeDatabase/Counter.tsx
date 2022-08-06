@@ -12,10 +12,10 @@ const Counter = ({ id }) => {
   const {data, set, unsubscribe} = useRealtime(`counts/${id}`);
 
   return (
-    <>
-      <button onClick={() => set(data+1)}>Increase count {data ? data : '–––'}</button>
+    <> {/*
+      <button onClick={() => set(data+1)}>{'Increase count ' + data ? data : '–––'}</button>
       <br />
-      <button onClick={unsubscribe}>Unsub</button>
+    <button onClick={unsubscribe}>Unsub</button> */}
     </>
   )
 }
