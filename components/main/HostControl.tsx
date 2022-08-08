@@ -8,7 +8,7 @@ function procTiles(state: GameState) {
 
   // Update tiles with number of times proc'd and assign resources to owners
   state.board.tiles.forEach((tile) => {
-    if (tile.odds > Math.random()*multiplier) {
+    if (tile.type !== 0 && tile.odds > Math.random()*multiplier) {
       tile.procs = (tile.procs ?? 0) + 1;
       if ('owner' in tile) {
         // If the tile is owned by a player, assign its resources
@@ -48,7 +48,7 @@ export default function HostControl() {
     const interval = setInterval(() => {
       console.log('Host Tick!');
       hostTick();
-    }, 5000);
+    }, 10000);
 
     return () => {
       // Clear ticker on dismount or pause

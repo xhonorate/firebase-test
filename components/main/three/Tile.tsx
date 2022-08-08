@@ -4,16 +4,16 @@ import { useFrame } from '@react-three/fiber'
 import { useSpring, animated } from '@react-spring/three';
 import Settlement from './Settlement';
 
-
 /* eslint-disable react-hooks/exhaustive-deps */
 
 export const tileTypes = [
-  { name: 'Water', color: 'blue', hovered: 'darkblue' },
-  { name: 'Wood', color: 'green', hovered: 'darkgreen' },
-  { name: 'Brick', color: 'red', hovered: 'darkred' },
-  { name: 'Wheat', color: 'yellow', hovered: 'orange' },
-  { name: 'Ore', color: 'gray', hovered: '#666' },
-  { name: 'Sheep', color: 'limegreen', hovered: 'teal' }
+  { name: 'Water', color: '#2D719F', hovered: '#255F85' },
+  { name: 'Wood', color: '#23A84D', hovered: '#1F9846' },
+  { name: 'Brick', color: '#A30000', hovered: '#8F0000' },
+  { name: 'Wheat', color: '#DBA11A', hovered: '#C99418' },
+  { name: 'Ore', color: '#333F71', hovered: '#2C3763' },
+  { name: 'Sheep', color: '#4BD2BC', hovered: '#31C4AB' },
+  { name: 'Gold', color: '#D5CB89', hovered: '#CFC477' }
 ]
 
 const playerColors = [
@@ -34,6 +34,7 @@ export interface HexCoords {
 }
 
 export interface TileData {
+  index?: number,
   type: number,
   hex: HexCoords,
   odds: number, //weighted likelyhood of being "rolled"
@@ -65,33 +66,33 @@ export default function Tile({hex, type, procs, odds, obj, owner, onClick}: Tile
     { type !== 0 && <mesh
       position={pos}
     >
-      <cylinderGeometry args={[1, 1, 0.15, 6]} />
+      <cylinderGeometry args={[1, 1, 0.18, 6]} />
       <animated.meshStandardMaterial transparent={true} opacity={glowOpacity} color={'white'}/>
     </mesh> }
 
     { /* Render buildings */ }
-    { obj && obj.type === 'settlement' && <>
+    { obj && obj.type === 'Settlement' && <>
+
+    
+
+
+
+    
       <Settlement color={playerColors[owner]} position={pos} />
     </>}
 
     { /* Highlighted ownership of tiles by player color */ }
     { owner !== undefined && <mesh
-      position={[pos[0], pos[1] + 0.05, pos[2]]}
+      position={[pos[0], pos[1] + 0.1, pos[2]]}
     >
       <cylinderGeometry args={[1, 1, 0.05, 6]} />
-      <meshStandardMaterial transparent={true} opacity={0.1} color={playerColors[owner]}/>
+      <meshStandardMaterial transparent={true} opacity={0.25} color={playerColors[owner]}/>
     </mesh> }
 
-
-
+    { /* hex has two parts, bottom/water level cylinder, then top 'tile' graduated cylinder */ }
     <mesh
-      ref={ref}
-      position={pos}
-      // rotation={[0, Math.PI / 2, 0]} // Rotate with flat side up
-      onClick={(event) => onClick()}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}>
-      <cylinderGeometry args={[type === 0 ? 1 : 0.85, 1, type === 0 ? 0.1 : odds* 0.15, 6] /* TODO: remove odds here */ } />
+      position={[pos[0], pos[1] - 0.2, pos[2]]}>
+      <cylinderGeometry args={[1, 1, 0.2, 6] } />
       <meshStandardMaterial
         transparent={type === 0}
         opacity={0.5}
@@ -99,6 +100,20 @@ export default function Tile({hex, type, procs, odds, obj, owner, onClick}: Tile
         side={THREE.FrontSide}
       />
     </mesh>
+    { type !== 0 &&
+    <mesh
+      ref={ref}
+      position={pos}
+      // rotation={[0, Math.PI / 2, 0]} // Rotate with flat side up
+      onClick={(event) => onClick()}
+      onPointerOver={(event) => hover(true)}
+      onPointerOut={(event) => hover(false)}>
+      <cylinderGeometry args={[0.85, 1, 0.2, 6] } />
+      <meshStandardMaterial
+        color={hovered ? tileTypes[type].hovered : tileTypes[type].color}
+        side={THREE.FrontSide}
+      />
+    </mesh> }
     </>
   )
 }

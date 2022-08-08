@@ -152,7 +152,6 @@ const LobbyBrowser = ({userData}) => {
 
   return (
     <>
-      {JSON.stringify(data)}
       {!!data && <ReactTable columns={columns} data={data} />}
       <CreateLobbyPopup 
         username={userData.username} 

@@ -136,17 +136,6 @@ export function adjacentTiles(tiles: TileData[], tile: TileData | number, dist:n
 // Every other column will be vertically offset to achieve hex grid
 // Vertex offset will shift based on even or odd column 
 
-export interface BoardProps {
-  tiles: TileData[],
-  size: number
-}
-
-export interface BoardSettings {
-  numPlayers: number,
-  size: number,
-  seed: string,
-}
-
 function shouldBeWater(hex: HexCoords, size: number) {
   // Smallest number of tiles to one edge of the board
   const edgeDist = size - cubeDistance(hex, center);
@@ -190,7 +179,7 @@ function chooseSpawn(tiles: TileData[], player: number, passes: number) {
   }
 
   // Add settlement on center tile
-  bestSoFar.tile.obj = { type: 'settlement' };
+  bestSoFar.tile.obj = { type: 'Settlement' };
   bestSoFar.tile.owner = player;
 
   // Set ownership of adjacent tiles
@@ -202,22 +191,40 @@ function chooseSpawn(tiles: TileData[], player: number, passes: number) {
   });
 }
 
+
+export interface BoardProps {
+  tiles: TileData[],
+  size: number
+}
+
+export interface BoardSettings {
+  numPlayers: number,
+  size: number,
+  spawnRates?: number[],
+  seed?: string,
+}
+
 // Called by Host to generate new board with random tile distribution based on settings
-export function generateBoard({numPlayers, size}: BoardSettings): BoardProps {
+export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings): BoardProps {
+  const weightedOptions: number[] = tileTypes.flatMap((tile, idx) => {
+    let rate = (spawnRates?.[idx] ?? 1); //default all spawn rates to 1 if not set
+    return Array(rate).fill(idx);
+  });
+
   let tiles: TileData[] = [{
-    type: randomInt(tileTypes.length),
+    type: randomChoice(weightedOptions),
     hex: center,
     odds: randomInt(3) + 1,
   }];
 
   // Board size determines radius of hex grid, middle tile being radius = 0, surrounding tiles radius = 1, etc.
-  for (let radius = 1; radius < size; radius++) {
+  for (let radius = 1; radius < size + 1; radius++) { //NOTE: added +1 to size for a 1 tile water border...
     for (let i = 0; i < 6; i ++) {
       let hex = cubeScale(cubeDirection(i), radius);
       
       for (let j = 0; j < radius; j++) {
         tiles.push({
-          type: shouldBeWater(hex, size) ? 0 : randomInt(tileTypes.length),
+          type: shouldBeWater(hex, size) ? 0 : randomChoice(weightedOptions),
           hex,
           odds: randomInt(3) + 1
         })
@@ -232,7 +239,7 @@ export function generateBoard({numPlayers, size}: BoardSettings): BoardProps {
   for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
     // TODO: scuffed balanace solution of giving subsequent players +1 pass to find a good spawn
     // should probs redo the whole spawn selection thing at some point, but w/e
-    chooseSpawn(tiles, playerIndex, (5 + playerIndex));
+    chooseSpawn(tiles, playerIndex, (10 + playerIndex));
   }
 
   return {
@@ -246,7 +253,7 @@ export function Board ({tiles, onSelect}: BoardProps & {onSelect: (tile: TileDat
   return <>
     { tiles.length > 0 &&
       tiles.map((tile: TileData, idx) => (
-        <Tile key={idx} {...tile} onClick={() => onSelect(tile)} />
+        <Tile key={idx} {...tile} onClick={() => onSelect({...tile, index: idx})} />
       ))
     }
   </>

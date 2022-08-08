@@ -44,7 +44,7 @@ export const GameContext = React.createContext<GameContextProps>({
   paused: false
 });
 
-export default function Room({id, settings={size: 6}, playerIndex, participants}) {
+export default function Room({id, settings={size: 6, spawnRates: [0, 1, 1, 1, 1, 1, 7]}, playerIndex, participants}) {
   /// TODO: I would like this to act like swr
   // is this triggering full refresh on every change? 
   // or is it like a ref and i can useEffect on specific child elements in the json??
@@ -57,11 +57,15 @@ export default function Room({id, settings={size: 6}, playerIndex, participants}
     // If no data is present, need to create new RTDB entry for room
     if (!data && !loading && playerIndex === 0) {
       set({
-        board: generateBoard({numPlayers: participants.length, size: settings.size, seed: ''}),
+        board: generateBoard({
+          numPlayers: participants.length, 
+          size: settings.size,
+          spawnRates: settings.spawnRates // spawn rates of different tiles
+        }),
         players: participants.map((player) => { 
           return {
             id: player.id,
-            resources: tileTypes.reduce((a, v) => ({ ...a, [v.name]: 0}), {})
+            resources: tileTypes.reduce((a, v) => (v.name === 'Water' ? a : { ...a, [v.name]: 0}), {})
           }
         }),
         turn: 0,
@@ -73,22 +77,24 @@ export default function Room({id, settings={size: 6}, playerIndex, participants}
   return (
     <GameContext.Provider value={{data, set, update, paused}}>
       { playerIndex === 0 && <>
-        <Button onClick={() => update({ board: generateBoard({numPlayers: participants.length, size: settings.size, seed: ''})})}>Regenerate</Button>
+        <Button onClick={() => update({ board: generateBoard({numPlayers: participants.length, size: settings.size, spawnRates: settings.spawnRates})})}>Regenerate</Button>
         <Button onClick={() => setPaused(!paused)}>{paused ? 'Unpause' : 'Pause'}</Button>
         <HostControl />
       </> }
       <Box w={'650px'} h={'650px'} border={'1px solid darkblue'}>
         <HUD playerIndex={playerIndex} w={'650px'} h={'650px'} target={target} />
-        <Canvas orthographic={true} camera={{fov: 100, near: 0.1, far: 1000, position: [0, 5, 10], zoom: 100}}>
-          <ambientLight />
-          <pointLight position={[10, 10, 10]} />
-          { !!data?.board && <Board {...data.board} onSelect={setTarget} /> }
-          { /* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
-            return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
-          }) */ }
-          { /* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */ }
-          <MapControls target={[-18,0,0]} maxZoom={100} minZoom={5} />
-        </Canvas>
+        <Box w={'full'} h={'full'}>
+          <Canvas orthographic={true} camera={{fov: 100, near: -100, far: 1000, position: [0, 5, 10], zoom: 1}}>
+            <ambientLight />
+            <pointLight position={[10, 10, 10]} />
+            { !!data?.board && <Board {...data.board} onSelect={setTarget} /> }
+            { /* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
+              return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
+            }) */ }
+            { /* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */ }
+            <MapControls target={[0,0,0]} maxZoom={100} minZoom={5} />
+          </Canvas>
+        </Box>
       </Box>
     </GameContext.Provider>
   )
