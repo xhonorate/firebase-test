@@ -4,11 +4,9 @@ import { Edges } from '@react-three/drei';
 
 // TODO: Import mesh
 export default function Settlement(props: JSX.IntrinsicElements['mesh'] & { color: string }) {
-  const ref = useRef<THREE.Mesh>(null!)
   return (
     <mesh
-      {...props}
-      ref={ref}>
+      {...props}>
       <boxGeometry args={[1, 1, 1]} />
       <Edges 
         scale={1}

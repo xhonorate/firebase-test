@@ -37,7 +37,7 @@ const center = {
 }
 
 // Get cube direction vector at index (directions of radial coord system: 0 is right, circles counter clockwise)
-function cubeDirection(direction: number) {
+export function cubeDirection(direction: number) {
   return cubeDirectionVectors[direction];
 }
 
@@ -60,7 +60,7 @@ function cubeSubtract(a: HexCoords, b: HexCoords) {
 }
 
 // Return scalar distance between two hex coords
-function cubeDistance(a: HexCoords, b: HexCoords) {
+export function cubeDistance(a: HexCoords, b: HexCoords) {
   let vec = cubeSubtract(a, b);
   return (Math.abs(vec.q) + Math.abs(vec.r) + Math.abs(vec.s)) / 2;
 }
@@ -80,8 +80,8 @@ function cubeNeighbor(hex: HexCoords, dir: number) {
 }
 
 // Return array of hex coords of all tiles at given radius (not 0) away from center tile
-function cubeRing(center: HexCoords, radius: number) {
-  let results = [];
+export function cubeRing(center: HexCoords, radius: number) {
+  let results: HexCoords[] = [];
   let hex = cubeAdd(center, cubeScale(cubeDirection(0), radius));
 
   for (let i = 0; i < 6; i++) {
@@ -112,29 +112,48 @@ export function indexToHex(index: number) {
   
   return cubeAdd(
     cubeScale(cubeDirection(sector), radius), // Position of first tile in this 'slice' at this radius
-    cubeScale(cubeDirection((sector + 3) % 6), sectorIndex) // offset for index in this sector (counter clockwise distance)
+    cubeScale(cubeDirection((sector + 2) % 6), sectorIndex) // offset for index in this sector (counter clockwise distance)
   )
 }
 
-// Search for tile with given hex coordinates in tiles list (probably slower than using indexToHex?)
-// TODO: check if this system actually works better or not, can convert to call indexToHex if faster
+// Search for tile with given hex coordinates in tiles list, return false if not found
 export function findTileByHex(tiles: TileData[], hex: HexCoords) {
-  return tiles.find((tile) => cubeDistance(tile.hex, hex) === 0 );
+  const index = hexToIndex(hex);
+  if (index >= tiles.length) return false;
+  return tiles[index];
 }
 
-// Return array of tiles adjacent to tile
-export function adjacentTiles(tiles: TileData[], tile: TileData | number, dist:number = 1) {
-  // Access by index if passed as param
-  if (typeof tile === 'number') tile = tiles[tile];
+// Return the sector the hex is in (0 - 5) counter clockwise from right
+// To get relative direction of a hex pass cubeSubtract(a, b) instead
+// Return [ sector, indexInSector ]
+function getSector(hex: HexCoords) {
+  const absQ = Math.abs(hex.q);
+  const absR = Math.abs(hex.r);
+  const absS = Math.abs(hex.s);
 
-  let adjacent = [];
-
-  return adjacent;
+  if (absQ > absR && absQ >= absS) {
+    return [hex.q > 0 ? 0 : 3, absR];
+  } else if (absR >= absQ && absR > absS) {
+    return [hex.r > 0 ? 4 : 1, absS];
+  } else {
+    return [hex.s > 0 ? 2 : 5, absQ];
+  }
 }
 
-// Treat as 2d x-y plane grid
-// Every other column will be vertically offset to achieve hex grid
-// Vertex offset will shift based on even or odd column 
+// Calculate index of hex at given coord
+// CAREFUL: This may return indexies that are out of range
+export function hexToIndex(hex: HexCoords) {
+  const radius = Math.max(Math.abs(hex.q), Math.abs(hex.r), Math.abs(hex.s));
+  if (radius === 0) return 0;
+  
+  // sum of first n numbers = (1/2)*n*(n-1);
+  // multiply by 6 (6 sections * radius hex's per section)
+  // add 1 for center tile
+  const contained = 1 + 6 * (1/2)*radius*(radius-1);
+
+  const [sector, indexInSector] = getSector(hex);
+  return contained + sector * radius + indexInSector;
+}
 
 function shouldBeWater(hex: HexCoords, size: number) {
   // Smallest number of tiles to one edge of the board
@@ -179,7 +198,7 @@ function chooseSpawn(tiles: TileData[], player: number, passes: number) {
   }
 
   // Add settlement on center tile
-  bestSoFar.tile.obj = { type: 'Settlement' };
+  bestSoFar.tile.obj = { type: 'Settlement', owner: player };
   bestSoFar.tile.owner = player;
 
   // Set ownership of adjacent tiles

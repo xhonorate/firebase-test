@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
 import { GameContext, GameState } from './room';
 import { TileData, tileTypes } from './three/Tile';
+import { cubeRing, findTileByHex } from './Board';
 
 function procTiles(state: GameState) {
   // TODO: something with this number
@@ -10,11 +11,16 @@ function procTiles(state: GameState) {
   state.board.tiles.forEach((tile) => {
     if (tile.type !== 0 && tile.odds > Math.random()*multiplier) {
       tile.procs = (tile.procs ?? 0) + 1;
+      // If the tile is owned by a player, assign its resources
       if ('owner' in tile) {
-        // If the tile is owned by a player, assign its resources
+        let amt = 1; 
         // TODO: check for city or tile upgrades, assign more/less resources
-        const type = tileTypes[tile.type].name; // convert index to text name
-        state.players[tile.owner].resources[type] += 1; // give 1 of related resource
+        if (tile?.obj?.type === 'City' || cubeRing(tile.hex, 1).map(hex => findTileByHex(state.board.tiles, hex)).some((tile) => !!tile && tile?.obj?.type === 'City')) {
+          // If tile is city or any adjacent tile (meaning city this is attatched to) is a city, add +1 to yield
+          amt += 1; 
+        }
+        const type = tileTypes[tile.type].name; // convert index of type to text name of type
+        state.players[tile.owner].resources[type] += amt; // give amt of related resource
       }
     } 
   })    

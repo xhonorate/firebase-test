@@ -3,6 +3,7 @@ import React, { MutableRefObject, useRef, useState, useEffect, useMemo } from 'r
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated } from '@react-spring/three';
 import Settlement from './Settlement';
+import Road from './Road';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -33,17 +34,22 @@ export interface HexCoords {
   s: number
 }
 
+export interface Obj {
+  type: string,
+  owner?: number;
+}
+
 export interface TileData {
   index?: number,
   type: number,
   hex: HexCoords,
   odds: number, //weighted likelyhood of being "rolled"
-  obj?: any, //any building or object on this tile
+  obj?: Obj, //any building or object on this tile
   procs?: number //how many times this tile has been "rolled", use listener
   owner?: number //index of player owning this tile
 }
 
-function cubeToPos(hex: HexCoords): [number, number, number] {
+export function cubeToPos(hex: HexCoords): [number, number, number] {
   return [Math.sqrt(3) * hex.q + Math.sqrt(3)/2 * hex.r, 0, (3/2) * hex.r];
 }
 
@@ -71,14 +77,13 @@ export default function Tile({hex, type, procs, odds, obj, owner, onClick}: Tile
     </mesh> }
 
     { /* Render buildings */ }
-    { obj && obj.type === 'Settlement' && <>
-
-    
-
-
-
-    
-      <Settlement color={playerColors[owner]} position={pos} />
+    { obj && <>
+      { obj.type === 'Settlement' && <>
+        <Settlement color={playerColors[obj?.owner ?? owner]} position={pos} />
+      </> }
+      { obj.type === 'Road' && <>
+        <Road hex={hex} color={playerColors[obj?.owner ?? owner]} position={pos} />
+      </> }
     </>}
 
     { /* Highlighted ownership of tiles by player color */ }
