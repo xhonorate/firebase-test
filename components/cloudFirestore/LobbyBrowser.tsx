@@ -15,6 +15,7 @@ import firebase from 'firebase/app'
 
 export interface Participant {
   id: string,
+  name?: string,
   connected: boolean,
 }
 

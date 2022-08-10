@@ -21,6 +21,7 @@ export interface ResourceStates {
 }
 
 export interface PlayerState {
+  id: string,
   resources: ResourceStates
 }
 
@@ -62,7 +63,7 @@ export default function Room({id, settings={size: 6, spawnRates: [0, 1, 1, 1, 1,
           size: settings.size,
           spawnRates: settings.spawnRates // spawn rates of different tiles
         }),
-        players: participants.map((player) => { 
+        players: participants.map((player) => {
           return {
             id: player.id,
             resources: tileTypes.reduce((a, v) => (v.name === 'Water' ? a : { ...a, [v.name]: 0}), {})
@@ -82,7 +83,7 @@ export default function Room({id, settings={size: 6, spawnRates: [0, 1, 1, 1, 1,
         <HostControl />
       </> }
       <Box w={'650px'} h={'650px'} border={'1px solid darkblue'}>
-        <HUD playerIndex={playerIndex} w={'650px'} h={'650px'} target={target} />
+        <HUD participants={participants} playerIndex={playerIndex} w={'650px'} h={'650px'} target={target} />
         <Box w={'full'} h={'full'}>
           <Canvas orthographic={true} camera={{fov: 100, near: -100, far: 1000, position: [0, 5, 10], zoom: 1}}>
             <ambientLight />

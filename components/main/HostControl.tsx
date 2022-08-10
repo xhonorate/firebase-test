@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
-import { GameContext, GameState } from './room';
+import { GameContext, GameState } from './Room';
 import { TileData, tileTypes } from './three/Tile';
 import { cubeRing, findTileByHex } from './Board';
 
@@ -15,7 +15,7 @@ function procTiles(state: GameState) {
       if ('owner' in tile) {
         let amt = 1; 
         // TODO: check for city or tile upgrades, assign more/less resources
-        if (tile?.obj?.type === 'City' || cubeRing(tile.hex, 1).map(hex => findTileByHex(state.board.tiles, hex)).some((tile) => !!tile && tile?.obj?.type === 'City')) {
+        if (tile?.obj?.level > 1 || cubeRing(tile.hex, 1).map(hex => findTileByHex(state.board.tiles, hex)).some((tile) => !!tile && tile?.obj?.level > 1)) {
           // If tile is city or any adjacent tile (meaning city this is attatched to) is a city, add +1 to yield
           amt += 1; 
         }

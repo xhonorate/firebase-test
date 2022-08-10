@@ -3,7 +3,7 @@ import { Text, Button, VStack } from '@chakra-ui/react'
 import { update, useDocument } from "@nandorojo/swr-firestore"
 import { useCallback, useState, useEffect } from "react";
 import firebase from 'firebase/app';
-import Room from '../main/room';
+import Room from '../main/Room';
 
 export interface GameSettings {
   maxPlayers: number,

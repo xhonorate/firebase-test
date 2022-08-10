@@ -1,35 +1,45 @@
-import * as THREE from 'three'
-import React, { useContext, useMemo } from 'react'
-import { Edges } from '@react-three/drei';
-import { GameContext } from '../room';
-import { HexCoords, cubeToPos } from './Tile';
-import { hexToIndex, cubeRing, cubeDirection } from '../Board';
+import * as THREE from "three";
+import React, { useContext, useMemo } from "react";
+import { Edges } from "@react-three/drei";
+import { GameContext } from "../Room";
+import { HexCoords, cubeToPos } from "./Tile";
+import { hexToIndex, cubeRing, cubeDirection } from "../Board";
+import { MeshProps } from '@react-three/fiber'
+
+interface RoadProps extends MeshProps {
+  hex: HexCoords,
+  color: string,
+}
 
 // TODO: Import mesh
-export default function Road(props: JSX.IntrinsicElements['mesh'] & { color: string, hex: HexCoords }) {
+export default function Road(
+  {hex, color, ...props}: RoadProps
+) {
   const { data } = useContext(GameContext);
-  
+
   // Get array of directions road should connect to
   const shapes = useMemo(() => {
     const shape = new THREE.Shape();
-    shape.moveTo(0,0);
-    cubeRing(props.hex, 1).forEach((hex, idx) => {
-      const type = data?.board?.tiles?.[hexToIndex(hex)]?.obj?.type;
+    shape.moveTo(0, 0);
+    cubeRing(hex, 1).forEach((neighborHex, idx) => {
+      const type = data?.board?.tiles?.[hexToIndex(neighborHex)]?.obj?.type;
+      console.log(type);
 
-      if (!!type && (type === 'Road' || type === 'Settlement' || type === 'City')) {
-        console.log("YO");
+      if (
+        !!type &&
+        (type === "Road" || type === "Settlement" || type === "City")
+      ) {
         const [x, y, z] = cubeToPos(cubeDirection(idx));
         shape.lineTo(x, z);
-      };
+      }
     });
 
     return shape;
-  }, [data?.board?.tiles]);
+  }, [data?.board?.tiles, hex]);
 
   return (
-    <mesh
-      {...props}>
-      { /* TODO: <extrudeGeometry args={[shapes, {
+    <mesh {...props}>
+      {/* TODO: <extrudeGeometry args={[shapes, {
         steps: 2,
         depth: 1,
         bevelEnabled: true,
@@ -37,14 +47,11 @@ export default function Road(props: JSX.IntrinsicElements['mesh'] & { color: str
         bevelSize: 1,
         bevelOffset: 0,
         bevelSegments: 1
-      }]} /> */ }
-            <boxGeometry args={[1, 0.3, 0.3]} />
+      }]} /> */}
+      <boxGeometry args={[1, 0.3, 0.3]} />
 
-      <Edges
-        scale={1}
-        color={'black'}
-      />
-      <meshStandardMaterial color={props.color} />
+      <Edges scale={1} color={"black"} />
+      <meshStandardMaterial color={color} />
     </mesh>
-  )
+  );
 }

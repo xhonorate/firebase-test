@@ -198,7 +198,7 @@ function chooseSpawn(tiles: TileData[], player: number, passes: number) {
   }
 
   // Add settlement on center tile
-  bestSoFar.tile.obj = { type: 'Settlement', owner: player };
+  bestSoFar.tile.obj = { type: 'Settlement', owner: player, level: 1 };
   bestSoFar.tile.owner = player;
 
   // Set ownership of adjacent tiles
@@ -233,7 +233,7 @@ export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings):
   let tiles: TileData[] = [{
     type: randomChoice(weightedOptions),
     hex: center,
-    odds: randomInt(3) + 1,
+    odds: randomChoice([1, 1, 1, 2, 2, 3]),
   }];
 
   // Board size determines radius of hex grid, middle tile being radius = 0, surrounding tiles radius = 1, etc.
@@ -245,7 +245,7 @@ export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings):
         tiles.push({
           type: shouldBeWater(hex, size) ? 0 : randomChoice(weightedOptions),
           hex,
-          odds: randomInt(3) + 1
+          odds: randomChoice([1, 1, 1, 2, 2, 3]),
         })
         
         // Step to next tile in section of ring
@@ -267,12 +267,12 @@ export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings):
   };
 }
 
-export function Board ({tiles, onSelect}: BoardProps & {onSelect: (tile: TileData) => void}) {
+export function Board ({tiles, onSelect}: BoardProps & {onSelect: (idx: number) => void}) {
   // Board graphics
   return <>
     { tiles.length > 0 &&
       tiles.map((tile: TileData, idx) => (
-        <Tile key={idx} {...tile} onClick={() => onSelect({...tile, index: idx})} />
+        <Tile key={idx} {...tile} onClick={() => onSelect(idx)} />
       ))
     }
   </>
