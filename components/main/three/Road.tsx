@@ -23,7 +23,7 @@ export default function Road(
     shape.moveTo(0, 0);
     cubeRing(hex, 1).forEach((neighborHex, idx) => {
       const type = data?.board?.tiles?.[hexToIndex(neighborHex)]?.obj?.type;
-      console.log(type);
+      console.log(type); // NOT CONSUMING CONEXT, CHECK STRUCTURE IN ROOM
 
       if (
         !!type &&

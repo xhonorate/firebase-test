@@ -142,7 +142,7 @@ export default function Tile({
           />
         </mesh>
       )}
-      
+
       {/* hex has two parts, bottom/water level cylinder, then top 'tile' graduated cylinder
       TODO: Combine into one mesh
       */}
@@ -164,7 +164,7 @@ export default function Tile({
           onPointerOver={(event) => hover(true)}
           onPointerOut={(event) => hover(false)}
         >
-          <cylinderGeometry args={[0.95 - 0.2 * odds, 1, 0.2 * odds, 6]} /*TODO: remove odds */ /> 
+          <cylinderGeometry args={[0.85, 1, 0.2, 6]} /*TODO: remove odds */ /> 
           <meshStandardMaterial
             color={hovered ? tileTypes[type].hovered : tileTypes[type].color}
             side={THREE.FrontSide}
