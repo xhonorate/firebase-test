@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import React, { useContext, useMemo } from "react";
 import { Edges } from "@react-three/drei";
-import { GameContext } from "../Room";
+import { GameContext } from "../RoomInstance";
 import { HexCoords, cubeToPos } from "./Tile";
 import { hexToIndex, cubeRing, cubeDirection } from "../Board";
 import { MeshProps } from '@react-three/fiber'

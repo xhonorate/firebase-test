@@ -1,7 +1,7 @@
 import { Text, Box, BoxProps } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { ResourceStates } from "../Room";
+import { ResourceStates } from "../RoomInstance";
 import { findTileTypeByName, tileTypes } from "../three/Tile";
 
 const MotionBox = motion<Omit<BoxProps, "transition">>(Box);

@@ -1,6 +1,6 @@
 import { findTileTypeByName, TileData, tileTypes } from '../three/Tile';
 import { hexToIndex, cubeRing } from '../Board';
-import { ResourceStates } from '../Room';
+import { ResourceStates } from '../RoomInstance';
 import { Button, chakra, Flex, Text } from '@chakra-ui/react';
 import React from 'react';
 import { buildOptions, Action } from './buildOptions';

@@ -9,7 +9,7 @@ import {
   useMemo,
   useCallback,
 } from "react";
-import { GameContext } from "../Room";
+import { GameContext } from "../RoomInstance";
 import { Action } from './buildOptions';
 import TileControls from './TileControls';
 import ResourceDisplay from "./ResourceDisplay";

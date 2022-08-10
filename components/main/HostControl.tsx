@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
-import { GameContext, GameState } from './Room';
+import { GameContext, GameState } from './RoomInstance';
 import { TileData, tileTypes } from './three/Tile';
 import { cubeRing, findTileByHex } from './Board';
 
