@@ -45,36 +45,35 @@ export default function ResourceDisplay(resources: ResourceStates) {
   return (
     <>
       {Object.entries(resources).map(([key, value]) => (
-        <>
-          <Text
-            fontWeight={600}
-            key={key}
-            color={findTileTypeByName(key).color}
-          >
-            {key + ": " + value}
+        <Text
+          as={'div'}
+          fontWeight={600}
+          key={key}
+          color={findTileTypeByName(key).color}
+        >
+          {key + ": " + value}
 
-            {!!popups?.[key] && popups[key].map((val: number, idx: number) => (
-              <Box key={idx} position={'relative'} w={'full'}>
-                <MotionBox
-                  position={'absolute'}
-                  textAlign={'center'}
-                  w={'full'}
-                  animate={{
-                    opacity: [0, 1, 1, 0],
-                    y: [0, 10, 14],
-                    scale: [1, 1.2]
-                  }}
-                  transition={{
-                    duration: 3,
-                  }}
-                  onAnimationComplete={(e) => anims.current[key].pop()} /* remove played animation */
-                >
-                  {(val > 0 ? '+' : '') + val}
-                </MotionBox>
-              </Box>
-            ))}
-          </Text>
-        </>
+          {!!popups?.[key] && popups[key].map((val: number, idx: number) => (
+            <Box key={idx} position={'relative'} w={'full'}>
+              <MotionBox
+                position={'absolute'}
+                textAlign={'center'}
+                w={'full'}
+                animate={{
+                  opacity: [0, 1, 1, 0],
+                  y: [0, 10, 14],
+                  scale: [1, 1.2]
+                }}
+                transition={{
+                  duration: 3,
+                }}
+                onAnimationComplete={(e) => anims.current[key].pop()} /* remove played animation */
+              >
+                {(val > 0 ? '+' : '') + val}
+              </MotionBox>
+            </Box>
+          ))}
+        </Text>
       ))}
     </>
   );

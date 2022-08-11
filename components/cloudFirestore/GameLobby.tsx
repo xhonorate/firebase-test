@@ -6,7 +6,17 @@ import firebase from 'firebase/app';
 import Room from '../main/RoomInstance';
 
 export interface GameSettings {
-  maxPlayers: number,
+  numPlayers: number, // Max players that can join room, also min players to start game
+  boardSize: number, // Max radius of tiles to spawn
+  tickRate: number,
+  yieldFrequency: number, // TODO: once done testing with this, move to a select of options which affect spawns
+  resourceSpawns: number,
+  //TODO: more board generation settings
+}
+
+export const gameSettingOptions: {[key in GameSettings as string]: { default: number, min: number, max: number }} = {
+  numPlayers: { default: 2, min: 1, max: 8 },
+  ///TODO:  ...
 }
 
 export interface GameData {

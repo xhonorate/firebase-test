@@ -1,16 +1,16 @@
-import { findTileTypeByName, TileData, tileTypes } from '../three/Tile';
-import { hexToIndex, cubeRing } from '../Board';
-import { ResourceStates } from '../RoomInstance';
-import { Button, chakra, Flex, Text } from '@chakra-ui/react';
-import React from 'react';
-import { buildOptions, Action } from './buildOptions';
+import { findTileTypeByName, TileData, tileTypes } from "../three/Tile";
+import { hexToIndex, cubeRing } from "../Board";
+import { ResourceStates } from "../RoomInstance";
+import { Button, chakra, Flex, Text } from "@chakra-ui/react";
+import React from "react";
+import { buildOptions, Action } from "./buildOptions";
 
 interface TileControlProps {
   tiles: TileData[];
   playerIndex: number;
   resources: ResourceStates;
   tile: TileData;
-  updateTile: (action: Action, cost: object) => void, 
+  updateTile: (action: Action, cost: object) => void;
 }
 
 // Display buttons to interact with tile that has been selected
@@ -22,7 +22,7 @@ export default function TileControls({
   updateTile,
 }: TileControlProps) {
   const options = [];
-  
+
   // Map array of options (const) buttons for what may be built, depending on requirements
   buildOptions.forEach((option) => {
     let reqPassed = true;
@@ -98,53 +98,45 @@ export default function TileControls({
 
         // If we do not have enough gold to cover the goldcost, disable button
         return (
-          <>
-            <Button
-              key={idx}
-              zIndex={1000}
-              h={"min-content"}
-              cursor={"pointer"}
-              isDisabled={
-                goldCost >
-                resources["Gold"] /* if user cannot afford, disable button */
-              }
-              onClick={() =>
-                updateTile(option.action, { ...option.cost, Gold: goldCost })
-              }
-            >
-              <Flex direction={"column"}>
-                <Text>{option.name}</Text>
-                {costText.map(([key, value, amtMissing]) => (
-                  <Text key={key}>
-                    <chakra.span
-                      color={findTileTypeByName(key).color}
-                    >
-                      {key}
-                    </chakra.span>
-                    {": "}
-                    <chakra.span
-                      as={!!amtMissing ? "del" : null}
-                      color={!!amtMissing ? "red" : null}
-                    >
-                      {value}
-                    </chakra.span>
-                    {!!amtMissing && (
-                      <>
-                        {!!(value - amtMissing) && " " + (value - amtMissing)}
-                        <chakra.span
-                          color={
-                            findTileTypeByName("Gold").color
-                          }
-                        >
-                          {" +" + amtMissing * goldPerResource + "g"}
-                        </chakra.span>
-                      </>
-                    )}
-                  </Text>
-                ))}
-              </Flex>
-            </Button>
-          </>
+          <Button
+            key={idx}
+            zIndex={1000}
+            h={"min-content"}
+            cursor={"pointer"}
+            isDisabled={
+              goldCost >
+              resources["Gold"] /* if user cannot afford, disable button */
+            }
+            onClick={() =>
+              updateTile(option.action, { ...option.cost, Gold: goldCost })
+            }
+          >
+            <Flex direction={"column"}>
+              <Text>{option.name}</Text>
+              {costText.map(([key, value, amtMissing]) => (
+                <Text key={key}>
+                  <chakra.span color={findTileTypeByName(key).color}>
+                    {key}
+                  </chakra.span>
+                  {": "}
+                  <chakra.span
+                    as={!!amtMissing ? "del" : null}
+                    color={!!amtMissing ? "red" : null}
+                  >
+                    {value}
+                  </chakra.span>
+                  {!!amtMissing && (
+                    <>
+                      {!!(value - amtMissing) && " " + (value - amtMissing)}
+                      <chakra.span color={findTileTypeByName("Gold").color}>
+                        {" +" + amtMissing * goldPerResource + "g"}
+                      </chakra.span>
+                    </>
+                  )}
+                </Text>
+              ))}
+            </Flex>
+          </Button>
         );
       })}
     </>

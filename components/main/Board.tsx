@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Tile, { tileTypes, TileData, HexCoords} from './three/Tile';
+import { GameContext } from './RoomInstance';
 
 // Return a random int less than max (may be 0)
 export function randomInt(max: number) {
@@ -42,7 +43,7 @@ export function cubeDirection(direction: number) {
 }
 
 // Return hex coordinates offset by vector
-function cubeAdd(hex: HexCoords, vec: HexCoords) {
+export function cubeAdd(hex: HexCoords, vec: HexCoords) {
   return {
     q: hex.q + vec.q,
     r: hex.r + vec.r,
@@ -66,7 +67,7 @@ export function cubeDistance(a: HexCoords, b: HexCoords) {
 }
 
 // Multiply cube distance by a given factor ( useful for scaling distance vectors )
-function cubeScale(hex: HexCoords, factor: number) {
+export function cubeScale(hex: HexCoords, factor: number) {
   return {
     q: hex.q * factor,
     r: hex.r * factor,

@@ -14,7 +14,7 @@ export default function Settlement(
 ) {
   return (
     <mesh {...props}>
-      <cylinderGeometry args={[0.5, 0.5, 0.5, 2 + level]} />
+      <cylinderGeometry args={[0.5, 0.5, 0.5*level, 2 + level]} />
       <Edges scale={1} color={"black"} />
       <meshStandardMaterial color={color} />
     </mesh>
