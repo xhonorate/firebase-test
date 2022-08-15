@@ -4,10 +4,11 @@ import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
 import { useEffect } from "react";
 import { Button, Box } from "@chakra-ui/react";
 import { Board, BoardProps, generateBoard } from "./Board";
-import { Backdrop, MapControls, Stars } from "@react-three/drei";
+import { MapControls, Stars, RandomizedLight } from '@react-three/drei';
 import HostControl from "./HostControl";
 import HUD from "./hud";
 import { tileTypes } from "./three/Tile";
+import { Bloom, DepthOfField, EffectComposer, Outline, Selection, SelectiveBloom } from "@react-three/postprocessing";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -108,7 +109,7 @@ export default function Room({
           <HostControl />
         </>
       )}
-      <Box w={"650px"} h={"650px"} border={"1px solid darkblue"} bg={'gray.800'}>
+      <Box w={"650px"} h={"650px"} border={"1px solid darkblue"} bg={'gray.800'} color={'gray.100'}>
         <HUD
           participants={participants}
           playerIndex={playerIndex}
@@ -124,13 +125,16 @@ export default function Room({
               near: -100,
               far: 1000,
               position: [0, 5, 10],
-              zoom: 1,
+              zoom: 1
             }}
           >
             { /* due to some issues with react, we must use a second provider inside of the canvas to pass props down */ }
-            <GameContext.Provider value={{ data, set, update, paused }}> 
-              <ambientLight />
-              <pointLight position={[10, 10, 10]} />
+            <GameContext.Provider value={{ data, set, update, paused }}>
+              <ambientLight intensity={0.3} />
+              <pointLight position={[10,10,10]} />
+              { /*
+              <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
+              */ }
               {!!data?.board && <Board {...data.board} onSelect={setTarget} />}
               {/* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
                 return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
@@ -138,6 +142,10 @@ export default function Room({
               {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
               <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
             </GameContext.Provider>
+            <EffectComposer autoClear={false}>
+              <DepthOfField focusDistance={0.1} focalLength={0.05} bokehScale={2} height={500} />
+              <Bloom luminanceThreshold={0} luminanceSmoothing={0.9} height={500} />
+            </EffectComposer>
           </Canvas>
         </Box>
       </Box>

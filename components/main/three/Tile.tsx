@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import React, {
-  MutableRefObject,
   useRef,
   useState,
   useEffect,
@@ -10,6 +9,10 @@ import { useFrame } from "@react-three/fiber";
 import { useSpring, animated } from "@react-spring/three";
 import Settlement from "./Settlement";
 import Road from "./Road";
+import HexWater from "./gltfjsx/tiles/hex_water";
+import HexForestDetail from "./gltfjsx/tiles/hex_forest_detail";
+import { randomInt, cubeScale } from "../Board";
+import { Edges } from "@react-three/drei";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -85,7 +88,17 @@ export default function Tile({
   onClick,
 }: TileData & { onClick: any }) {
   const ref = useRef<THREE.Mesh>(null!);
-  const pos = useMemo(() => cubeToPos(hex), [hex]);
+  const pos = useMemo(
+    () =>
+      cubeToPos(
+        cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
+      ),
+    [hex]
+  );
+  const heightScale = useMemo(
+    () => (type === 0 ? 1 : 1 + randomInt(5) * 0.1),
+    [type]
+  );
   const { glowOpacity } = useSpring({ glowOpacity: 0 });
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
@@ -99,9 +112,9 @@ export default function Tile({
   }, [procs]);
   //useFrame((state, delta) => (ref.current.rotation.x += 0.01))
   return (
-    <>
+    <group position={pos} dispose={null}>
       {type !== 0 && (
-        <mesh position={pos}>
+        <mesh>
           <cylinderGeometry args={[1, 1, 0.18, 6]} />
           <animated.meshStandardMaterial
             transparent={true}
@@ -118,14 +131,15 @@ export default function Tile({
             <Settlement
               level={obj?.level ?? 1 /* whether settlment has been upgraded */}
               color={playerColors[obj?.owner ?? owner]}
-              position={vectorAdd(pos, [0, 0.25, 0])}
+              position={[0, heightScale, 0]}
+              castShadow={true}
             />
           )}
           {obj.type === "Road" && (
             <Road
               hex={hex}
               color={playerColors[obj?.owner ?? owner]}
-              position={vectorAdd(pos, [0, 0.1, 0])}
+              position={[0, 0.1, 0]}
             />
           )}
         </>
@@ -133,7 +147,7 @@ export default function Tile({
 
       {/* Highlighted ownership of tiles by player color */}
       {owner !== undefined && (
-        <mesh position={vectorAdd(pos, [0, 0.1, 0])}>
+        <mesh position={[0, 0.1, 0]}>
           <cylinderGeometry args={[1, 1, 0.05, 6]} />
           <meshStandardMaterial
             transparent={true}
@@ -146,16 +160,23 @@ export default function Tile({
       {/* hex has two parts, bottom/water level cylinder, then top 'tile' graduated cylinder
       TODO: Combine into one mesh
       */}
-      <mesh position={vectorAdd(pos, [0, -0.2, 0])}>
-        <cylinderGeometry args={[1, 1, 0.2, 6]} />
-        <meshStandardMaterial
-          transparent={type === 0}
-          opacity={0.5}
-          color={hovered ? tileTypes[type].hovered : tileTypes[type].color}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-      {type !== 0 && (
+      {
+        type === 0 ? (
+          <HexWater />
+        ) : (
+          <HexForestDetail
+            receiveShadow={true}
+            onContextMenu={() => console.log("Right Clicked")}
+            scale={[1, heightScale, 1]}
+            onClick={(event) => {
+              if (type !== 0) onClick();
+            }}
+            onPointerOver={(event) => hover(true)}
+            onPointerOut={(event) => hover(false)}
+          />
+        )
+        /*
+      (
         <mesh
           ref={ref}
           position={pos}
@@ -164,13 +185,14 @@ export default function Tile({
           onPointerOver={(event) => hover(true)}
           onPointerOut={(event) => hover(false)}
         >
-          <cylinderGeometry args={[0.85, 1, 0.2, 6]} /*TODO: remove odds */ /> 
+          <cylinderGeometry args={[0.85, 1, 0.2, 6]} /> 
           <meshStandardMaterial
             color={hovered ? tileTypes[type].hovered : tileTypes[type].color}
             side={THREE.FrontSide}
           />
         </mesh>
-      )}
-    </>
+      ) */
+      }
+    </group>
   );
 }

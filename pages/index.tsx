@@ -1,5 +1,3 @@
-import ReadDataFromCloudFirestore from '../components/cloudFirestore/read'
-import WriteToCloudFirestore from '../components/cloudFirestore/write'
 import { useUser } from '../components/auth/useUser'
 import NextLink from 'next/link'
 import CreateUser from '../components/cloudFirestore/CreateUser';
@@ -7,7 +5,6 @@ import { useDocument } from '@nandorojo/swr-firestore'
 import { Button } from '@chakra-ui/react';
 import LobbyBrowser from '../components/cloudFirestore/LobbyBrowser';
 import GameLobby from '../components/cloudFirestore/GameLobby';
-import Counter from '../components/realtimeDatabase/Counter'
 
 export default function Home() {
   // TODO: Should use SWR or fuego somehow for auth...
@@ -44,8 +41,6 @@ export default function Home() {
             // If user account is not set up, prompt them with a form to set username, etc.
             <CreateUser id={user.id} isAnonymous={user.isAnonymous} />
           }
-          <WriteToCloudFirestore />
-          <ReadDataFromCloudFirestore />
           <Button onClick={() => logout()}>Log Out</Button>
         </div>
       )

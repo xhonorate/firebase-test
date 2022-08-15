@@ -1,9 +1,10 @@
-import * as THREE from "three";
 import React, { useRef } from "react";
-import { Edges } from "@react-three/drei";
-import { MeshProps } from '@react-three/fiber'
+import { GroupProps } from '@react-three/fiber'
+import House from "./gltfjsx/objects/house";
+import Watchtower from './gltfjsx/objects/watchtower';
+import Castle from './gltfjsx/objects/castle';
 
-interface SettlementProps extends MeshProps {
+interface SettlementProps extends GroupProps {
   level: number,
   color: string,
 }
@@ -12,11 +13,14 @@ interface SettlementProps extends MeshProps {
 export default function Settlement(
   {level, color, ...props}: SettlementProps
 ) {
-  return (
-    <mesh {...props}>
-      <cylinderGeometry args={[0.5, 0.5, 0.5*level, 2 + level]} />
-      <Edges scale={1} color={"black"} />
-      <meshStandardMaterial color={color} />
-    </mesh>
-  );
+  switch (level) {
+    case 1:
+      return <House {...props} />
+    case 2:
+      return <Watchtower {...props} />
+    case 3:
+      return <Castle {...props} />
+    default:
+      return null;
+  }
 }
