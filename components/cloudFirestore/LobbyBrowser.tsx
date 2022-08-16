@@ -1,11 +1,12 @@
 
 import { LockIcon } from '@chakra-ui/icons';
 import { Text, Button, useDisclosure, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, 
-  AlertDialogHeader, AlertDialogOverlay, Input, FormControl, FormLabel, FormHelperText } from '@chakra-ui/react'
+  AlertDialogHeader, AlertDialogOverlay, Input, FormControl, FormLabel, FormHelperText, FormErrorMessage } from '@chakra-ui/react'
 import { useCollection, update } from "@nandorojo/swr-firestore"
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useMemo, useCallback, useState, ChangeEvent, useEffect } from "react";
 import ReactTable from "../ReactTable"
 import firebase from 'firebase/app'
+import { gameSettingOptions } from './GameLobby';
 
 // browse existing games
 // buttons to host new game, join from list, or join from code (api endpoint meme)
@@ -77,9 +78,71 @@ const CreateLobbyPopup = ({username, isOpen, onClose, onSubmit}) => {
   )  
 }
 
+
+const PasswordPrompt = ({lobbyName, target, isOpen, onClose, onSubmit}) => {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const inputRef = React.useRef();
+
+  //TODO: Security: switch to hash, could use axios here to api call
+  const handleSubmit = useCallback((silent=false) => {
+    if (password === target) {
+      onSubmit();
+    } else if (!silent) {
+      setError("Wrong Password!");
+    }
+  }, [onSubmit, password, target]);
+
+  useEffect(() => {
+    if (!password) setError(null);
+  }, [password])
+
+  useEffect(() => {
+    handleSubmit(true);
+  }, [password, handleSubmit])
+
+  return (
+    <>
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={inputRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}>
+              <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                Join {lobbyName}
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <FormControl mt={4} isInvalid={!!error}>
+                  <FormLabel>Password</FormLabel>
+                  <Input ref={inputRef} autoComplete={'current-password'} size={'lg'} value={password} onChange={(e) => setPassword(e.target.value)} />
+                  {!!error && <FormErrorMessage>{error}</FormErrorMessage> }
+                </FormControl>                
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button onClick={onClose}>
+                  Cancel
+                </Button>
+              </AlertDialogFooter>
+            </form>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    </>
+  )  
+}
+
 const LobbyBrowser = ({userData}) => {
   // Create room modal disclosure
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [passwordPrompt, setPasswordPrompt] = useState(null);
 
   // TODO: fetch with pagination instead
   // use startafter / endbefore
@@ -90,6 +153,7 @@ const LobbyBrowser = ({userData}) => {
     listen: true
   });
 
+  // TODO: add check for participants > row.original.settings.maxPlayers
   const joinLobby = useCallback(
     (id: string) => {
       update('user_data/' + userData?.id, {active_game: id});
@@ -107,7 +171,7 @@ const LobbyBrowser = ({userData}) => {
         created: new Date(),
         finished: false,
         started: false,
-        settings: {},
+        settings: gameSettingOptions.map((option) => option.default),
         name: name,
         password: !!password ? password : null,
         participants: []
@@ -125,7 +189,7 @@ const LobbyBrowser = ({userData}) => {
       {
         Header: 'Name',
         accessor: 'name',
-        Cell: ({row}) => <Text>{row.original.name}{!!row.original.password && <LockIcon />}</Text>
+        Cell: ({row}) => <Text>{row.original.name}{!!row.original.password && <LockIcon ms={2} mt={-1} />}</Text>
       },
       {
         Header: 'Status',
@@ -145,12 +209,20 @@ const LobbyBrowser = ({userData}) => {
       },
       {
         accessor: 'id',
-        Cell: ({value}) => <Button onClick={() => joinLobby(value)}>Join</Button>
+        Cell: ({value, row}) => <Button onClick={() => {
+          if (!!row.original.password) {
+            // Open password prompt if a password is set
+            setPasswordPrompt(row);
+          } else {
+            // TODO: eventually move this to an API function for security purposes, with password input sent in req
+            joinLobby(value);
+          }
+        }}>Join</Button>
       },
     ],
     [joinLobby],
   )
-
+    console.log(passwordPrompt)
   return (
     <>
       {!!data && <ReactTable columns={columns} data={data} />}
@@ -162,7 +234,14 @@ const LobbyBrowser = ({userData}) => {
           createLobby({name, password});
         }} 
       />
-      <Button onClick={() => onOpen()}>Host</Button>
+      <PasswordPrompt 
+        lobbyName={passwordPrompt?.original.name}
+        target={passwordPrompt?.original.password}
+        isOpen={passwordPrompt !== null}
+        onClose={() => setPasswordPrompt(null)}
+        onSubmit={() => joinLobby(passwordPrompt?.original.id)}
+      />
+      <Button my={4} onClick={() => onOpen()}>Host</Button>
     </>
   )
 }

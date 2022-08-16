@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import Tile, { tileTypes, TileData, HexCoords} from './three/Tile';
 import { GameContext } from './RoomInstance';
+import { GameSettings } from '../cloudFirestore/GameLobby';
 
 // Return a random int less than max (may be 0)
 export function randomInt(max: number) {
@@ -217,34 +218,33 @@ export interface BoardProps {
   size: number
 }
 
-export interface BoardSettings {
-  numPlayers: number,
-  size: number,
-  spawnRates?: number[],
-  seed?: string,
-}
-
 // Called by Host to generate new board with random tile distribution based on settings
-export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings): BoardProps {
-  const weightedOptions: number[] = tileTypes.flatMap((tile, idx) => {
-    let rate = (spawnRates?.[idx] ?? 1); //default all spawn rates to 1 if not set
-    return Array(rate).fill(idx);
-  });
+export function generateBoard(settings: GameSettings): BoardProps {
+  const tileChoice = () => {
+    if (settings.yieldFrequency > randomInt(30)) {
+      // Mark to choose one of the resource tiles
+      // TODO: add more settings, also detect based on neighbor tiles
+      return randomChoice([1,2,3,4,5]);
+    }
+    // Return default tile type (gold)
+    return 6;
+    // TODO: add options for spawning water?
+  }
 
   let tiles: TileData[] = [{
-    type: randomChoice(weightedOptions),
+    type: tileChoice(),
     hex: center,
     odds: randomChoice([1, 1, 1, 2, 2, 3]),
   }];
 
   // Board size determines radius of hex grid, middle tile being radius = 0, surrounding tiles radius = 1, etc.
-  for (let radius = 1; radius < size + 1; radius++) { //NOTE: added +1 to size for a 1 tile water border...
+  for (let radius = 1; radius < settings.boardSize + 1; radius++) { //NOTE: added +1 to size for a 1 tile water border...
     for (let i = 0; i < 6; i ++) {
       let hex = cubeScale(cubeDirection(i), radius);
       
       for (let j = 0; j < radius; j++) {
         tiles.push({
-          type: shouldBeWater(hex, size) ? 0 : randomChoice(weightedOptions),
+          type: shouldBeWater(hex, settings.boardSize) ? 0 : tileChoice(),
           hex,
           odds: randomChoice([1, 1, 1, 2, 2, 3]),
         })
@@ -256,7 +256,7 @@ export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings):
   }
 
   // Select spawn location for players
-  for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
+  for (let playerIndex = 0; playerIndex < settings.numPlayers; playerIndex++) {
     // TODO: scuffed balanace solution of giving subsequent players +1 pass to find a good spawn
     // should probs redo the whole spawn selection thing at some point, but w/e
     chooseSpawn(tiles, playerIndex, (10 + playerIndex));
@@ -264,7 +264,7 @@ export function generateBoard({numPlayers, size, spawnRates=[]}: BoardSettings):
 
   return {
     tiles, 
-    size: size + 0
+    size: settings.boardSize + 0
   };
 }
 

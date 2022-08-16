@@ -2,10 +2,11 @@ import React, { useEffect, useCallback, useRef, useContext } from 'react'
 import { GameContext, GameState } from './RoomInstance';
 import { TileData, tileTypes } from './three/Tile';
 import { cubeRing, findTileByHex } from './Board';
+import { GameSettings } from '../cloudFirestore/GameLobby';
 
-function procTiles(state: GameState) {
+function procTiles(state: GameState, frequency: number) {
   // TODO: something with this number
-  const multiplier = 20;
+  const multiplier = 30 - frequency;
 
   // Update tiles with number of times proc'd and assign resources to owners
   state.board.tiles.forEach((tile) => {
@@ -26,7 +27,7 @@ function procTiles(state: GameState) {
   })    
 }
 
-export default function HostControl() {
+export default function HostControl(settings: GameSettings) {
   const { data, set, update, paused } = useContext(GameContext);
 
   // Store data in ref rather than state so we do not need to remount tick loop on data change
@@ -37,10 +38,10 @@ export default function HostControl() {
 
   const hostTick = useCallback(() => {
     const state = dataRef.current;
-    procTiles(state); // Update state information -- tile procs and resources
+    procTiles(state, settings.yieldFrequency); // Update state information -- tile procs and resources
     update(state)
     //update({turn: (state.turn ?? 0) + 1 })
-  }, [update]);
+  }, [update, settings.yieldFrequency]);
 
   // Mount ticking timer to perform server actions
   useEffect(() => {
@@ -54,14 +55,14 @@ export default function HostControl() {
     const interval = setInterval(() => {
       console.log('Host Tick!');
       hostTick();
-    }, 10000);
+    }, settings.tickRate ?? 5000);
 
     return () => {
       // Clear ticker on dismount or pause
       console.log("Host unmounted");
       clearInterval(interval);
     }
-  }, [paused, hostTick]);
+  }, [paused, hostTick, settings.tickRate]);
   
   return (
     <>

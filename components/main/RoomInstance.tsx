@@ -48,7 +48,7 @@ export const GameContext = React.createContext<GameContextProps>({
 
 export default function Room({
   id,
-  settings = { size: 6, spawnRates: [0, 1, 1, 1, 1, 1, 7] },
+  settings,
   playerIndex,
   participants,
 }) {
@@ -66,11 +66,7 @@ export default function Room({
     // If no data is present, need to create new RTDB entry for room
     if (!data && !loading && playerIndex === 0) {
       set({
-        board: generateBoard({
-          numPlayers: participants.length,
-          size: settings.size,
-          spawnRates: settings.spawnRates, // spawn rates of different tiles
-        }),
+        board: generateBoard(settings),
         players: participants.map((player) => {
           return {
             id: player.id,
@@ -106,7 +102,7 @@ export default function Room({
           <Button onClick={() => setPaused(!paused)}>
             {paused ? "Unpause" : "Pause"}
           </Button>
-          <HostControl />
+          <HostControl {...settings} />
         </>
       )}
       <Box w={"650px"} h={"650px"} border={"1px solid darkblue"} bg={'gray.800'} color={'gray.100'}>
@@ -142,8 +138,8 @@ export default function Room({
               {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
               <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
             </GameContext.Provider>
-            <EffectComposer autoClear={false}>
-              <DepthOfField focusDistance={0.1} focalLength={0.05} bokehScale={2} height={500} />
+            <EffectComposer>
+              <DepthOfField focusDistance={0.1} focalLength={0.05} bokehScale={1} height={500} />
               <Bloom luminanceThreshold={0} luminanceSmoothing={0.9} height={500} />
             </EffectComposer>
           </Canvas>

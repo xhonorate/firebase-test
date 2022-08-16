@@ -6,13 +6,13 @@ import React, {
   useMemo,
 } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useSpring, animated } from "@react-spring/three";
 import Settlement from "./Settlement";
 import Road from "./Road";
 import HexWater from "./gltfjsx/tiles/hex_water";
 import HexForestDetail from "./gltfjsx/tiles/hex_forest_detail";
 import { randomInt, cubeScale } from "../Board";
-import { Edges } from "@react-three/drei";
+import { motion } from "framer-motion-3d"
+import { useAnimation, useMotionValue } from "framer-motion";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -87,7 +87,6 @@ export default function Tile({
   owner,
   onClick,
 }: TileData & { onClick: any }) {
-  const ref = useRef<THREE.Mesh>(null!);
   const pos = useMemo(
     () =>
       cubeToPos(
@@ -99,30 +98,45 @@ export default function Tile({
     () => (type === 0 ? 1 : 1 + randomInt(5) * 0.1),
     [type]
   );
-  const { glowOpacity } = useSpring({ glowOpacity: 0 });
+
+  const tileProc = useAnimation();
   const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
 
   //When procs increases, this has been rolled, play animation
   useEffect(() => {
     if (procs) {
-      //TODO: Switch to use framer motion's three adapter ?
-      glowOpacity.start(0.9).then(() => glowOpacity.start(0));
+      tileProc.start({
+        opacity: [0, 0.6, 0.6, 0],
+      });
     }
   }, [procs]);
   //useFrame((state, delta) => (ref.current.rotation.x += 0.01))
   return (
+    <>
     <group position={pos} dispose={null}>
       {type !== 0 && (
-        <mesh>
-          <cylinderGeometry args={[1, 1, 0.18, 6]} />
-          <animated.meshStandardMaterial
+        // Yield Proc Display //
+        <mesh position={[0,0.675 * heightScale,0]}>
+          <cylinderGeometry args={[1.0, 1.0, 0.675 * heightScale, 6]} />
+          <motion.meshStandardMaterial
+            initial={{opacity: 0}}
+            animate={tileProc}
+            transition={{duration: 3}}
             transparent={true}
-            opacity={glowOpacity}
             color={"white"}
           />
         </mesh>
       )}
+
+      <mesh position={[0,0.5 * heightScale,0]}>
+        <cylinderGeometry args={[1.16, 1.16, 1.01 * heightScale, 6]} />
+        <motion.meshStandardMaterial
+          animate={{opacity: (hovered ? 0.2 : 0)}}
+          transition={{duration: (hovered ? 0.05 : 0.4), ease: 'easeOut'}}
+          transparent={true}
+          color={"black"}
+        />
+      </mesh>
 
       {/* Render buildings */}
       {obj && (
@@ -171,7 +185,7 @@ export default function Tile({
             onClick={(event) => {
               if (type !== 0) onClick();
             }}
-            onPointerOver={(event) => hover(true)}
+            onPointerOver={(event) => { event.stopPropagation(); hover(true); }}
             onPointerOut={(event) => hover(false)}
           />
         )
@@ -194,5 +208,6 @@ export default function Tile({
       ) */
       }
     </group>
+    </>
   );
 }
