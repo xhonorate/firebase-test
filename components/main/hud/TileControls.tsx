@@ -1,4 +1,4 @@
-import { findTileTypeByName, TileData, tileTypes } from "../three/Tile";
+import { findResourceTypeByName, TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing } from "../Board";
 import { ResourceStates } from "../RoomInstance";
 import { Button, chakra, Flex, Text } from "@chakra-ui/react";
@@ -115,7 +115,7 @@ export default function TileControls({
               <Text>{option.name}</Text>
               {costText.map(([key, value, amtMissing]) => (
                 <Text key={key}>
-                  <chakra.span color={findTileTypeByName(key).color}>
+                  <chakra.span color={findResourceTypeByName(key).color}>
                     {key}
                   </chakra.span>
                   {": "}
@@ -128,7 +128,7 @@ export default function TileControls({
                   {!!amtMissing && (
                     <>
                       {!!(value - amtMissing) && " " + (value - amtMissing)}
-                      <chakra.span color={findTileTypeByName("Gold").color}>
+                      <chakra.span color={findResourceTypeByName("Gold").color}>
                         {" +" + amtMissing * goldPerResource + "g"}
                       </chakra.span>
                     </>

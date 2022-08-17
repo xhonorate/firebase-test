@@ -1,4 +1,4 @@
-import { TileData } from "../three/Tile";
+import { TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing } from "../Board";
 
 // Requirement functions:

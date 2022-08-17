@@ -24,7 +24,7 @@ export interface GameSettings {
   boardSize: number; // Max radius of tiles to spawn
   tickRate: number;
   yieldFrequency: number; // TODO: once done testing with this, move to a select of options which affect spawns
-  resourceSpawns: number;
+  resourceSpawns: number; // rate 1-10
   //TODO: more board generation settings
 }
 
@@ -41,10 +41,9 @@ export const gameSettingOptions: {
   {
     key: "boardSize",
     label: "Board Size",
-    default: 10,
-    min: 5,
-    step: 5,
-    max: 25,
+    default: 7,
+    min: 4,
+    max: 20,
     valueLabels: ["Tiny", "Small", "Medium", "Large", "Huge"],
   },
   {
@@ -58,9 +57,9 @@ export const gameSettingOptions: {
   {
     key: "yieldFrequency",
     label: "Yield Frequency",
-    default: 10,
+    default: 5,
     min: 1,
-    max: 20,
+    max: 10,
     valueLabels: ["Rare", "Normal", "Frequent"],
   },
   {
@@ -68,7 +67,7 @@ export const gameSettingOptions: {
     label: "Resource Spawns",
     default: 3,
     min: 1,
-    max: 6,
+    max: 10,
     valueLabels: ["Scarce", "Normal", "Abundant"],
   },
 ];
@@ -205,12 +204,14 @@ const GameLobby = ({ userData }) => {
   const startGame = useCallback(() => {
     updateGame({ started: true });
   }, [updateGame]);
+
   return (
     <VStack m={4} align={"start"}>
       {data?.started ? (
         <Room
           playerIndex={playerIndex}
           id={data.id}
+          updateGame={updateGame}
           participants={data.participants}
           settings={ // Get all default game options for those not set, replace with populated options from database if set
             {

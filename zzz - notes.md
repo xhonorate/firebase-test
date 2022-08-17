@@ -9,3 +9,5 @@ allow construction of buildings on tiles within your city! such as defense turre
 
 
 User actions happen INSTANTLY! push to db, then useEffect to render walking animations or w/e, but damage or w/e can be calculated instantly
+
+resources: wood, stone, iron, food

@@ -1,12 +1,12 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
 import { GameContext, GameState } from './RoomInstance';
-import { TileData, tileTypes } from './three/Tile';
+import { resourceTypes } from './three/Tiles/Tile';
 import { cubeRing, findTileByHex } from './Board';
 import { GameSettings } from '../cloudFirestore/GameLobby';
 
 function procTiles(state: GameState, frequency: number) {
   // TODO: something with this number
-  const multiplier = 30 - frequency;
+  const multiplier = 25 - frequency;
 
   // Update tiles with number of times proc'd and assign resources to owners
   state.board.tiles.forEach((tile) => {
@@ -20,8 +20,11 @@ function procTiles(state: GameState, frequency: number) {
           // If tile is city or any adjacent tile (meaning city this is attatched to) is a city, add +1 to yield
           amt += 1; 
         }
-        const type = tileTypes[tile.type].name; // convert index of type to text name of type
-        state.players[tile.owner].resources[type] += amt; // give amt of related resource
+        
+        if (state.players[tile.owner]) {
+          const type = resourceTypes[tile.type].name; // convert index of type to text name of type
+          state.players[tile.owner].resources[type] += amt; // give amt of related resource
+        }
       }
     } 
   })    

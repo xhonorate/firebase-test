@@ -1,5 +1,5 @@
 import { Text, Stack, chakra, StackProps } from "@chakra-ui/react";
-import { TileData, tileTypes, playerColors } from "../three/Tile";
+import { TileData, resourceTypes, playerColors } from "../three/Tiles/Tile";
 import { Participant } from "../../cloudFirestore/LobbyBrowser";
 
 interface TileInfoProps extends StackProps {
@@ -13,7 +13,7 @@ export default function TileInfo({
   participants,
   ...props
 }: TileInfoProps) {
-  const tileType = tileTypes[tile.type];
+  const tileType = resourceTypes[tile.type];
 
   return (
     <Stack direction={"column"} spacing={1} {...props}>

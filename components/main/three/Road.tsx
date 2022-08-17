@@ -2,7 +2,7 @@ import * as THREE from "three";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Edges, Extrude } from "@react-three/drei";
 import { GameContext } from "../RoomInstance";
-import { HexCoords, cubeToPos } from "./Tile";
+import { HexCoords, cubeToPos } from "./Tiles/Tile";
 import {
   hexToIndex,
   cubeRing,

@@ -15,11 +15,11 @@ export default function Settlement(
 ) {
   switch (level) {
     case 1:
-      return <House {...props} />
+      return <House {...props} color={color} />
     case 2:
-      return <Watchtower {...props} />
+      return <Watchtower {...props} color={color} />
     case 3:
-      return <Castle {...props} />
+      return <Castle {...props} color={color} />
     default:
       return null;
   }

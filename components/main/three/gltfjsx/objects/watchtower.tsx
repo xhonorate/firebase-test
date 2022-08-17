@@ -22,12 +22,12 @@ type GLTFResult = GLTF & {
   }
 }
 
-export default function Watchtower(props: JSX.IntrinsicElements['group']) {
+export default function Watchtower(props: JSX.IntrinsicElements['group'] & { color: string }) {
   const group = useRef<THREE.Group>()
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/watchtower.gltf.glb') as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
-      <mesh geometry={nodes.Cylinder1309.geometry} material={materials.Stone} />
+      <mesh geometry={nodes.Cylinder1309.geometry} material={materials.Stone} material-color={props.color} />
       <mesh geometry={nodes.Cylinder1309_1.geometry} material={materials.BrownDark} />
       <mesh geometry={nodes.Cylinder1309_2.geometry} material={materials.StoneDark} />
       <mesh geometry={nodes.Cylinder1309_3.geometry} material={materials.Beige} />

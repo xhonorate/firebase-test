@@ -7,7 +7,7 @@ import { Board, BoardProps, generateBoard } from "./Board";
 import { MapControls, Stars, RandomizedLight } from '@react-three/drei';
 import HostControl from "./HostControl";
 import HUD from "./hud";
-import { tileTypes } from "./three/Tile";
+import { resourceTypes } from './three/Tiles/Tile';
 import { Bloom, DepthOfField, EffectComposer, Outline, Selection, SelectiveBloom } from "@react-three/postprocessing";
 
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -49,6 +49,7 @@ export const GameContext = React.createContext<GameContextProps>({
 export default function Room({
   id,
   settings,
+  updateGame,
   playerIndex,
   participants,
 }) {
@@ -70,8 +71,8 @@ export default function Room({
         players: participants.map((player) => {
           return {
             id: player.id,
-            resources: tileTypes.reduce(
-              (a, v) => (v.name === "Water" ? a : { ...a, [v.name]: 0 }),
+            resources: resourceTypes.reduce(
+              (a, v) => (v.name === "None" ? a : { ...a, [v.name]: 0 }),
               {}
             ),
           };
@@ -88,16 +89,12 @@ export default function Room({
         <>
           <Button
             onClick={() =>
-              update({
-                board: generateBoard({
-                  numPlayers: participants.length,
-                  size: settings.size,
-                  spawnRates: settings.spawnRates,
-                }),
+              updateGame({
+                started: false,
               })
             }
           >
-            Regenerate
+            Back to Lobby
           </Button>
           <Button onClick={() => setPaused(!paused)}>
             {paused ? "Unpause" : "Pause"}
@@ -121,7 +118,7 @@ export default function Room({
               near: -100,
               far: 1000,
               position: [0, 5, 10],
-              zoom: 1
+              zoom: 10
             }}
           >
             { /* due to some issues with react, we must use a second provider inside of the canvas to pass props down */ }

@@ -2,7 +2,7 @@ import { Text, Box, BoxProps } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { ResourceStates } from "../RoomInstance";
-import { findTileTypeByName, tileTypes } from "../three/Tile";
+import { findResourceTypeByName } from "../three/Tiles/Tile";
 
 const MotionBox = motion<Omit<BoxProps, "transition">>(Box);
 
@@ -49,7 +49,7 @@ export default function ResourceDisplay(resources: ResourceStates) {
           as={'div'}
           fontWeight={600}
           key={key}
-          color={findTileTypeByName(key).color}
+          color={findResourceTypeByName(key).color}
         >
           {key + ": " + value}
 

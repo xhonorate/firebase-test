@@ -24,13 +24,13 @@ type GLTFResult = GLTF & {
   }
 }
 
-export default function Castle(props: JSX.IntrinsicElements['group']) {
+export default function Castle(props: JSX.IntrinsicElements['group'] & { color: string }) {
   const group = useRef<THREE.Group>()
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/castle.gltf.glb') as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
-      <mesh geometry={nodes.Cube1012.geometry} material={materials.Stone} />
-      <mesh geometry={nodes.Cube1012_1.geometry} material={materials.StoneDark} />
+      <mesh geometry={nodes.Cube1012.geometry} material={materials.Stone} material-color={props.color} />
+      <mesh geometry={nodes.Cube1012_1.geometry} material={materials.StoneDark}/>
       <mesh geometry={nodes.Cube1012_2.geometry} material={materials.BrownDark} />
       <mesh geometry={nodes.Cube1012_3.geometry} material={materials.Brown} />
       <mesh geometry={nodes.Cube1012_4.geometry} material={materials.White} />
