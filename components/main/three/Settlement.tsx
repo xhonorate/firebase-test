@@ -1,8 +1,13 @@
-import React, { useRef } from "react";
+import React, { useMemo } from "react";
 import { GroupProps } from '@react-three/fiber'
 import House from "./gltfjsx/objects/house";
 import Watchtower from './gltfjsx/objects/watchtower';
 import Castle from './gltfjsx/objects/castle';
+import { randomInt } from '../Board';
+
+const borderGeometry = {
+
+}
 
 interface SettlementProps extends GroupProps {
   level: number,
@@ -13,14 +18,18 @@ interface SettlementProps extends GroupProps {
 export default function Settlement(
   {level, color, ...props}: SettlementProps
 ) {
-  switch (level) {
-    case 1:
-      return <House {...props} color={color} />
-    case 2:
-      return <Watchtower {...props} color={color} />
-    case 3:
-      return <Castle {...props} color={color} />
-    default:
-      return null;
-  }
+  const BuildingModel = level === 1 ? House : level === 2 ? Watchtower : Castle;
+  // TODO: Add ring to designate control
+  return <group {...props}>
+    
+    <mesh>
+      <cylinderGeometry args={[1.16, 1.16, 0.2, 6]} />
+      <meshStandardMaterial
+        opacity={0.5}
+        transparent={true}
+        color={color}
+      />
+    </mesh>
+    <BuildingModel />
+  </group>
 }

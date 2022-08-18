@@ -4,7 +4,7 @@ import Settlement from "../Settlement";
 import Road from "../Road";
 import HexWater from "../gltfjsx/tiles/hex_water";
 import HexForestDetail from "../gltfjsx/tiles/hex_forest_detail";
-import { randomInt, cubeScale } from "../../Board";
+import { randomInt, cubeScale } from '../../Board';
 import { motion } from "framer-motion-3d";
 import { useAnimation } from "framer-motion";
 import HexRock from "../gltfjsx/tiles/hex_rock";
@@ -210,6 +210,7 @@ export default function Tile({
       ),
     [hex]
   );
+  const rotation = useMemo(() => ((randomInt(6)) * Math.PI / 3), []);
 
   const heightScale = 1 + height * 0.1;
 
@@ -238,7 +239,7 @@ export default function Tile({
   const [roadType, orientation] = useRoad(hex, obj);
   
   const TileGraphic = useMemo(() => 
-    roadType ? biomeTypes[biome].tile.road[roadType] : biomeTypes[biome].tile.default
+    roadType === null ? biomeTypes[biome].tile.default : biomeTypes[biome].tile.road[roadType]
   ,[roadType]);
 
   //When procs increases, this has been rolled, play animation
@@ -252,7 +253,7 @@ export default function Tile({
   //useFrame((state, delta) => (ref.current.rotation.x += 0.01))
   return (
     <>
-      <group position={pos} dispose={null}>
+      <group position={pos} rotation={[0, rotation, 0]} dispose={null}>
         {type !== 0 && (
           // Yield Proc Display //
           <mesh position={[0, 0.675 * heightScale, 0]}>
@@ -303,6 +304,7 @@ export default function Tile({
           rotation-y={-orientation * Math.PI / 3}
           scale={[1, heightScale, 1]}
           onClick={(event) => {
+            event.stopPropagation();
             if (type !== 0) onClick();
           }}
           onPointerOver={(event) => {
