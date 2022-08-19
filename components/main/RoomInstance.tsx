@@ -7,8 +7,9 @@ import { Board, BoardProps, generateBoard } from "./Board";
 import { MapControls, Stars, RandomizedLight } from '@react-three/drei';
 import HostControl from "./HostControl";
 import HUD from "./hud";
-import { resourceTypes } from './three/Tiles/Tile';
+import { resourceTypes } from './three/Tiles/Resource';
 import { Bloom, DepthOfField, EffectComposer, Outline, Selection, SelectiveBloom } from "@react-three/postprocessing";
+import Territories from "./three/Territories";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -96,6 +97,15 @@ export default function Room({
           >
             Back to Lobby
           </Button>
+          <Button
+            onClick={() =>
+              update({
+                board: generateBoard(settings),
+              })
+            }
+          >
+            Regenerate Board
+          </Button>
           <Button onClick={() => setPaused(!paused)}>
             {paused ? "Unpause" : "Pause"}
           </Button>
@@ -128,7 +138,10 @@ export default function Room({
               { /*
               <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
               */ }
-              {!!data?.board && <Board {...data.board} onSelect={setTarget} />}
+              {!!data?.board && <> 
+                <Board {...data.board} onSelect={setTarget} />
+                { /* <Territories {...data.board} numPlayers={settings.numPlayers} /> */ }
+              </>}
               {/* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
                 return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
               }) */}

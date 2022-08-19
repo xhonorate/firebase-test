@@ -55,22 +55,9 @@ import DetailRocks from '../gltfjsx/objects/detail_rocks';
 import DetailHill from '../gltfjsx/objects/detail_hill';
 import DetailRocksSmall from '../gltfjsx/objects/detail_rocks_small';
 import DetailForestB from '../gltfjsx/objects/detail_forestB';
+import Resource from "./Resource";
 
 /* eslint-disable react-hooks/exhaustive-deps */
-
-export function findResourceTypeByName(name: string) {
-  return resourceTypes.find((tile) => tile.name === name);
-}
-
-export const resourceTypes = [
-  { name: "None", color: "#000000" },
-  { name: "Wood", color: "#23A84D" },
-  { name: "Brick", color: "#A30000" },
-  { name: "Wheat", color: "#DBA11A" },
-  { name: "Ore", color: "#333F71" },
-  { name: "Sheep", color: "#4BD2BC" },
-  { name: "Gold", color: "#D5CB89" },
-];
 
 type TileElement = (props: JSX.IntrinsicElements["group"]) => JSX.Element;
 
@@ -203,34 +190,19 @@ export default function Tile({
   owner,
   onClick,
 }: TileData & { onClick: any }) {
-  const pos = useMemo(
-    () =>
-      cubeToPos(
+  // @ts-ignore
+  const pos: [number, number, number] = useMemo(
+    () => { 
+      const pos = cubeToPos(
         cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
-      ),
-    [hex]
+      )
+      pos.splice(1, 1, height * 0.1);
+      return pos; 
+    }, [hex, height]
   );
+
+  // Randomly rotate each tile some multiple of 60 deg
   const rotation = useMemo(() => ((randomInt(6)) * Math.PI / 3), []);
-
-  const heightScale = 1 + height * 0.1;
-
-  // Select which details should be displayed for resource
-  const ResourceDetail = useMemo(() => {
-    switch (type) {
-      case 1:
-        return DetailForestA
-      case 2:
-        return DetailRocks
-      case 3:
-        return DetailRocksSmall
-      case 4:
-        return DetailHill
-      case 5:
-        return DetailForestB
-      default:
-        return null;
-    }
-  }, [type]);
 
   const tileProc = useAnimation();
   const [hovered, hover] = useState(false);
@@ -240,7 +212,7 @@ export default function Tile({
   
   const TileGraphic = useMemo(() => 
     roadType === null ? biomeTypes[biome].tile.default : biomeTypes[biome].tile.road[roadType]
-  ,[roadType]);
+  ,[biome, roadType]);
 
   //When procs increases, this has been rolled, play animation
   useEffect(() => {
@@ -256,8 +228,8 @@ export default function Tile({
       <group position={pos} rotation={[0, rotation, 0]} dispose={null}>
         {type !== 0 && (
           // Yield Proc Display //
-          <mesh position={[0, 0.675 * heightScale, 0]}>
-            <cylinderGeometry args={[1.0, 1.0, 0.675 * heightScale, 6]} />
+          <mesh position={[0, 1, 0]}>
+            <cylinderGeometry args={[1.0, 1.0, 0.2, 6]} />
             <motion.meshStandardMaterial
               initial={{ opacity: 0 }}
               animate={tileProc}
@@ -268,8 +240,8 @@ export default function Tile({
           </mesh>
         )}
 
-        <mesh position={[0, 0.5 * heightScale, 0]}>
-          <cylinderGeometry args={[1.16, 1.16, 1.01 * heightScale, 6]} />
+        <mesh position={[0, 0.5, 0]}>
+          <cylinderGeometry args={[1.16, 1.16, 1.16, 6]} />
           <motion.meshStandardMaterial
             animate={{ opacity: hovered ? 0.2 : 0 }}
             transition={{ duration: hovered ? 0.05 : 0.4, ease: "easeOut" }}
@@ -279,7 +251,7 @@ export default function Tile({
         </mesh>
 
         {/* Render tile resources */}
-        {!!ResourceDetail && <ResourceDetail position={[0, heightScale, 0]}/>}
+        {<Resource type={type} odds={odds} />}
 
         {/* Render buildings */}
         {!!obj && (
@@ -289,8 +261,8 @@ export default function Tile({
                 level={
                   obj?.level ?? 1 /* whether settlment has been upgraded */
                 }
+                position={[0,1.16,0]}
                 color={playerColors[obj?.owner ?? owner]}
-                position={[0, heightScale, 0]}
                 castShadow={true}
               />
             )}
@@ -301,8 +273,7 @@ export default function Tile({
       TODO: Combine into one mesh
       */}
         <TileGraphic
-          rotation-y={-orientation * Math.PI / 3}
-          scale={[1, heightScale, 1]}
+          rotation-y={-rotation -orientation * Math.PI / 3}
           onClick={(event) => {
             event.stopPropagation();
             if (type !== 0) onClick();

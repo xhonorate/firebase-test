@@ -1,6 +1,7 @@
 import { Text, Stack, chakra, StackProps } from "@chakra-ui/react";
-import { TileData, resourceTypes, playerColors } from "../three/Tiles/Tile";
+import { TileData, playerColors } from "../three/Tiles/Tile";
 import { Participant } from "../../cloudFirestore/LobbyBrowser";
+import { resourceTypes } from '../three/Tiles/Resource';
 
 interface TileInfoProps extends StackProps {
   tile: TileData;

@@ -11,3 +11,13 @@ allow construction of buildings on tiles within your city! such as defense turre
 User actions happen INSTANTLY! push to db, then useEffect to render walking animations or w/e, but damage or w/e can be calculated instantly
 
 resources: wood, stone, iron, food
+
+
+
+Could probably convert tiles into an array of Classes with various functions
+on update of rtdb, check which tiles actually need to update, then update tiles array which gets passed to stuff 
+
+Merged drei for models?
+
+
+Fog of war

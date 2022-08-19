@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useRef, useContext } from 'react'
 import { GameContext, GameState } from './RoomInstance';
-import { resourceTypes } from './three/Tiles/Tile';
+import { resourceTypes } from './three/Tiles/Resource';
 import { cubeRing, findTileByHex } from './Board';
 import { GameSettings } from '../cloudFirestore/GameLobby';
 

@@ -1,9 +1,10 @@
-import { findResourceTypeByName, TileData } from "../three/Tiles/Tile";
+import { TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing } from "../Board";
 import { ResourceStates } from "../RoomInstance";
 import { Button, chakra, Flex, Text } from "@chakra-ui/react";
 import React from "react";
 import { buildOptions, Action } from "./buildOptions";
+import { findResourceTypeByName } from '../three/Tiles/Resource';
 
 interface TileControlProps {
   tiles: TileData[];

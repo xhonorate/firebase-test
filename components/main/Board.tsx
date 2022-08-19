@@ -2,7 +2,8 @@ import React, {useContext} from 'react';
 import Tile, { TileData, HexCoords} from './three/Tiles/Tile';
 import { GameContext } from './RoomInstance';
 import { GameSettings } from '../cloudFirestore/GameLobby';
-import { biomeTypes, resourceTypes } from './three/Tiles/Tile';
+import { biomeTypes } from './three/Tiles/Tile';
+import { resourceTypes } from './three/Tiles/Resource';
 
 // Return a random int less than max (may be 0)
 export function randomInt(max: number) {
@@ -67,7 +68,7 @@ export function cubeAdd(hex: HexCoords, vec: HexCoords) {
 }
 
 // Get vector distance from b to a
-function cubeSubtract(a: HexCoords, b: HexCoords) {
+export function cubeSubtract(a: HexCoords, b: HexCoords) {
   return {
     q: a.q - b.q,
     r: a.r - b.r,
@@ -91,7 +92,7 @@ export function cubeScale(hex: HexCoords, factor: number) {
 }
 
 // Return coordinates of given neighboring hex (of index 0 - 5)
-function cubeNeighbor(hex: HexCoords, dir: number) {
+export function cubeNeighbor(hex: HexCoords, dir: number) {
   return cubeAdd(hex, cubeDirection(dir));
 }
 
@@ -222,61 +223,123 @@ export interface BoardProps {
   tiles: TileData[]
 }
 
-// Base Rate multiplies all other values
+// Base Rate is int relative weight OR array of weights based on passed index (like biome)
 // If any influance type is not set, it will have no affect on the rate
 // Passed value should be a value between 0 and 1 (0 being min possible, 1 being max possible)
-// If set, should return a number which base rate will be multipled by (greater than or equal to 0)
+// If set, should return a number which base rate will be increased/decreased by
 interface SpawnWeight {
-  base: number, // Base rate all other values will be multiplied by
+  base: number | number[], // Base rate all other values will be multiplied by
   sameAdjacencyInfluance?: (n: number) => number, // Affect of neighboring tiles with same property value
   diffAdjacencyInfluance?: (n: number) => number, // Affect of neighboring tiles with different property value
   emptyAdjacencyInfluance?: (n: number) => number, // Affect of neighboring tiles with no property value
   sameGlobalInfluance?: (n: number) => number, // Affect of total tiles with same property value
   diffGlobalInfluance?: (n: number) => number, // Affect of total tiles with different property value
   radiusInfluance?: (n: number) => number, // Increases affect at farther out radius
-  verticalInfluance?: (n: number) => number,
+  verticalInfluance?: (n: number) => number
 }
 
 // Called by Host to generate new board with random tile distribution based on settings
 export function generateBoard({numPlayers, boardSize, resourceSpawns}: GameSettings): BoardProps {
   const tiles: TileData[] = [];
 
-  const biomeWeights: SpawnWeight[] = [
-    { // Water
-      base: 10,
-      sameAdjacencyInfluance: x => -x
-    },
-    { // Forest
-      base: 10
-    },
-    { // Rock
-      base: 10
-    },
-    { // Sand
-      base: 10
-    },
-    { // Snow
-      base: 0
-    },
-  ];
+  type weightTypes = 'biome' | 'type' | 'height';
 
-  const biomeCounts = Array(biomeTypes.length).fill(0);
-  const resourceCounts = Array(resourceTypes.length).fill(0);
+  const weights: { [key in weightTypes]?: SpawnWeight[] } = { 
+    // Biome types
+    'biome': [
+      { // Water
+        base: 0,
+        radiusInfluance: (n) => (100*(n - 0.8))**3,
+      },
+      { // Forest
+        base: 30,
+        sameAdjacencyInfluance: (n) => 30*n,
+        sameGlobalInfluance: (n) => -4*n,
+      },
+      { // Rock
+        base: 10,
+        sameAdjacencyInfluance: (n) => 10*n,
+        sameGlobalInfluance: (n) => -4*n,
+      },
+      { // Sand
+        base: 10,
+        sameAdjacencyInfluance: (n) => 10*n,
+        sameGlobalInfluance: (n) => -4*n,
+      },
+      { // Snow
+        base: 0
+      },
+    ],
 
-  const tileChoice = (hex: HexCoords): TileData => {
-    // STEP 1: Choose biome - water or land
-    const adjacentIndexes = cubeRing(hex, 1).map((neighborHex) => hexToIndex(neighborHex)).filter(i => i < tiles.length);
+    'type': [
+      { // None
+        base: 0, // resourceSpawns: 1 - 10
+      },
+      { // Wood
+        base: [0, 30, 10, 0, 20],
+        sameAdjacencyInfluance: (n) => -50*n,
+        sameGlobalInfluance: (n) => -20*n,
+      },
+      { // Brick
+        base: [0, 10, 30, 10, 10],
+        sameAdjacencyInfluance: (n) => -50*n,
+        sameGlobalInfluance: (n) => -20*n,
+      },
+      { // Wheat
+        base: [0, 20, 10, 0, 0],
+        sameAdjacencyInfluance: (n) => -50*n,
+        sameGlobalInfluance: (n) => -20*n,
+      },
+      { // Ore
+        base: [0, 10, 30, 20, 10],
+        sameAdjacencyInfluance: (n) => -50*n,
+        sameGlobalInfluance: (n) => -20*n,
+      },
+      { // Sheep
+        base: [0, 20, 10, 5, 5],
+        sameAdjacencyInfluance: (n) => -50*n,
+        sameGlobalInfluance: (n) => -20*n,
+      },
+      { // Gold
+        base: 200 - resourceSpawns * 15
+      },
+    ],
+  };
+
+  const counts: { [key in weightTypes]?: number[] } = { 
+    'biome': [...Array(biomeTypes.length)].fill(0),
+    'type': [...Array(resourceTypes.length)].fill(0),
+  }
+
+  // Safely check if weight funcion is set, and apply it if so, otherwise just return weight
+  function applyWeight(weight: number, spawnWeight: SpawnWeight, key: (keyof Omit<SpawnWeight, 'base'>), value: number) {
+    if (value === NaN || value === Infinity || value === -Infinity || !(key in spawnWeight)) {
+      return weight;
+    } else {
+      return Math.max(0, weight + Math.round(spawnWeight[key](value)));
+    }
+  }
+
+  // Select based on weights, total counts, and type (biome/tile)
+  function makeChoice( type: weightTypes, adjacentIndexes: number[], hex: HexCoords, baseIndex?: number) {
+    // Calculate values that are going to be reused
+    const totalCounts = counts[type]?.reduce((a,b) => a + b, 0);
+    const radiusVal = cubeDistance(center, hex) / boardSize;
     
-    // array of weights
-    const weights = biomeWeights.map((spawnWeight: SpawnWeight, checkingBiomeIdx: number) => {
-      let weight = spawnWeight.base;
-      if (adjacentIndexes.length && spawnWeight.sameAdjacencyInfluance || spawnWeight.diffAdjacencyInfluance || spawnWeight.emptyAdjacencyInfluance) {
-        let same: number, diff: number, empty: number = 0; 
+    const choice = weightedChoice(weights[type].map((spawnWeight: SpawnWeight, checkingIdx: number) => {
+      // Get base rate based on index (biome) if passed, otherwise get flat base value
+      let weight = Array.isArray(spawnWeight.base) ? spawnWeight.base[baseIndex] : spawnWeight.base;
+
+      // If there are adjacent tiles...
+      if (adjacentIndexes.length && (spawnWeight.sameAdjacencyInfluance || spawnWeight.diffAdjacencyInfluance || spawnWeight.emptyAdjacencyInfluance)) {
+        let same: number = 0, 
+            diff: number = 0,
+            empty: number = 0; 
         adjacentIndexes.forEach((adjIndex) => {
           // Check for each adjacent tile, how many have the same property / different / none
-          if (!('biome' in tiles[adjIndex])) {
+          if (!(type in tiles[adjIndex])) {
             empty += 1;
-          } else if (tiles[adjIndex]['biome'] === checkingBiomeIdx) {
+          } else if (tiles[adjIndex][type] === checkingIdx) {
             same += 1;
           } else {
             diff += 1;
@@ -284,55 +347,59 @@ export function generateBoard({numPlayers, boardSize, resourceSpawns}: GameSetti
         });
 
         // Apply set influances for adjacent tiles (weighted against maximum value (num of adj tiles))
-        if (spawnWeight.sameAdjacencyInfluance) {
-          weight *= spawnWeight?.sameAdjacencyInfluance(same / adjacentIndexes.length);
-        }
-        if (spawnWeight.diffAdjacencyInfluance) {
-          weight *= spawnWeight?.diffAdjacencyInfluance(diff / adjacentIndexes.length);
-        }
-        if (spawnWeight.emptyAdjacencyInfluance) {
-          weight *= spawnWeight?.emptyAdjacencyInfluance(empty / adjacentIndexes.length);
-        }
+        weight = applyWeight(weight, spawnWeight, 'sameAdjacencyInfluance', (same / adjacentIndexes.length));
+        weight = applyWeight(weight, spawnWeight, 'diffAdjacencyInfluance', (diff / adjacentIndexes.length));
+        weight = applyWeight(weight, spawnWeight, 'emptyAdjacencyInfluance', (empty / adjacentIndexes.length));
       }
-
-      const totalCounts = biomeCounts.reduce((a,b) => a + b, 0);
 
       // Apply global influances (weighted against total number of tiles)
-      if (totalCounts && spawnWeight.sameGlobalInfluance) {
-        weight *= spawnWeight.sameGlobalInfluance(biomeCounts[checkingBiomeIdx] / totalCounts)
+      if (totalCounts) {
+        weight = applyWeight(weight, spawnWeight, 'sameGlobalInfluance', counts[type][checkingIdx] / totalCounts);
+        weight = applyWeight(weight, spawnWeight, 'diffGlobalInfluance', (totalCounts - counts[type][checkingIdx]) / totalCounts);  
       }
 
-      if (totalCounts && spawnWeight.diffGlobalInfluance) {
-        weight *= spawnWeight.diffGlobalInfluance((totalCounts - biomeCounts[checkingBiomeIdx]) / totalCounts)
-      }
-
-      if (spawnWeight.radiusInfluance) {
-        weight *= spawnWeight.radiusInfluance(Math.max(hex.q, hex.r, hex.s) / boardSize)
-      }
+      weight = applyWeight(weight, spawnWeight, 'radiusInfluance', radiusVal);
 
       return weight;
-    });
+    }));
     
-    const biome = weightedChoice(weights);
-            
+    // Track count of this type for subsequent spawn calculations
+    if (type in counts) {
+      counts[type][choice] += 1;
+    }
+
+    // Return chosen option
+    return choice;
+  }
+
+  // Select all options for tile at given hex
+  const tileChoice = (hex: HexCoords): TileData => {
+    const adjacentIndexes = cubeRing(hex, 1).map((neighborHex) => hexToIndex(neighborHex)).filter(i => i < tiles.length);
+
+    // STEP 1: Choose biome - water or land
+    const biome = makeChoice('biome', adjacentIndexes, hex);
+
     // STEP 2: Choose additional resources (dependant on biome + neighbors + total # of resource)
-
-    const type = resourceSpawns > randomInt(10) ? randomInt(5) + 1 : 6;
-
-
+    
+    const type = biome === 0 ? 0 : makeChoice('type', adjacentIndexes, hex, biome);
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
     const odds = type === 6 ? 1 : randomChoice([1, 1, 1, 2, 2, 3]);
+
+    //TODO: relative heights based on neighbors / biome
+    const height = type === 0 ? 0 : randomChoice([0,1,2]);
 
     // add to totals...
     return {
       type,
       biome,
+      height,
       hex,
       odds,
     }
   }
 
+  // Add center tile first
   tiles.push(tileChoice(center));
 
   // Board size determines radius of hex grid, middle tile being radius = 0, surrounding tiles radius = 1, etc.
