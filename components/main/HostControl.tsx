@@ -42,7 +42,7 @@ export default function HostControl(settings: GameSettings) {
   const hostTick = useCallback(() => {
     const state = dataRef.current;
     procTiles(state, settings.yieldFrequency); // Update state information -- tile procs and resources
-    update(state)
+    update({...state, turn: state.turn + 1})
     //update({turn: (state.turn ?? 0) + 1 })
   }, [update, settings.yieldFrequency]);
 

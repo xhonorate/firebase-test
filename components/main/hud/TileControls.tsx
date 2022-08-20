@@ -102,6 +102,7 @@ export default function TileControls({
           <Button
             key={idx}
             zIndex={1000}
+            colorScheme={'blackAlpha'}
             h={"min-content"}
             cursor={"pointer"}
             isDisabled={
@@ -113,7 +114,7 @@ export default function TileControls({
             }
           >
             <Flex direction={"column"}>
-              <Text>{option.name}</Text>
+              <Text color={'white'} fontWeight={600}>{option.name}</Text>
               {costText.map(([key, value, amtMissing]) => (
                 <Text key={key}>
                   <chakra.span color={findResourceTypeByName(key).color}>
