@@ -60,7 +60,7 @@ export default function HostControl(settings: GameSettings) {
     const state = dataRef.current;
 
     // Update state information -- tile procs and resources
-    update(procTiles(state, settings.yieldFrequency));
+    update({...procTiles(state, settings.yieldFrequency), turn: state.turn + 1});
 
     //update({turn: (state.turn ?? 0) + 1 })
   }, [update, settings.yieldFrequency]);
