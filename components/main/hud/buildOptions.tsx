@@ -149,7 +149,7 @@ export const buildOptions: BuildOption[] = [
   },
   {
     name: "Upgrade City",
-    cost: { Wheat: 1, Ore: 2, Sheep: 2 },
+    cost: { Wheat: 2, Ore: 2, Sheep: 2 },
     req: [ownedByMe, hasObject("Settlement"), objHasParams({ level: 2 })],
     action: (target) => {
       return {

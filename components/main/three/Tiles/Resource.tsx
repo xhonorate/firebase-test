@@ -1,3 +1,4 @@
+import { GroupProps, MeshProps } from '@react-three/fiber';
 export function findResourceTypeByName(name: string) {
   return resourceTypes.find((tile) => tile.name === name);
 }
@@ -12,8 +13,13 @@ export const resourceTypes = [
   { name: "Gold", color: "#D5CB89" },
 ];
 
+interface ResourceProps extends Omit<MeshProps, 'type'> {
+  type: number, 
+  odds: number,
+}
+
 // If type is set, display resource of type, else return null
-export default function Resource({ type, odds }: {type: number, odds: number }) {
+export default function Resource({ type, odds, ...props }: ResourceProps) {
   // Select which details should be displayed for resource
   /*switch (type) {
     case 1: // Wood
@@ -35,7 +41,7 @@ export default function Resource({ type, odds }: {type: number, odds: number }) 
   if (type === 0 || type === 6) return null;
 
   return (
-    <mesh position={[0, 1, 0]}>
+    <mesh {...props}>
       <cylinderGeometry args={[0.5, 0.5, 0.1 * (odds+1)**2, 30]} />
       <meshStandardMaterial
         color={resourceTypes[type].color}

@@ -1,6 +1,6 @@
 import { HStack, Text, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Switch, VStack, Box, Tooltip } from '@chakra-ui/react';
 import React, { useReducer, useState } from 'react'
-import { indexToHex, hexToIndex, cubeDistance } from '../components/main/Board';
+import { indexToHex, hexToIndex, cubeDistance, adjacentIndexes } from '../components/main/Board';
 
 function cubeToPos (hex, scale, count) {
   return { 
@@ -15,6 +15,8 @@ export default function Test () {
   const [hexInput, setHexInput] = useState({q: 0, r: 0, s: 0})
 
   const [view, toggleView] = useReducer(((view) => !view), false);
+
+  const adj = adjacentIndexes(indexInput);
 
   return <VStack align={'start'} p={5}>
     <HStack>
@@ -78,11 +80,15 @@ export default function Test () {
       hexToIndex: {hexToIndex(hexInput)}
     </Box>
 
+    <Box>
+      adjacentIndexes: {JSON.stringify(adj)}
+    </Box>
+
     <Box>View: <Switch isChecked={view} onChange={toggleView} /></Box>
     { view && <Box w={'500px'} h={'500px'} position={'relative'}>
-      {[...Array(indexInput + 1)].map((_,idx) => {
+      {[...Array(Math.max(...adj) + 1)].map((_,idx) => {
         let hex = indexToHex(idx);
-        return <Box position={'absolute'} {...cubeToPos(hex, 500, indexInput)} key={idx}><Tooltip label={hex.q + ',' + hex.r + ',' + hex.s}><Text>{idx}</Text></Tooltip></Box>
+        return <Box position={'absolute'} {...cubeToPos(hex, 500, indexInput)} key={idx}><Tooltip label={hex.q + ',' + hex.r + ',' + hex.s}><Text color={idx === indexInput ? 'blue' : adj.includes(idx) ? 'orange' : 'unset'}>{idx}</Text></Tooltip></Box>
       })}
     </Box>}
   </VStack>

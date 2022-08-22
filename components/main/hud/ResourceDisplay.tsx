@@ -47,7 +47,7 @@ export default function ResourceDisplay(resources: ResourceStates) {
       {Object.entries(resources).map(([key, value]) => (
         <Text
           as={'div'}
-          fontWeight={600}
+          fontWeight={700}
           key={key}
           color={findResourceTypeByName(key).color}
         >

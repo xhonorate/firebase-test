@@ -73,7 +73,7 @@ export default function Room({
           return {
             id: player.id,
             resources: resourceTypes.reduce(
-              (a, v) => (v.name === "None" ? a : { ...a, [v.name]: 0 }),
+              (a, v) => (v.name === "None" ? a : { ...a, [v.name]: 1 }),
               {}
             ),
           };
@@ -149,7 +149,7 @@ export default function Room({
               <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
             </GameContext.Provider>
             <EffectComposer>
-              <DepthOfField focusDistance={0.1} focalLength={0.05} bokehScale={1} height={500} />
+              <DepthOfField focusDistance={0.1} focalLength={0.12} bokehScale={4} height={500} />
               <Bloom luminanceThreshold={0} luminanceSmoothing={0.9} height={500} />
             </EffectComposer>
           </Canvas>

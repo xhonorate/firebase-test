@@ -53,6 +53,7 @@ export default function HUD({
 
   const updateTile = useCallback(
     (action: Action, cost: object) => {
+      // TODO: check pending actions on RTDB (from host tick, etc)
       // Do not allow users to double-submit an action by accident
       if (hasPendingActions.current) return;
       hasPendingActions.current = true;
