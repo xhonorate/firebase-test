@@ -6,7 +6,7 @@ import { GameSettings } from "../cloudFirestore/GameLobby";
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
 function procTiles(state: GameState, frequency: number): object {
-  const updates = {};
+  const updates = {turn: state.turn + 1};
   // TODO: something with this number
   const multiplier = 25 - frequency;
 
@@ -60,7 +60,7 @@ export default function HostControl(settings: GameSettings) {
     const state = dataRef.current;
 
     // Update state information -- tile procs and resources
-    update({...procTiles(state, settings.yieldFrequency), turn: state.turn + 1});
+    update(procTiles(state, settings.yieldFrequency));
 
     //update({turn: (state.turn ?? 0) + 1 })
   }, [update, settings.yieldFrequency]);
