@@ -253,7 +253,7 @@ export default function Tile({
             return <Line key={idx} position={[0,1,0]} points={[
               [0.58 * (edgePoint[0] + edgePoint[2] * 0.5), 0, 0.58 * (edgePoint[2] - edgePoint[0] * 0.5)],
               [0.58 * (edgePoint[0] - edgePoint[2] * 0.5), 0, 0.58 * (edgePoint[2] + edgePoint[0] * 0.5)]
-            ]} color={playerColors[owner]} dashed={false} lineWidth={2} transparent={true} opacity={0.6} />;
+            ]} color={playerColors[owner]} dashed={false} lineWidth={4} transparent={true} opacity={0.6} />;
           })}
 
         {type !== 0 && (
@@ -311,7 +311,7 @@ export default function Tile({
       TODO: Combine into one mesh
       */}
         <TileGraphic
-          rotation-y={-rotation - (orientation * Math.PI) / 3}
+          rotation-y={(orientation * Math.PI) / 3}
           onClick={(event) => {
             event.stopPropagation();
             if (type !== 0) onClick();

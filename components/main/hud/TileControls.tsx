@@ -4,7 +4,7 @@ import { ResourceStates } from "../RoomInstance";
 import { Button, chakra, Flex, Text } from "@chakra-ui/react";
 import React from "react";
 import { buildOptions, Action } from "./buildOptions";
-import { findResourceTypeByName } from '../three/Tiles/Resource';
+import { findResourceTypeByName, resourceTypes } from '../three/Tiles/Resource';
 
 interface TileControlProps {
   tiles: TileData[];
@@ -88,13 +88,23 @@ export default function TileControls({
       {options.map((option, idx) => {
         const costText = []; //text to be displayed on button
         var goldCost = 0; // Calculate whether user can purchase this item (either with resources or gold);
-        Object.entries(option.cost).forEach(([key, value]) => {
-          // Calculate how much gold would be required to cover any missing resources
-          if (typeof value !== "number") return;
-          let amtMissing = Math.max(0, value - resources[key]);
-          goldCost += amtMissing * goldPerResource;
 
-          costText.push([key, value, amtMissing]);
+        // If object has diminishing returns (e.g. increased cost per time built, add its cost)
+        const drCost = !!option.dr ? option.dr(tiles, playerIndex) : null;
+
+        resourceTypes.forEach(({name}) => {
+          // Add base cost plus dr cost for this resource
+          const totalCost = (option?.cost?.[name] ?? 0) + (drCost?.[name] ?? 0);
+          // If there is no cost set, no need to display text, return
+          if (!totalCost) return;
+          if (name === "Gold") {
+            goldCost += totalCost; // If gold is required add it directly
+            costText.push(["Gold", totalCost, 0]); //Do not show amtMissing for gold (since we cannot replace it with gold..)
+          } else {
+            const amtMissing = Math.max(0, totalCost - resources[name]);
+            goldCost += amtMissing * goldPerResource; // Calculate cost to replace insufficient resource with gold
+            costText.push([name, totalCost, amtMissing]); // Add to text to display
+          }
         });
 
         // If we do not have enough gold to cover the goldcost, disable button
@@ -123,7 +133,7 @@ export default function TileControls({
                   {": "}
                   <chakra.span
                     as={!!amtMissing ? "del" : null}
-                    color={!!amtMissing ? "red" : null}
+                    color={!!amtMissing ? "red" : "white"}
                   >
                     {value}
                   </chakra.span>

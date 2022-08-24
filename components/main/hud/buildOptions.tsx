@@ -81,6 +81,7 @@ export type Action = (
 interface BuildOption {
   name: string;
   cost: { [type: string]: number };
+  dr?: (( tiles: TileData[], playerIndex: number ) => { [type: string]: number } ); // Function to determine increase in cost based on existing tiles
   req?: ((
     tile: TileData,
     playerIndex?: number,
@@ -98,6 +99,11 @@ export const buildOptions: BuildOption[] = [
   {
     name: "Build Settlement",
     cost: { Wood: 1, Brick: 1, Sheep: 1, Wheat: 1 },
+    dr: (tiles: TileData[], playerIndex: number ) => {
+      return { //Increase gold cost by 1 per settlement built so far
+        Gold: tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement").length - 1
+      }
+    },
     req: [notOwned, hasNoObject, hasRoadToSettlement],
     allAdjReq: [notOwned], // Adjacent tiles not claimed territory
     action: (target, playerIndex, tiles) => {
@@ -126,6 +132,11 @@ export const buildOptions: BuildOption[] = [
   {
     name: "Build Road",
     cost: { Wood: 1, Brick: 1 },
+    dr: (tiles: TileData[], playerIndex: number ) => {
+      return { //Increase gold cost by 1 per two roads built so far
+        Gold: Math.floor(tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Road").length / 2)
+      }
+    },
     req: [notOwnedByOther, hasNoObject],
     anyAdjReq: [hasObject(["Road", "Settlement", "City"]), objOwnedByMe], // Must have an adjacent settlment or road owned by me
     action: (target, playerIndex) => {
@@ -140,6 +151,11 @@ export const buildOptions: BuildOption[] = [
   {
     name: "Build City",
     cost: { Wheat: 2, Ore: 3 },
+    dr: (tiles: TileData[], playerIndex: number ) => {
+      return { //Increase gold cost by 1 per city built so far
+        Gold: tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 1).length - 1
+      }
+    },
     req: [ownedByMe, hasObject("Settlement"), objHasParams({ level: 1 })],
     action: (target) => {
       return {
@@ -149,7 +165,12 @@ export const buildOptions: BuildOption[] = [
   },
   {
     name: "Upgrade City",
-    cost: { Wheat: 2, Ore: 2, Sheep: 2 },
+    cost: { Wheat: 2, Ore: 2, Sheep: 2, Gold: 1 },
+    dr: (tiles: TileData[], playerIndex: number ) => {
+      return { //Increase gold cost by 1 per upgraded city built so far
+        Gold: (tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 2).length - 1) * 2
+      }
+    },
     req: [ownedByMe, hasObject("Settlement"), objHasParams({ level: 2 })],
     action: (target) => {
       return {
