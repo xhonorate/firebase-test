@@ -307,7 +307,7 @@ export function generateBoard({
 }: GameSettings): BoardProps {
   const tiles: TileData[] = [];
 
-  type weightTypes = "biome" | "type" | "height";
+  type weightTypes = "biome" | "type" | "odds" | "height";
 
   const weights: { [key in weightTypes]?: SpawnWeight[] } = {
     // Biome types
@@ -341,6 +341,7 @@ export function generateBoard({
       },
     ],
 
+    // Resource Types
     type: [
       {
         // None
@@ -381,11 +382,57 @@ export function generateBoard({
         base: 200 - resourceSpawns * 15,
       },
     ],
+
+    // Odds
+    odds: [
+      {
+        // 1
+        base: 30,
+      },
+      {
+        // 2
+        base: 20,
+        sameAdjacencyInfluance: (n) => -30 * n,
+      },
+      {
+        // 3
+        base: 10,
+        sameAdjacencyInfluance: (n) => -20 * n,
+      },
+    ],
+
+    // Heights
+    height: [
+      {
+        // 1 - FLAT
+        base: [100, 60, 10, 80, 50],
+      },
+      {
+        // 2 - SHORT
+        base: [0, 25, 25, 20, 25],
+        sameAdjacencyInfluance: (n) => 30 * n,
+      },
+      {
+        // 3
+        base: [0, 10, 30, 0, 10],
+        sameAdjacencyInfluance: (n) => 20 * n,
+      },
+      {
+        // 4
+        base: [0, 5, 20, 0, 10],
+      },
+      {
+        // 5 - TALL
+        base: [0, 0, 15, 0, 5],
+        sameAdjacencyInfluance: (n) => -20 * n,
+      },
+    ],
   };
 
   const counts: { [key in weightTypes]?: number[] } = {
     biome: [...Array(biomeTypes.length)].fill(0),
     type: [...Array(resourceTypes.length)].fill(0),
+    odds: [0,0,0],
   };
 
   // Safely check if weight funcion is set, and apply it if so, otherwise just return weight
@@ -508,15 +555,15 @@ export function generateBoard({
     const biome = makeChoice("biome", adjacentIndexes, hex);
 
     // STEP 2: Choose additional resources (dependant on biome + neighbors + total # of resource)
-
     const type =
       biome === 0 ? 0 : makeChoice("type", adjacentIndexes, hex, biome);
+
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
-    const odds = type === 6 ? 1 : randomChoice([1, 1, 1, 2, 2, 3]);
+    const odds = type === 6 ? 1 : makeChoice("odds", adjacentIndexes, hex, biome);
 
     //TODO: relative heights based on neighbors / biome
-    const height = type === 0 ? 0 : randomChoice([0, 1, 2]);
+    const height = type === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
 
     // add to totals...
     return {
@@ -547,7 +594,8 @@ export function generateBoard({
     }
   }
 
-  //TODO: Run second pass on tiles
+  //TODO: Run second pass for river generation?, height generation, and balance?
+  
 
   // Select spawn location for players
   for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
