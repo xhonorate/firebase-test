@@ -134,7 +134,7 @@ export const buildOptions: BuildOption[] = [
     cost: { Wood: 1, Brick: 1 },
     dr: (tiles: TileData[], playerIndex: number ) => {
       return { //Increase gold cost by 1 per two roads built so far
-        Gold: Math.floor(tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Road").length / 2)
+        Gold: Math.floor(tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Road").length / 3)
       }
     },
     req: [notOwnedByOther, hasNoObject],
@@ -153,7 +153,7 @@ export const buildOptions: BuildOption[] = [
     cost: { Wheat: 2, Ore: 3 },
     dr: (tiles: TileData[], playerIndex: number ) => {
       return { //Increase gold cost by 1 per city built so far
-        Gold: tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 1).length - 1
+        Gold: tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 1).length
       }
     },
     req: [ownedByMe, hasObject("Settlement"), objHasParams({ level: 1 })],
@@ -168,7 +168,7 @@ export const buildOptions: BuildOption[] = [
     cost: { Wheat: 2, Ore: 2, Sheep: 2, Gold: 1 },
     dr: (tiles: TileData[], playerIndex: number ) => {
       return { //Increase gold cost by 1 per upgraded city built so far
-        Gold: (tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 2).length - 1) * 2
+        Gold: (tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 2).length) * 2
       }
     },
     req: [ownedByMe, hasObject("Settlement"), objHasParams({ level: 2 })],

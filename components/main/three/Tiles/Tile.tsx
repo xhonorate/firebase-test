@@ -143,10 +143,10 @@ export const biomeTypes: BiomeProps[] = [
 export const playerColors = [
   "red",
   "blue",
-  "green",
+  "yellow",
   "brown",
   "purple",
-  "yellow",
+  "green",
   "teal",
   "orange",
 ];
@@ -311,7 +311,7 @@ export default function Tile({
       TODO: Combine into one mesh
       */}
         <TileGraphic
-          rotation-y={(orientation * Math.PI) / 3}
+          rotation-y={-(orientation * Math.PI) / 3}
           onClick={(event) => {
             event.stopPropagation();
             if (type !== 0) onClick();

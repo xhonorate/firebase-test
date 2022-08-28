@@ -560,7 +560,7 @@ export function generateBoard({
 
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
-    const odds = type === 6 ? 1 : makeChoice("odds", adjacentIndexes, hex, biome);
+    const odds = type === 6 ? 1 : (makeChoice("odds", adjacentIndexes, hex, biome) + 1);
 
     //TODO: relative heights based on neighbors / biome
     const height = type === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
