@@ -3,7 +3,7 @@ import Tile, { TileData, HexCoords } from "./three/Tiles/Tile";
 import { GameContext } from "./RoomInstance";
 import { GameSettings } from "../cloudFirestore/GameLobby";
 import { biomeTypes } from "./three/Tiles/Tile";
-import { resourceTypes } from "./three/Tiles/Resource";
+import { resourceTypes, findResourceIndexByName } from './three/Tiles/Resource';
 
 // Return a random int less than max (may be 0)
 export function randomInt(max: number) {
@@ -80,6 +80,18 @@ export function cubeSubtract(a: HexCoords, b: HexCoords) {
 export function cubeDistance(a: HexCoords, b: HexCoords) {
   let vec = cubeSubtract(a, b);
   return (Math.abs(vec.q) + Math.abs(vec.r) + Math.abs(vec.s)) / 2;
+}
+
+// Return hex coordinates of all hexes less than or equal to <range> tiles from the given hex
+export function cubeRange(hex: HexCoords, range: number) {
+  const results = [];
+  for (let q = -range; q <= range; q++) {
+    for (let r = Math.max(-range, -q -range); r <= Math.min(range, -q + range); r++) {
+      const s = -q -r; // q + r + s = 0 constraint
+      results.push(cubeAdd(hex, { q, r, s }));
+    }
+  }
+  return results;
 }
 
 // Multiply cube distance by a given factor ( useful for scaling distance vectors )
@@ -233,49 +245,121 @@ export function hexToIndex(hex: HexCoords) {
   return containedTiles(radius) + sector * radius + indexInSector;
 }
 
-// Test a few different locations to find the best start for this player
-function chooseSpawn(tiles: TileData[], player: number, passes: number) {
-  const availableTiles = tiles.filter((tile) => {
-    if (tile.type === 0) return false; // not a water tile
+// Place start spawns for players
+// Spawns will be spaced out as well as possible, and then balanced
+// Pass strength to determine how good of a start players should have (0 is random)
+function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 0) {
+  const goldIndex = findResourceIndexByName("Gold");
 
-    // Check all tiles surrounding given hex, if any are owned return false
-    cubeRing(tile.hex, 1).forEach((hex) => {
-      let neighbor = findTileByHex(tiles, hex);
-      if (neighbor && "owner" in neighbor) return false;
+  // Array of possible spawns tile indexes
+  const validIndexes = tiles.map((tile,idx) => { // FIRST MAP, then FILTER to keep original idx
+    if (tile.type === 0) return null; // Not a water tile
+    let adjWaterTiles = 0;
+    adjacentIndexes(idx).forEach((adjIdx) => {
+      if (tiles?.[adjIdx]?.type === 0) {
+        adjWaterTiles += 1; 
+      }
     });
+    if (adjWaterTiles > 1) {
+      return null; // Maximum of one adjacent water tile
+    }
+    return idx;
+  }).filter(res => res !== null); // Filter out invalid options
 
-    return true;
-  });
+  let choices = null;
+  let minDist = cubeDistance(center, tiles[tiles.length - 1].hex);
+  distLoop: while (minDist > 0) {
+    choices = [];
+    let indexesInRange = validIndexes;
+    for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
+      // If there are no more available spawns in range
+      if (!indexesInRange.length) {
+        // Search with incrementaly smaller minimum separation between spawns
+        minDist -= 1;
+        continue distLoop;
+      } else {
+        const choice = randomChoice(indexesInRange);
+        choices.push(choice);
+        // Filter out tiles too close to this new choice
+        indexesInRange = indexesInRange.filter((idx) => {
+          return cubeDistance(tiles[idx].hex, tiles[choice].hex) > minDist;
+        })
+      }
+    }
+    // If here - All choices are valid
+    break;
+  }
 
-  let bestSoFar = { tile: null, value: -1 };
-
-  for (let i = 0; i < passes; i++) {
-    // choose random tiles
-    // calc value including adjacent tiles odds
-    let currentTile = randomChoice(availableTiles);
-    let value = currentTile.odds;
-
-    cubeRing(currentTile.hex, 1).forEach((hex) => {
-      let neighbor = findTileByHex(tiles, hex);
-      if (neighbor && neighbor.type !== 0) {
-        value += neighbor.odds;
+  // Place players on chosen tiles
+  choices.forEach((choice: number, playerNum: number) => {
+    // Add settlement on center tile
+    tiles[choice].obj = { type: "Settlement", owner: playerNum, level: 1 };
+    tiles[choice].type = goldIndex; // Set center tile to no yeild
+    tiles[choice].odds = 1;
+    tiles[choice].owner = playerNum;
+    
+    // Set ownership of adjacent tiles
+    const adjIdxs = adjacentIndexes(choice);
+    adjIdxs.forEach((adjIdx) => {
+      // If tile exists
+      if (adjIdx < tiles.length) {
+        // Assign ownership
+        tiles[adjIdx].owner = playerNum;
       }
     });
 
-    if (value > bestSoFar.value) {
-      bestSoFar = { tile: currentTile, value: -1 };
+    // Balance Strengths
+    if (!strength) {
+      // If strength === 0, allow random spawns -- do not balance
+      return;
     }
-  }
 
-  // Add settlement on center tile
-  bestSoFar.tile.obj = { type: "Settlement", owner: player, level: 1 };
-  bestSoFar.tile.owner = player;
+    // TODO: add balance for having TOO strong of a start by default (right now we only buff bad starts, no nerf)
+    const desiredNumYields = 1 + strength;
+    const desiredTotalValue = 4 + strength * 2;
 
-  // Set ownership of adjacent tiles
-  cubeRing(bestSoFar.tile.hex, 1).forEach((hex) => {
-    let neighbor = findTileByHex(tiles, hex);
-    if (neighbor) {
-      neighbor.owner = player;
+    // Array of index values of yield types (discluding none and base)
+    const possibleYields = Array(resourceTypes.length - 2).fill(null).map((_, i) => i + 1); // [1, 2, 3, ...] 
+
+    // Remove all duplicate yield types
+    let idxsWithYields = adjIdxs.filter(idx => possibleYields.includes(tiles[idx].type));
+    const existingYields = [];
+    idxsWithYields.forEach((idx) => {
+      if (existingYields.includes(tiles[idx].type)) {
+        // If there is already another tile with this same yield type, reset it
+        tiles[idx].odds = 1;
+        tiles[idx].type = goldIndex; // Reset to base yield type
+      } else {
+        existingYields.push(tiles[idx].type); // Record unique yield type
+      }
+    });
+
+    // Get array of all tiles with base yields, but without special yields
+    while (existingYields.length < desiredNumYields) {
+      const idxsWithoutYields = adjIdxs.filter(idx => tiles[idx].type === goldIndex);
+      if (!idxsWithoutYields.length) {
+        // If there are no more available tiles to assign yields to, just break
+        break;
+      }
+      // Choose a new yield for this tile -- not one already present
+      const newYield = randomChoice(possibleYields.filter(val => !existingYields.includes(val)));
+      existingYields.push(newYield);
+      tiles[randomChoice(idxsWithoutYields)].type = newYield;
+    }
+    
+    // Fetch new indexes with yields
+    idxsWithYields = adjIdxs.filter(idx => possibleYields.includes(tiles[idx].type));
+    let totalValue = adjIdxs.reduce((prev, idx) => prev + tiles[idx].odds, 0 );
+    // Continually increase value of random tile until desired total is reached
+    while (totalValue < desiredTotalValue) {
+      // Select only tiles that can still be increased in odds
+      const options = idxsWithYields.filter(idx => tiles[idx].odds < 3);
+      if (!options.length) {
+        break; // If desiredvalue has been set impossibly high, break eventually
+      }
+      // Increased chosen tiles odds by 1
+      tiles[randomChoice(options)].odds += 1;
+      totalValue += 1;
     }
   });
 }
@@ -304,6 +388,7 @@ export function generateBoard({
   numPlayers,
   boardSize,
   resourceSpawns,
+  spawnStrength
 }: GameSettings): BoardProps {
   const tiles: TileData[] = [];
 
@@ -386,7 +471,7 @@ export function generateBoard({
     // Odds
     odds: [
       {
-        // 1
+        // 1 (each array index will be increased by 1)
         base: 30,
       },
       {
@@ -432,7 +517,7 @@ export function generateBoard({
   const counts: { [key in weightTypes]?: number[] } = {
     biome: [...Array(biomeTypes.length)].fill(0),
     type: [...Array(resourceTypes.length)].fill(0),
-    odds: [0,0,0],
+    odds: [0, 0, 0],
   };
 
   // Safely check if weight funcion is set, and apply it if so, otherwise just return weight
@@ -560,10 +645,16 @@ export function generateBoard({
 
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
-    const odds = type === 6 ? 1 : (makeChoice("odds", adjacentIndexes, hex, biome) + 1);
+    const odds =
+      type === 0
+        ? 0
+        : type === 6
+        ? 1
+        : makeChoice("odds", adjacentIndexes, hex, biome) + 1;
 
     //TODO: relative heights based on neighbors / biome
-    const height = type === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
+    const height =
+      type === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
 
     // add to totals...
     return {
@@ -595,14 +686,9 @@ export function generateBoard({
   }
 
   //TODO: Run second pass for river generation?, height generation, and balance?
-  
 
   // Select spawn location for players
-  for (let playerIndex = 0; playerIndex < numPlayers; playerIndex++) {
-    // TODO: scuffed balanace solution of giving subsequent players +1 pass to find a good spawn
-    // should probs redo the whole spawn selection thing at some point, but w/e
-    chooseSpawn(tiles, playerIndex, 10 + playerIndex);
-  }
+  chooseSpawns(tiles, numPlayers, spawnStrength);
 
   return {
     tiles,
@@ -623,9 +709,9 @@ export function Board({
               key={idx}
               {...tile}
               borders={
-                ("owner" in tile)
+                "owner" in tile
                   ? adjacentIndexes(idx).map(
-                      (adjIdx) => tiles?.[adjIdx].owner !== tile.owner
+                      (adjIdx) => tiles?.[adjIdx]?.owner !== tile.owner
                     )
                   : null
               }

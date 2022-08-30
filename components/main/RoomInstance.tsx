@@ -8,8 +8,7 @@ import { MapControls, Stars, RandomizedLight } from '@react-three/drei';
 import HostControl from "./HostControl";
 import HUD from "./hud";
 import { resourceTypes } from './three/Tiles/Resource';
-import { Bloom, DepthOfField, EffectComposer, Outline, Selection, SelectiveBloom } from "@react-three/postprocessing";
-import Territories from "./three/Territories";
+import { Bloom, DepthOfField, EffectComposer } from "@react-three/postprocessing";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -25,12 +24,14 @@ export interface ResourceStates {
 export interface PlayerState {
   id: string;
   resources: ResourceStates;
+  points: number;
 }
 
 export interface GameState {
   board: BoardProps;
   players: PlayerState[];
   turn: number;
+  winner?: string;
 }
 
 export interface GameContextProps {
@@ -76,6 +77,7 @@ export default function Room({
               (a, v) => (v.name === "None" ? a : { ...a, [v.name]: 1 }),
               {}
             ),
+            points: 1
           };
         }),
         turn: 0,

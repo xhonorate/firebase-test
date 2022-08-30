@@ -1,4 +1,8 @@
 import { GroupProps, MeshProps } from '@react-three/fiber';
+export function findResourceIndexByName(name: string) {
+  return resourceTypes.findIndex((tile) => tile.name === name);
+}
+
 export function findResourceTypeByName(name: string) {
   return resourceTypes.find((tile) => tile.name === name);
 }

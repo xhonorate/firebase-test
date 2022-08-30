@@ -1,5 +1,6 @@
 import { TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing } from "../Board";
+import { findResourceIndexByName } from '../three/Tiles/Resource';
 
 // Requirement functions:
 // Invert any other requirement function
@@ -29,6 +30,10 @@ const objHasParams = (params: object) => {
     // If object does not exist or fails to meet any of the parameters passed, return false
     return !Object.entries(params).some(([key, value]) => (tile?.obj?.[key] !== value));
   };
+};
+
+const hasType = (type: number) => {
+  return (tile: TileData) => tile.type === type;
 };
 
 // Check if hex has a connecting path of roads to a settlement owned by me
@@ -165,7 +170,7 @@ export const buildOptions: BuildOption[] = [
   },
   {
     name: "Upgrade City",
-    cost: { Wheat: 2, Ore: 2, Sheep: 2, Gold: 1 },
+    cost: { Brick: 1, Wheat: 2, Ore: 2, Sheep: 2 },
     dr: (tiles: TileData[], playerIndex: number ) => {
       return { //Increase gold cost by 1 per upgraded city built so far
         Gold: (tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Settlement" && tile.obj.level > 2).length) * 2
@@ -175,6 +180,22 @@ export const buildOptions: BuildOption[] = [
     action: (target) => {
       return {
         ["/board/tiles/" + target + "/obj/level"]: 3 // Increase level value of settlement to 2
+      };
+    },
+  },
+  {
+    name: "Build Market",
+    cost: { Wood: 2, Wheat: 1, Sheep: 3 },
+    dr: (tiles: TileData[], playerIndex: number ) => {
+      return { //Increase gold cost by 1 per city built so far
+        Gold: tiles.filter(tile => tile.owner === playerIndex && tile.obj?.type === "Market").length
+      }
+    },
+    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Gold"))],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/odds"]: 3, // Increase gold tick rate to 3
+        ["/board/tiles/" + target + "/obj"]: { type: "Market", owner: playerIndex } // Increase level value of settlement to 2
       };
     },
   },

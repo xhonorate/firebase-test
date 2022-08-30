@@ -16,8 +16,6 @@ function procTiles(state: GameState, frequency: number): object {
       updates["board/tiles/" + idx + "/procs"] = (tile.procs ?? 0) + 1;
       // If the tile is owned by a player, assign its resources
       if ("owner" in tile) {
-        // TODO: check for city or tile upgrades, assign more/less resources
-        
         // Get level of tile based on neighboring hexes (check if there are upgrades / cities)
         const level = [
           tile,
@@ -34,13 +32,37 @@ function procTiles(state: GameState, frequency: number): object {
           // Get value from other updates or from state if no updates for this resource are pending
           const prevVal =
             updates["/players/" + tile.owner + "/resources/" + type] ??
-            state.players[tile.owner].resources[type];
+            state.players[tile.owner].resources?.[type] ?? 0;
 
           // Update resource yields individually
           updates["/players/" + tile.owner + "/resources/" + type] =
             prevVal + level; // give amt of related resource
         }
       }
+    }
+  });
+
+  return updates;
+}
+
+// Count and record total points for each player
+// Also check if any player has reached the number of points to win
+function calcPoints(state: GameState, pointsToWin: number): object {
+  const updates = {};
+
+  const newPoints = {};
+  state.board.tiles.forEach((tile) => {
+    if (tile?.obj?.type === 'Settlement') {
+      newPoints[tile.owner] = (newPoints[tile.owner] ?? 0) + 1 * tile.obj.level;
+    }
+  });
+
+  Object.entries(newPoints).forEach(([key, val]) => {
+    updates["/players/" + key + "/points"] = val;
+    if (val >= pointsToWin) {
+      // If any player has reached required points to win, record it in database
+      // in the event of a tie, record winner1 and winner2 and winner3 ...
+      updates["/winner"] = "/winner" in updates ? updates["/winner"] + 'and' + key : key;
     }
   });
 
@@ -59,10 +81,16 @@ export default function HostControl(settings: GameSettings) {
   const hostTick = useCallback(() => {
     const state = dataRef.current;
 
-    // Update state information -- tile procs and resources
-    update(procTiles(state, settings.yieldFrequency));
+    const updates = {
+      // Proc Tiles
+      ...procTiles(state, settings.yieldFrequency),
+      // Calculate Points
+      ...calcPoints(state, settings.pointsToWin)
+    }    
 
-    //update({turn: (state.turn ?? 0) + 1 })
+    // Update state information -- tile procs and resources
+    update(updates);
+
   }, [update, settings.yieldFrequency]);
 
   // Mount ticking timer to perform server actions

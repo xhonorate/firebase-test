@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import Settlement from "../Settlement";
+import Settlement from "../Objects/Settlement";
 import HexWater from "../gltfjsx/tiles/hex_water";
 import HexForestDetail from "../gltfjsx/tiles/hex_forest_detail";
 import { randomInt, cubeScale, cubeDirection } from '../../Board';
@@ -50,6 +50,7 @@ import HexSandRoadL from "../gltfjsx/tiles/hex_sand_roadL";
 import HexSandRoadM from "../gltfjsx/tiles/hex_sand_roadM";
 import Resource from "./Resource";
 import { Line } from "@react-three/drei";
+import Market from '../Objects/Market';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -65,6 +66,7 @@ interface BiomeProps {
   };
 }
 
+// TODO: transition tiles
 export const biomeTypes: BiomeProps[] = [
   {
     name: "Water",
@@ -301,6 +303,14 @@ export default function Tile({
                 }
                 position={[0, 1, 0]}
                 color={playerColors[obj?.owner ?? owner]}
+                castShadow={true}
+              />
+            )}
+
+            {obj.type === "Market" && (
+              <Market
+                rotation={[0, rotation, 0]}
+                position={[0, 1, 0]}
                 castShadow={true}
               />
             )}

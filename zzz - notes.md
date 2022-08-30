@@ -21,3 +21,7 @@ Merged drei for models?
 
 
 Fog of war
+
+
+More goodies on the map, significantly increase cost of building / upgrading cities
+Passive territory gain?

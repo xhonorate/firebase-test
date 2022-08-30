@@ -25,6 +25,8 @@ export interface GameSettings {
   tickRate: number;
   yieldFrequency: number; // TODO: once done testing with this, move to a select of options which affect spawns
   resourceSpawns: number; // rate 1-10
+  spawnStrength: number; // rate 1-10
+  pointsToWin: number;
   //TODO: more board generation settings
 }
 
@@ -69,6 +71,21 @@ export const gameSettingOptions: {
     min: 1,
     max: 10,
     valueLabels: ["Scarce", "Normal", "Abundant"],
+  },
+  {
+    key: "spawnStrength",
+    label: "Start Strength",
+    default: 0,
+    min: 0,
+    max: 4,
+    valueLabels: ["Random", "Weak", "Normal", "Strong", "Epic"],
+  },
+  {
+    key: "pointsToWin",
+    label: "Points to Win",
+    default: 10,
+    min: 6,
+    max: 20,
   },
 ];
 

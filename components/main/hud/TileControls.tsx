@@ -81,7 +81,7 @@ export default function TileControls({
   });
 
   //TODO: gold per resource
-  const goldPerResource = 2;
+  const goldPerResource = 3;
 
   return (
     <>

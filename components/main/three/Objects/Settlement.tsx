@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { GroupProps } from '@react-three/fiber'
-import House from "./gltfjsx/objects/house";
-import Watchtower from './gltfjsx/objects/watchtower';
-import Castle from './gltfjsx/objects/castle';
+import House from "../gltfjsx/objects/house";
+import Watchtower from '../gltfjsx/objects/watchtower';
+import Castle from '../gltfjsx/objects/castle';
 
 interface SettlementProps extends GroupProps {
   level: number,
