@@ -1,5 +1,5 @@
 import { TileData } from "../three/Tiles/Tile";
-import { hexToIndex, cubeRing } from "../Board";
+import { hexToIndex, cubeRing, adjacentIndexes } from '../Board';
 import { ResourceStates } from "../RoomInstance";
 import { Button, chakra, Flex, Text } from "@chakra-ui/react";
 import React from "react";
@@ -45,12 +45,11 @@ export default function TileControls({
             : true
           : true;
 
-      cubeRing(tile.hex, 1).forEach((hex) => {
-        let index = hexToIndex(hex);
+      adjacentIndexes(hexToIndex(tile.hex)).forEach((index) => {
         // If tile exists (not outside of board)
         if (index < tiles.length) {
           option?.allAdjReq?.forEach((req) => {
-            if (!req(tiles[index], playerIndex)) {
+            if (!req(tiles[index], playerIndex, tiles)) {
               // If all tiles must pass a condition, and any fail, return false
               reqPassed = false;
             }
@@ -60,7 +59,7 @@ export default function TileControls({
           if (!anyAdjPassed) {
             let passedAll = true;
             option?.anyAdjReq?.forEach((req) => {
-              if (!req(tiles[index], playerIndex)) {
+              if (!req(tiles[index], playerIndex, tiles)) {
                 passedAll = false;
               }
             });
