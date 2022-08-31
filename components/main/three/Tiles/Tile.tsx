@@ -1,14 +1,11 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import Settlement from "../Objects/Settlement";
-import HexWater from "../gltfjsx/tiles/hex_water";
-import HexForestDetail from "../gltfjsx/tiles/hex_forest_detail";
-import { randomInt, cubeScale, cubeDirection } from '../../Board';
+import { randomInt, cubeScale } from "../../Board";
 import { motion } from "framer-motion-3d";
 import { useAnimation } from "framer-motion";
-import HexRock from "../gltfjsx/tiles/hex_rock";
-import HexForest from "../gltfjsx/tiles/hex_forest";
-import HexSand from "../gltfjsx/tiles/hex_sand";
 import useRoad from "./useRoad";
+import Resource from "./Resource";
+import Borders from './Borders';
+import Building from "../Objects/Building";
 import HexForestRoadA from "../gltfjsx/tiles/hex_forest_roadA";
 import HexForestRoadB from "../gltfjsx/tiles/hex_forest_roadB";
 import HexForestRoadC from "../gltfjsx/tiles/hex_forest_roadC";
@@ -48,9 +45,20 @@ import HexSandRoadJ from "../gltfjsx/tiles/hex_sand_roadJ";
 import HexSandRoadK from "../gltfjsx/tiles/hex_sand_roadK";
 import HexSandRoadL from "../gltfjsx/tiles/hex_sand_roadL";
 import HexSandRoadM from "../gltfjsx/tiles/hex_sand_roadM";
-import Resource from "./Resource";
-import { Line } from "@react-three/drei";
-import Market from '../Objects/Market';
+import HexForestWaterA from '../gltfjsx/tiles/hex_forest_waterA';
+import HexForestWaterC from '../gltfjsx/tiles/hex_forest_waterC';
+import HexForestWaterD from '../gltfjsx/tiles/hex_forest_waterD';
+import HexRockWaterA from '../gltfjsx/tiles/hex_rock_waterA';
+import HexRockWaterC from '../gltfjsx/tiles/hex_rock_waterC';
+import HexRockWaterD from '../gltfjsx/tiles/hex_rock_waterD';
+import HexSandWaterA from '../gltfjsx/tiles/hex_sand_waterA';
+import HexSandWaterC from '../gltfjsx/tiles/hex_sand_waterC';
+import HexSandWaterD from '../gltfjsx/tiles/hex_sand_waterD';
+import HexWaterDetail from '../gltfjsx/tiles/hex_water_detail';
+import HexForest from '../gltfjsx/tiles/hex_forest';
+import HexRock from '../gltfjsx/tiles/hex_rock';
+import HexSand from '../gltfjsx/tiles/hex_sand';
+import HexEmptyDetail from '../gltfjsx/tiles/hex_empty_detail';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -60,7 +68,6 @@ interface BiomeProps {
   name: string;
   tile: {
     default: TileElement;
-    detail?: TileElement;
     road?: TileElement[];
     transition?: TileElement[];
   };
@@ -71,14 +78,26 @@ export const biomeTypes: BiomeProps[] = [
   {
     name: "Water",
     tile: {
-      default: HexWater,
+      default: HexWaterDetail,
+      transition: [
+        HexForestWaterA,
+        HexForestWaterC,
+        HexForestWaterD,
+
+        HexRockWaterA,
+        HexRockWaterC,
+        HexRockWaterD,
+
+        HexSandWaterA,
+        HexSandWaterC,
+        HexSandWaterD,
+      ],
     },
   },
   {
     name: "Forest",
     tile: {
       default: HexForest,
-      detail: HexForestDetail,
       road: [
         HexForestRoadA,
         HexForestRoadB,
@@ -94,7 +113,6 @@ export const biomeTypes: BiomeProps[] = [
         HexForestRoadL,
         HexForestRoadM,
       ],
-      transition: [],
     },
   },
   {
@@ -170,8 +188,7 @@ export interface TileData {
   type: number; // Yield type
   biome?: number;
   height?: number;
-  detail?: boolean;
-  transition?: number;
+  transition?: { type: number; orientation: number }; // Which type of transition based on neighboring biomes
   hex: HexCoords;
   borders?: boolean[]; // array of sides of this tile touching unowed terrirory (true if border; false if not)
   odds: number; //weighted likelyhood of being "rolled"
@@ -189,11 +206,13 @@ export function cubeToPos(hex: HexCoords): [number, number, number] {
 }
 
 export default function Tile({
+  index,
   hex,
   type,
   procs,
   biome = 0,
   height = 0,
+  transition = null,
   odds,
   obj,
   owner,
@@ -206,7 +225,7 @@ export default function Tile({
     const pos = cubeToPos(
       cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
     );
-    pos.splice(1, 1, height * 0.1);
+    pos.splice(1, 1, height * 0.5);
     return pos;
   }, [hex, height]);
 
@@ -217,13 +236,15 @@ export default function Tile({
   const [hovered, hover] = useState(false);
 
   // If tile has a road on it, figure out which shape it should be based on neighbors
-  const [roadType, orientation] = useRoad(hex, obj);
+  const [roadType, roadOrientation] = useRoad(index, obj);
 
   const TileGraphic = useMemo(
     () =>
-      roadType === null
-        ? biomeTypes[biome].tile.default
-        : biomeTypes[biome].tile.road[roadType],
+      transition !== null
+        ? biomeTypes[biome].tile.transition[transition.type]
+        : roadType !== null
+        ? biomeTypes[biome].tile.road[roadType]
+        : biomeTypes[biome].tile.default,
     [biome, roadType]
   );
 
@@ -236,6 +257,8 @@ export default function Tile({
     }
   }, [procs]);
 
+  //TODO: add useEffect for object type -> dust cloud / build animation
+
   useEffect(() => {
     // Mark component as mounted, allow animations to begin playing
     if (!mounted.current) {
@@ -247,16 +270,7 @@ export default function Tile({
   return (
     <>
       <group position={pos} dispose={null}>
-        {!!borders &&
-          borders.map((hasBorder, idx) => {
-            if (!hasBorder) return null;
-            const edgePoint = cubeToPos(cubeDirection(idx));
-            // Create line at edge, rotated by 90 degrees relative to direction towards edge
-            return <Line key={idx} position={[0,1,0]} points={[
-              [0.58 * (edgePoint[0] + edgePoint[2] * 0.5), 0, 0.58 * (edgePoint[2] - edgePoint[0] * 0.5)],
-              [0.58 * (edgePoint[0] - edgePoint[2] * 0.5), 0, 0.58 * (edgePoint[2] + edgePoint[0] * 0.5)]
-            ]} color={playerColors[owner]} dashed={false} lineWidth={4} transparent={true} opacity={0.6} />;
-          })}
+        {!!borders && <Borders borders={borders} color={playerColors[owner]} /> }
 
         {type !== 0 && (
           // Yield Proc Display //
@@ -283,45 +297,29 @@ export default function Tile({
         </mesh>
 
         {/* Render tile resources */}
-        {
-          <Resource
-            type={type}
-            odds={odds}
-            position={[0, 1, 0]}
-            rotation={[0, rotation, 0]}
-          />
-        }
+        <Resource
+          type={type}
+          odds={odds}
+          position={[0, 0.5, 0]}
+          rotation={[0, rotation, 0]}
+        />
 
         {/* Render buildings */}
-        {!!obj && (
-          <>
-            {obj.type === "Settlement" && (
-              <Settlement
-                rotation={[0, rotation, 0]}
-                level={
-                  obj?.level ?? 1 /* whether settlment has been upgraded */
-                }
-                position={[0, 1, 0]}
-                color={playerColors[obj?.owner ?? owner]}
-                castShadow={true}
-              />
-            )}
+        <Building 
+          obj={obj} 
+          rotation={[0, rotation, 0]}
+          position={[0, 0.5, 0]}
+          castShadow={true}
+        />
+        
+        { /* dirt underneath tile */ }
+        { height > 1 && <HexEmptyDetail scale-y={height} position-y={-height*0.5}/> }
 
-            {obj.type === "Market" && (
-              <Market
-                rotation={[0, rotation, 0]}
-                position={[0, 1, 0]}
-                castShadow={true}
-              />
-            )}
-          </>
-        )}
-
-        {/* hex has two parts, bottom/water level cylinder, then top 'tile' graduated cylinder
-      TODO: Combine into one mesh
-      */}
         <TileGraphic
-          rotation-y={-(orientation * Math.PI) / 3}
+          rotation-y={
+            -((transition?.orientation ?? roadOrientation ?? 0) * Math.PI) / 3
+          }
+          scale-y={0.5}
           onClick={(event) => {
             event.stopPropagation();
             if (type !== 0) onClick();
@@ -330,7 +328,7 @@ export default function Tile({
             event.stopPropagation();
             hover(true);
           }}
-          onPointerOut={(event) => hover(false)}
+          onPointerOut={() => hover(false)}
         />
       </group>
     </>

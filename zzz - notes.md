@@ -22,6 +22,10 @@ Merged drei for models?
 
 Fog of war
 
+Wraparound or sphere map?
+Look at sampleA picture
+
+-- MAYBE just ore, wood, food, gold ?
 
 More goodies on the map, significantly increase cost of building / upgrading cities
 Passive territory gain?

@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
 import { useEffect } from "react";
-import { Button, Box } from "@chakra-ui/react";
+import { Button, Box, useEventListener } from "@chakra-ui/react";
 import { Board, BoardProps, generateBoard } from "./Board";
 import { MapControls, Stars, RandomizedLight } from '@react-three/drei';
 import HostControl from "./HostControl";
@@ -13,12 +13,10 @@ import { Bloom, DepthOfField, EffectComposer } from "@react-three/postprocessing
 /* eslint-disable react-hooks/exhaustive-deps */
 
 export interface ResourceStates {
-  gold: number;
   wood: number;
-  brick: number;
   ore: number;
-  wheat: number;
-  sheep: number;
+  food: number;
+  gold: number;
 }
 
 export interface PlayerState {
@@ -58,12 +56,20 @@ export default function Room({
   /// TODO: I would like this to act like swr
   // is this triggering full refresh on every change?
   // or is it like a ref and i can useEffect on specific child elements in the json??
-  const { data, set, update, loading, unsubscribe } = useRealtime<GameState>(
+  const { data, set, update, loading, unsubscribe, deleteReference } = useRealtime<GameState>(
     `rooms/${id}`
   );
 
   const [paused, setPaused] = useState(false);
   const [target, setTarget] = useState(null);
+
+  // Deselect Tile on Escape key press
+  // TODO: add pause menu
+  useEventListener('keyup', (e: KeyboardEvent) => {
+    if (['27', 'Escape'].includes(String(e.key))) {
+      setTarget(null);
+    }
+  });
 
   useEffect(() => {
     // If no data is present, need to create new RTDB entry for room
@@ -91,11 +97,13 @@ export default function Room({
       {playerIndex === 0 && (
         <>
           <Button
-            onClick={() =>
+            onClick={() => {
               updateGame({
                 started: false,
-              })
-            }
+              });
+              unsubscribe();
+              deleteReference(); //Delete game lobby -- force regeneration on next instance
+            }}
           >
             Back to Lobby
           </Button>

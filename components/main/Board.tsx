@@ -1,9 +1,9 @@
 import React, { useContext } from "react";
 import Tile, { TileData, HexCoords } from "./three/Tiles/Tile";
-import { GameContext } from "./RoomInstance";
-import { GameSettings } from "../cloudFirestore/GameLobby";
 import { biomeTypes } from "./three/Tiles/Tile";
-import { resourceTypes, findResourceIndexByName } from './three/Tiles/Resource';
+import { resourceTypes, findResourceIndexByName } from "./three/Tiles/Resource";
+import { getTransition } from "./three/Tiles/transitions";
+import { GameSettings } from "../cloudFirestore/GameSettings";
 
 // Return a random int less than max (may be 0)
 export function randomInt(max: number) {
@@ -86,8 +86,12 @@ export function cubeDistance(a: HexCoords, b: HexCoords) {
 export function cubeRange(hex: HexCoords, range: number) {
   const results = [];
   for (let q = -range; q <= range; q++) {
-    for (let r = Math.max(-range, -q -range); r <= Math.min(range, -q + range); r++) {
-      const s = -q -r; // q + r + s = 0 constraint
+    for (
+      let r = Math.max(-range, -q - range);
+      r <= Math.min(range, -q + range);
+      r++
+    ) {
+      const s = -q - r; // q + r + s = 0 constraint
       results.push(cubeAdd(hex, { q, r, s }));
     }
   }
@@ -248,23 +252,30 @@ export function hexToIndex(hex: HexCoords) {
 // Place start spawns for players
 // Spawns will be spaced out as well as possible, and then balanced
 // Pass strength to determine how good of a start players should have (0 is random)
-function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 0) {
+function chooseSpawns(
+  tiles: TileData[],
+  numPlayers: number,
+  strength: number = 0
+) {
   const goldIndex = findResourceIndexByName("Gold");
 
   // Array of possible spawns tile indexes
-  const validIndexes = tiles.map((tile,idx) => { // FIRST MAP, then FILTER to keep original idx
-    if (tile.type === 0) return null; // Not a water tile
-    let adjWaterTiles = 0;
-    adjacentIndexes(idx).forEach((adjIdx) => {
-      if (tiles?.[adjIdx]?.type === 0) {
-        adjWaterTiles += 1; 
+  const validIndexes = tiles
+    .map((tile, idx) => {
+      // FIRST MAP, then FILTER to keep original idx
+      if (tile.type === 0) return null; // Not a water tile
+      let adjWaterTiles = 0;
+      adjacentIndexes(idx).forEach((adjIdx) => {
+        if (tiles?.[adjIdx]?.type === 0) {
+          adjWaterTiles += 1;
+        }
+      });
+      if (adjWaterTiles > 1) {
+        return null; // Maximum of one adjacent water tile
       }
-    });
-    if (adjWaterTiles > 1) {
-      return null; // Maximum of one adjacent water tile
-    }
-    return idx;
-  }).filter(res => res !== null); // Filter out invalid options
+      return idx;
+    })
+    .filter((res) => res !== null); // Filter out invalid options
 
   let choices = null;
   let minDist = cubeDistance(center, tiles[tiles.length - 1].hex);
@@ -283,7 +294,7 @@ function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 
         // Filter out tiles too close to this new choice
         indexesInRange = indexesInRange.filter((idx) => {
           return cubeDistance(tiles[idx].hex, tiles[choice].hex) > minDist;
-        })
+        });
       }
     }
     // If here - All choices are valid
@@ -297,7 +308,7 @@ function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 
     tiles[choice].type = goldIndex; // Set center tile to no yeild
     tiles[choice].odds = 1;
     tiles[choice].owner = playerNum;
-    
+
     // Set ownership of adjacent tiles
     const adjIdxs = adjacentIndexes(choice);
     adjIdxs.forEach((adjIdx) => {
@@ -315,14 +326,18 @@ function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 
     }
 
     // TODO: add balance for having TOO strong of a start by default (right now we only buff bad starts, no nerf)
-    const desiredNumYields = 1 + strength;
-    const desiredTotalValue = 4 + strength * 2;
+    const desiredNumYields = Math.floor(strength / 2);
+    const desiredTotalValue = 5 + strength;
 
     // Array of index values of yield types (discluding none and base)
-    const possibleYields = Array(resourceTypes.length - 2).fill(null).map((_, i) => i + 1); // [1, 2, 3, ...] 
+    const possibleYields = Array(resourceTypes.length - 2)
+      .fill(null)
+      .map((_, i) => i + 1); // [1, 2, 3, ...]
 
     // Remove all duplicate yield types
-    let idxsWithYields = adjIdxs.filter(idx => possibleYields.includes(tiles[idx].type));
+    let idxsWithYields = adjIdxs.filter((idx) =>
+      possibleYields.includes(tiles[idx].type)
+    );
     const existingYields = [];
     idxsWithYields.forEach((idx) => {
       if (existingYields.includes(tiles[idx].type)) {
@@ -336,24 +351,30 @@ function chooseSpawns(tiles: TileData[], numPlayers: number, strength: number = 
 
     // Get array of all tiles with base yields, but without special yields
     while (existingYields.length < desiredNumYields) {
-      const idxsWithoutYields = adjIdxs.filter(idx => tiles[idx].type === goldIndex);
+      const idxsWithoutYields = adjIdxs.filter(
+        (idx) => tiles[idx].type === goldIndex
+      );
       if (!idxsWithoutYields.length) {
         // If there are no more available tiles to assign yields to, just break
         break;
       }
       // Choose a new yield for this tile -- not one already present
-      const newYield = randomChoice(possibleYields.filter(val => !existingYields.includes(val)));
+      const newYield = randomChoice(
+        possibleYields.filter((val) => !existingYields.includes(val))
+      );
       existingYields.push(newYield);
       tiles[randomChoice(idxsWithoutYields)].type = newYield;
     }
-    
+
     // Fetch new indexes with yields
-    idxsWithYields = adjIdxs.filter(idx => possibleYields.includes(tiles[idx].type));
-    let totalValue = adjIdxs.reduce((prev, idx) => prev + tiles[idx].odds, 0 );
+    idxsWithYields = adjIdxs.filter((idx) =>
+      possibleYields.includes(tiles[idx].type)
+    );
+    let totalValue = adjIdxs.reduce((prev, idx) => prev + tiles[idx].odds, 0);
     // Continually increase value of random tile until desired total is reached
     while (totalValue < desiredTotalValue) {
       // Select only tiles that can still be increased in odds
-      const options = idxsWithYields.filter(idx => tiles[idx].odds < 3);
+      const options = idxsWithYields.filter((idx) => tiles[idx].odds < 3);
       if (!options.length) {
         break; // If desiredvalue has been set impossibly high, break eventually
       }
@@ -388,7 +409,7 @@ export function generateBoard({
   numPlayers,
   boardSize,
   resourceSpawns,
-  spawnStrength
+  spawnStrength,
 }: GameSettings): BoardProps {
   const tiles: TileData[] = [];
 
@@ -439,26 +460,14 @@ export function generateBoard({
         sameGlobalInfluance: (n) => -20 * n,
       },
       {
-        // Brick
-        base: [0, 10, 30, 10, 10],
-        sameAdjacencyInfluance: (n) => -50 * n,
-        sameGlobalInfluance: (n) => -20 * n,
-      },
-      {
-        // Wheat
-        base: [0, 20, 10, 0, 0],
-        sameAdjacencyInfluance: (n) => -50 * n,
-        sameGlobalInfluance: (n) => -20 * n,
-      },
-      {
         // Ore
         base: [0, 10, 30, 20, 10],
         sameAdjacencyInfluance: (n) => -50 * n,
         sameGlobalInfluance: (n) => -20 * n,
       },
       {
-        // Sheep
-        base: [0, 20, 10, 5, 5],
+        // Food
+        base: [30, 20, 10, 5, 5],
         sameAdjacencyInfluance: (n) => -50 * n,
         sameGlobalInfluance: (n) => -20 * n,
       },
@@ -490,25 +499,25 @@ export function generateBoard({
     height: [
       {
         // 1 - FLAT
-        base: [100, 60, 10, 80, 50],
+        base: [100, 65, 20, 85, 50],
       },
       {
         // 2 - SHORT
-        base: [0, 25, 25, 20, 25],
+        base: [0, 30, 35, 15, 25],
         sameAdjacencyInfluance: (n) => 30 * n,
       },
       {
         // 3
-        base: [0, 10, 30, 0, 10],
+        base: [0, 5, 30, 0, 10],
         sameAdjacencyInfluance: (n) => 20 * n,
       },
       {
         // 4
-        base: [0, 5, 20, 0, 10],
+        base: [0, 0, 10, 0, 10],
       },
       {
         // 5 - TALL
-        base: [0, 0, 15, 0, 5],
+        base: [0, 0, 5, 0, 5],
         sameAdjacencyInfluance: (n) => -20 * n,
       },
     ],
@@ -640,15 +649,12 @@ export function generateBoard({
     const biome = makeChoice("biome", adjacentIndexes, hex);
 
     // STEP 2: Choose additional resources (dependant on biome + neighbors + total # of resource)
-    const type =
-      biome === 0 ? 0 : makeChoice("type", adjacentIndexes, hex, biome);
+    const type = makeChoice("type", adjacentIndexes, hex, biome);
 
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
     const odds =
-      type === 0
-        ? 0
-        : type === 6
+      type === findResourceIndexByName("Gold")
         ? 1
         : makeChoice("odds", adjacentIndexes, hex, biome) + 1;
 
@@ -690,6 +696,17 @@ export function generateBoard({
   // Select spawn location for players
   chooseSpawns(tiles, numPlayers, spawnStrength);
 
+  // Assign transition types to tiles (e.g. half water half sand, etc.)
+  tiles.forEach((tile, idx) => {
+    const transition = getTransition(
+      tile.biome,
+      adjacentIndexes(idx).map((adjIdx) => tiles?.[adjIdx]?.biome)
+    );
+    if (transition) {
+      tile.transition = transition;
+    }
+  });
+
   return {
     tiles,
   };
@@ -707,6 +724,7 @@ export function Board({
           return (
             <Tile
               key={idx}
+              index={idx}
               {...tile}
               borders={
                 "owner" in tile

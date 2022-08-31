@@ -44,10 +44,11 @@ export default function TileInfo({
           }
         </Text>
       )}
-
+      { /* Has been rolled text display
       <Text>
         Has been rolled {tile?.procs ?? 0} time{tile.procs !== 1 && "s"}
       </Text>
+      */ }
     </Stack>
   );
 }

@@ -3,9 +3,7 @@ import {
   useContext,
   useRef,
   useMemo,
-  useCallback,
-  useState,
-  useEffect,
+  useCallback
 } from "react";
 import { GameContext } from "../RoomInstance";
 import { Action } from "./buildOptions";
@@ -51,8 +49,7 @@ export default function HUD({
     [data?.players, playerIndex]
   );
 
-  const updateTile = useCallback(
-    (action: Action, cost: object) => {
+  const updateTile = useCallback((action: Action, cost: object) => {
       // TODO: check pending actions on RTDB (from host tick, etc)
       // Do not allow users to double-submit an action by accident
       if (hasPendingActions.current) return;
@@ -74,6 +71,18 @@ export default function HUD({
   );
 
   if (!data || playerIndex === -1) return null; // If loading or player not found in game lobby (playerIndex = -1)
+
+  if (paused) {
+    return (
+      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={9999}>
+        <Flex h={'full'} alignItems={'center'}>
+          <Text fontSize={"4xl"}>
+            {"Paused"}
+          </Text>
+        </Flex>
+      </HUDContainer>
+    )
+  }
 
   if (!!data.winner) {
     return (

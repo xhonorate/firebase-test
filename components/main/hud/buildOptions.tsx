@@ -2,13 +2,7 @@ import { TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing, adjacentIndexes } from "../Board";
 import { findResourceIndexByName } from "../three/Tiles/Resource";
 
-// Requirement functions:
-// Invert any other requirement function
-const not =
-  (fn: (...params: any) => boolean) =>
-  (...params: any) =>
-    !fn(...params);
-
+//////////////////////// Requirement functions: ////////////////////////
 const notOwned = (tile: TileData) => !("owner" in tile);
 const ownedByMe = (tile: TileData, playerIndex: number) => {
   return tile?.owner === playerIndex;
@@ -37,9 +31,26 @@ const objHasParams = (params: object) => {
   };
 };
 
-const hasType = (type: number) => {
-  return (tile: TileData) => tile.type === type;
+// Check tile biome type, if array is passed, will check if type matches any in array
+const hasBiome = (biome: number | number[]) => {
+  if (Array.isArray(biome)) {
+    return (tile: TileData) => biome.includes(tile.biome);
+  } else {
+    return (tile: TileData) => tile.biome === biome;
+  }
 };
+
+// Check tile resource type, if array is passed, will check if type matches any in array
+const hasType = (type: number | number[]) => {
+  if (Array.isArray(type)) {
+    return (tile: TileData) => type.includes(tile.type);
+  } else {
+    return (tile: TileData) => tile.type === type;
+  }
+};
+
+const isWater = (tile: TileData) => tile.biome === 0;
+const isLand = (tile: TileData) => tile.biome !== 0;
 
 // Check if hex has a connecting path of roads to a settlement owned by me
 const hasRoadToSettlement = (
@@ -90,11 +101,12 @@ const adjacentToSettlement = (
   tiles: TileData[]
 ) => {
   const tileIndex = hexToIndex(tile.hex);
-  return adjacentIndexes(tileIndex).some(
-    (adjIdx) =>
-      hasObject("Settlement")(tiles?.[adjIdx])
+  return adjacentIndexes(tileIndex).some((adjIdx) =>
+    hasObject("Settlement")(tiles?.[adjIdx])
   );
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 export type Action = (
   target: number, // INDEX of tile
@@ -130,7 +142,7 @@ interface BuildOption {
 export const buildOptions: BuildOption[] = [
   {
     name: "Build Settlement",
-    cost: { Wood: 1, Brick: 1, Sheep: 1, Wheat: 1 },
+    cost: { Wood: 2, Ore: 2, Food: 5 },
     dr: (tiles: TileData[], playerIndex: number) => {
       return {
         //Increase gold cost by 1 per settlement built so far
@@ -168,7 +180,7 @@ export const buildOptions: BuildOption[] = [
   },
   {
     name: "Build Road",
-    cost: { Wood: 1, Brick: 1 },
+    cost: { Wood: 1, Ore: 1 },
     dr: (tiles: TileData[], playerIndex: number) => {
       return {
         //Increase gold cost by 1 per two roads built so far
@@ -192,7 +204,7 @@ export const buildOptions: BuildOption[] = [
   },
   {
     name: "Build City",
-    cost: { Wheat: 2, Ore: 3 },
+    cost: { Wood: 3, Ore: 4, Food: 10 },
     dr: (tiles: TileData[], playerIndex: number) => {
       return {
         //Increase gold cost by 1 per city built so far
@@ -211,7 +223,7 @@ export const buildOptions: BuildOption[] = [
       };
     },
   },
-  {
+  /* {
     name: "Upgrade City",
     cost: { Brick: 1, Wheat: 2, Ore: 2, Sheep: 2 },
     dr: (tiles: TileData[], playerIndex: number) => {
@@ -232,10 +244,10 @@ export const buildOptions: BuildOption[] = [
         ["/board/tiles/" + target + "/obj/level"]: 3, // Increase level value of settlement to 2
       };
     },
-  },
+  }, */
   {
     name: "Build Market",
-    cost: { Wood: 2, Wheat: 1, Sheep: 3 },
+    cost: { Wood: 1, Food: 2 },
     dr: (tiles: TileData[], playerIndex: number) => {
       return {
         //Increase gold cost by 1 per city built so far
@@ -244,33 +256,85 @@ export const buildOptions: BuildOption[] = [
         ).length,
       };
     },
-    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Gold"))],
+    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Gold")), hasBiome(3 /* sand */)],
     action: (target, playerIndex) => {
       return {
-        ["/board/tiles/" + target + "/odds"]: 3, // Increase gold tick rate to 3
+        ["/board/tiles/" + target + "/odds"]: 2, // Increase gold tick rate to 2 //TODO: remove this?
         ["/board/tiles/" + target + "/obj"]: {
           type: "Market",
           owner: playerIndex,
-        }, // Increase level value of settlement to 2
+          level: 1,
+        },
       };
     },
   },
+
+  {
+    name: "Build Lumbermill",
+    cost: { Wood: 2, Ore: 1 },
+    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Wood"))],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Lumbermill",
+          owner: playerIndex,
+          level: 1,
+        },
+      };
+    },
+  },
+
+  {
+    name: "Build Mine",
+    cost: { Wood: 1, Ore: 2 },
+    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Ore"))],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Mine",
+          owner: playerIndex,
+          level: 1,
+        },
+      };
+    },
+  },
+
+  {
+    name: "Build Farm",
+    cost: { Wood: 1, Ore: 1 },
+    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Food")), hasBiome(1 /* forest */)],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Farm",
+          owner: playerIndex,
+          level: 1,
+        },
+      };
+    },
+  },
+
   {
     name: "Buy Tile",
-    cost: { Gold: 8 },
+    cost: { Gold: 5 },
     dr: (tiles: TileData[], playerIndex: number) => {
       return {
-        //Increase gold cost by 1 per city built so far
-        Gold: tiles.filter(
-          (tile) => tile.owner === playerIndex && tile.obj?.type === "Market"
-        ).length,
+        //Increase gold cost by 1 per extra tile owned (total - 7 per settlment)
+        Gold:
+          tiles.filter((tile) => tile.owner === playerIndex).length -
+          tiles.filter(
+            (tile) =>
+              tile?.obj?.type === "Settlement" &&
+              tile?.obj?.owner === playerIndex
+          ).length *
+            7,
       };
     },
     req: [notOwned],
-    anyAdjReq: [ownedByMe, adjacentToSettlement],
+    anyAdjReq: [ownedByMe, adjacentToSettlement], //an adjacent tile has to be adjacent to a setltment (e.g. max 2 away)
     action: (target, playerIndex) => {
       return {
-        ["/board/tiles/" + target + "/owner"]: playerIndex // Gain control of tile
+        ["/board/tiles/" + target + "/owner"]: playerIndex, // Gain control of tile
       };
     },
   },

@@ -2,7 +2,7 @@ import { Text, Box, BoxProps } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { ResourceStates } from "../RoomInstance";
-import { findResourceTypeByName } from "../three/Tiles/Resource";
+import { resourceTypes } from '../three/Tiles/Resource';
 
 const MotionBox = motion<Omit<BoxProps, "transition">>(Box);
 
@@ -17,15 +17,15 @@ export default function ResourceDisplay(resources: ResourceStates) {
     if (prevValues.current) {
       let valuesChanged = false;
       const deltas = {...anims.current};
-      Object.keys(resources).forEach((key) => {
-        const delta = resources[key] - prevValues.current[key];
+      resourceTypes.forEach(({name}) => {
+        const delta = resources[name] - prevValues.current[name];
         if (delta) {
-          if (!(key in deltas)) {
+          if (!(name in deltas)) {
             // Initialize array if empty
-            deltas[key] = [];
+            deltas[name] = [];
           }
           valuesChanged = true; // Mark that at least one value has changed
-          deltas[key].push(delta);
+          deltas[name].push(delta);
         }
       });
 
@@ -44,37 +44,39 @@ export default function ResourceDisplay(resources: ResourceStates) {
 
   return (
     <>
-      {Object.entries(resources).map(([key, value]) => (
-        <Text
-          as={'div'}
-          fontWeight={700}
-          key={key}
-          color={findResourceTypeByName(key).color}
-        >
-          {key + ": " + value}
+      {resourceTypes.map(({name, color}, idx) => {
+        if (name === "None") return null;
+        return (
+          <Text
+            as={'div'}
+            fontWeight={700}
+            key={idx}
+            color={color}
+          >
+            {name + ": " + resources[name]}
 
-          {!!popups?.[key] && popups[key].map((val: number, idx: number) => (
-            <Box key={idx} position={'relative'} w={'full'}>
-              <MotionBox
-                position={'absolute'}
-                textAlign={'center'}
-                w={'full'}
-                animate={{
-                  opacity: [0, 1, 1, 0],
-                  y: [0, 10, 14],
-                  scale: [1, 1.2]
-                }}
-                transition={{
-                  duration: 3,
-                }}
-                onAnimationComplete={(e) => anims.current[key].pop()} /* remove played animation */
-              >
-                {(val > 0 ? '+' : '') + val}
-              </MotionBox>
-            </Box>
-          ))}
-        </Text>
-      ))}
+            {!!popups?.[name] && popups[name].map((val: number, idx: number) => (
+              <Box key={idx} position={'relative'} w={'full'}>
+                <MotionBox
+                  position={'absolute'}
+                  textAlign={'center'}
+                  w={'full'}
+                  animate={{
+                    opacity: [0, 1, 1, 0],
+                    y: [0, 10, 14],
+                    scale: [1, 1.2]
+                  }}
+                  transition={{
+                    duration: 3,
+                  }}
+                  onAnimationComplete={(e) => anims.current[name].pop()} /* remove played animation */
+                >
+                  {(val > 0 ? '+' : '') + val}
+                </MotionBox>
+              </Box>
+            ))}
+          </Text> )
+        })}
     </>
   );
 }

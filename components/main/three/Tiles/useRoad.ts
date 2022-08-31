@@ -1,5 +1,5 @@
-import { HexCoords, Obj } from './Tile';
-import { cubeRing, hexToIndex } from '../../Board';
+import { Obj } from './Tile';
+import { adjacentIndexes } from '../../Board';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GameContext } from '../../RoomInstance';
 
@@ -19,7 +19,7 @@ const roadTypes = [
   [0,1,2,3,4,5] //M
 ]
 
-export default function useRoad(hex: HexCoords, obj: Obj): [type: number, orientation: number] {
+export default function useRoad(tileIndex: number, obj: Obj): [type: number, orientation: number] {
   const { data } = useContext(GameContext);
   // Keep track of connections to avoid additional calculations on every board change
   const [connections, setConnections] = useState([]);
@@ -29,8 +29,8 @@ export default function useRoad(hex: HexCoords, obj: Obj): [type: number, orient
     
     const newConnections = [];
 
-    cubeRing(hex, 1).forEach((neighborHex, idx) => {
-      const type = data?.board?.tiles?.[hexToIndex(neighborHex)]?.obj?.type;
+    adjacentIndexes(tileIndex).forEach((adjIdx, idx) => {
+      const type = data?.board?.tiles?.[adjIdx]?.obj?.type;
       if (!!type && (type === "Road" || type === "Settlement")) {
         newConnections.push(idx);
       }
@@ -40,13 +40,11 @@ export default function useRoad(hex: HexCoords, obj: Obj): [type: number, orient
     if (connections.length !== newConnections.length || connections.some((val, index) => val !== newConnections[index])) {
       setConnections(newConnections);
     }
-  }, [connections, data?.board?.tiles, hex, obj]);
+  }, [connections, data?.board?.tiles, tileIndex, obj]);
 
   const [type, orientation] = useMemo(() => {
     // If there are no connections, return null
     if (!connections || !connections.length) return [null, null];
-
-    console.log('Calcing road.... should not do this too often')
     
     // Try each rotation of tile to see if any road type fits at any orientation
     for (let orientation = 0; orientation < 6; orientation++) {

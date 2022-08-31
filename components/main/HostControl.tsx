@@ -1,30 +1,34 @@
 import React, { useEffect, useCallback, useRef, useContext } from "react";
 import { GameContext, GameState } from "./RoomInstance";
 import { resourceTypes } from "./three/Tiles/Resource";
-import { cubeRing, findTileByHex } from "./Board";
-import { GameSettings } from "../cloudFirestore/GameLobby";
+import { GameSettings } from "../cloudFirestore/GameSettings";
+import findClosestSettlement from './helpers/findClosestSettlement';
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
 function procTiles(state: GameState, frequency: number): object {
   const updates = {turn: state.turn + 1};
   // TODO: something with this number
-  const multiplier = 25 - frequency;
+  const multiplier = 20 - frequency;
 
   // Update tiles with number of times proc'd and assign resources to owners
   state.board.tiles.forEach((tile, idx) => {
-    if (tile.type !== 0 && tile.odds > Math.random() * multiplier) {
+    // Note: "owner" in tile -- requirement means that tiles will not show procs at all unless owned by a player
+    if ("owner" in tile && tile.type !== 0 && tile.odds > Math.random() * multiplier) {
       updates["board/tiles/" + idx + "/procs"] = (tile.procs ?? 0) + 1;
       // If the tile is owned by a player, assign its resources
-      if ("owner" in tile) {
+      // if ("owner" in tile) { <-- moved to earlier if statement to hide procs on unowned tiles
         // Get level of tile based on neighboring hexes (check if there are upgrades / cities)
-        const level = [
-          tile,
-          ...cubeRing(tile.hex, 1).map((hex) =>
-            findTileByHex(state.board.tiles, hex)
-          ),
-        ].reduce((prev, tile) => {
-          return !!tile && tile?.obj?.level > prev ? tile.obj.level : prev;
-        }, 1);
+        let level = (tile?.obj?.level ?? 0); //Default to level of object built on tile
+        const ownerSettlement = findClosestSettlement(state.board.tiles, idx, tile.owner);
+        // If a settlement was found
+        if (ownerSettlement !== null) {
+          // If more than one are equidistant, take the max of the levels
+          if (Array.isArray(ownerSettlement)) {
+            level += ownerSettlement.reduce((prev, obj) => Math.max(prev, obj.level), 0);  
+          } else {
+            level += ownerSettlement.level; // Add value of settlement / city
+          }
+        }
 
         if (state.players[tile.owner]) {
           const type = resourceTypes[tile.type].name; // convert index of type to text name of type
@@ -38,7 +42,7 @@ function procTiles(state: GameState, frequency: number): object {
           updates["/players/" + tile.owner + "/resources/" + type] =
             prevVal + level; // give amt of related resource
         }
-      }
+      //}
     }
   });
 

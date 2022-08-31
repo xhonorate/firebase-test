@@ -24,7 +24,7 @@ export default function HexWaterDetail(props: JSX.IntrinsicElements['group']) {
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder1115.geometry} material={materials.BrownDark} />
-      <mesh geometry={nodes.Cylinder1115_1.geometry} material={materials.Water} />
+      <mesh geometry={nodes.Cylinder1115_1.geometry} /* material-opacity={0.8} material-transparency={true} */ material={materials.Water} />
     </group>
   )
 }
