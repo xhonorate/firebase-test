@@ -58,13 +58,13 @@ interface AnimatedProps extends GroupProps {
 export default function AnimatedCharacter({anim, ...props}: AnimatedProps) {
   const group = useRef<THREE.Group>()
   const { nodes, materials, animations } = useGLTF('/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb') as unknown as GLTFResult
-  const { actions } = useAnimations<GLTFActions>(animations, group)
+  const { actions } = useAnimations<GLTFActions | any>(animations, group)
 
   useEffect(() => {
     if (!!anim) {
       actions[anim].play();
     }
-  }, [anim])
+  }, [anim, actions])
 
   return (
     <group ref={group} {...props} dispose={null}>

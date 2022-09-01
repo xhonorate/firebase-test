@@ -52,12 +52,12 @@ export default function Resource({ type, odds, ...props }: ResourceProps) {
         }
       case 3: // Food
         return (
-          () => <mesh {...props}>
+          function Food (props) { return <mesh {...props}>
             <cylinderGeometry args={[0.5, 0.5, 0.1 * (odds+1)**2, 30]} />
             <meshStandardMaterial
               color={resourceTypes[type].color}
             />
-          </mesh>
+          </mesh> }
         )
       case 4: // Gold
         return null;

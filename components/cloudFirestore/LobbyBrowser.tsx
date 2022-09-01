@@ -6,7 +6,7 @@ import { useCollection, update } from "@nandorojo/swr-firestore"
 import React, { useMemo, useCallback, useState, ChangeEvent, useEffect } from "react";
 import ReactTable from "../ReactTable"
 import firebase from 'firebase/app'
-import { gameSettingOptions } from './GameLobby';
+import { gameSettingOptions } from './GameSettings';
 
 // browse existing games
 // buttons to host new game, join from list, or join from code (api endpoint meme)

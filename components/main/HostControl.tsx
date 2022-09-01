@@ -95,7 +95,7 @@ export default function HostControl(settings: GameSettings) {
     // Update state information -- tile procs and resources
     update(updates);
 
-  }, [update, settings.yieldFrequency]);
+  }, [update, settings.yieldFrequency, settings.pointsToWin]);
 
   // Mount ticking timer to perform server actions
   useEffect(() => {
