@@ -9,6 +9,7 @@ import HostControl from "./HostControl";
 import HUD from "./hud";
 import { resourceTypes } from './three/Tiles/Resource';
 import { Bloom, DepthOfField, EffectComposer } from "@react-three/postprocessing";
+import Test from "./three/Units/Test";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -145,6 +146,9 @@ export default function Room({
             <GameContext.Provider value={{ data, set, update, paused }}>
               <ambientLight intensity={0.3} />
               <pointLight position={[10,10,10]} />
+
+              <Test scale={20} color={null} />
+
               { /*
               <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
               */ }
