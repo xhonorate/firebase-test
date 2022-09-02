@@ -19,34 +19,30 @@ type GLTFResult = GLTF & {
   }
 }
 
-export default function PrototypePete(props: JSX.IntrinsicElements['skinnedMesh']) {
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/PrototypePete.gltf') as unknown as GLTFResult
-  console.log("!@#!@#@!")
-  console.log(nodes);
+export default function Model(props: JSX.IntrinsicElements['group']) {
+  const group = useRef<THREE.Group>()
+  const { nodes, materials } = useGLTF('/PrototypePete.gltf') as GLTFResult
   return (
-    <skinnedMesh {...props}>
-      <mesh name={'Body'} geometry={nodes.PrototypePete_body.geometry} material={nodes.PrototypePete_body.material}>
+    <group ref={group} {...props} dispose={null}>
+      <mesh geometry={nodes.PrototypePete_body.geometry} material={nodes.PrototypePete_body.material}>
         <mesh
-          name={'armLeft'}
           geometry={nodes.PrototypePete_armLeft.geometry}
           material={nodes.PrototypePete_armLeft.material}
           position={[0.2, 0.63, 0]}
         />
         <mesh
-          name={'armRight'}
           geometry={nodes.PrototypePete_armRight.geometry}
           material={nodes.PrototypePete_armRight.material}
           position={[-0.2, 0.63, 0]}
         />
         <mesh
-          name={'Head'}
           geometry={nodes.PrototypePete_head.geometry}
           material={nodes.PrototypePete_head.material}
           position={[0, 0.7, 0]}
         />
       </mesh>
-    </skinnedMesh>
+    </group>
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/PrototypePete.gltf')
+useGLTF.preload('/PrototypePete.gltf')

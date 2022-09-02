@@ -1,4 +1,16 @@
 # use only on GTLF files INSIDE OF public folder
+if ["$1" == ""]; then {
+  echo "MISSING INPUT FOLDER LOCATION PARAM!"
+  exit;
+}
+fi
+
+if ["$2" == ""]; then {
+  echo "MISSING OUTPUT FOLDER NAME PARAM!"
+  exit;
+}
+fi
+
 echo "Importing from: $1"; # pass folder as param
 echo "Exporting to: $2"; # output folder name
 

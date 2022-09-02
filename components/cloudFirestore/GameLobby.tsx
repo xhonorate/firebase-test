@@ -41,13 +41,17 @@ const GameLobby = ({ userData }) => {
       // If the user leaving was the only user in the lobby, delete it
       deleteDocument();
     } else {
-      updateGame({
-        participants: firebase.firestore.FieldValue.arrayRemove({
-          id: userData.id,
-          name: userData.username ?? null,
-          connected: true,
-        }),
-      });
+      try { 
+        updateGame({
+          participants: firebase.firestore.FieldValue.arrayRemove({
+            id: userData.id,
+            name: userData.username ?? null,
+            connected: true,
+          }),
+        });
+      } catch (e) {
+        console.warn(e);
+      }
     }
     update("user_data/" + userData?.id, { active_game: null });
 
@@ -56,7 +60,11 @@ const GameLobby = ({ userData }) => {
 
   // Create a game lobby in RTDB and set status to started
   const startGame = useCallback(() => {
-    updateGame({ started: true });
+    try {
+      updateGame({ started: true });
+    } catch (e) {
+      console.warn(e);
+    }
   }, [updateGame]);
 
   return (

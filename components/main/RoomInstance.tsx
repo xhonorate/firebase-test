@@ -99,11 +99,15 @@ export default function Room({
         <>
           <Button
             onClick={() => {
-              updateGame({
-                started: false,
-              });
-              unsubscribe();
-              deleteReference(); //Delete game lobby -- force regeneration on next instance
+              try {
+                updateGame({
+                  started: false,
+                });
+                unsubscribe();
+                deleteReference(); //Delete game lobby -- force regeneration on next instance
+              } catch (e) {
+                console.warn(e);
+              }
             }}
           >
             Back to Lobby
@@ -147,7 +151,7 @@ export default function Room({
               <ambientLight intensity={0.3} />
               <pointLight position={[10,10,10]} />
 
-              { /* <Test scale={20} color={null} /> */ }
+              <Test scale={20} color={null} />
 
               { /*
               <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
