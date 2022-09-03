@@ -109,7 +109,7 @@ const GameLobby = ({ userData }) => {
           <Button
             colorScheme={"green"}
             isDisabled={
-              playerIndex !== 0 || data.participants.length !== data.settings.numPlayers
+              playerIndex !== 0 || (!!data.settings.numPlayers && data.participants.length !== data.settings.numPlayers)
             }
             onClick={startGame}
           >
