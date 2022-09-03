@@ -9,6 +9,7 @@ import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { GroupProps } from '@react-three/fiber'
 import CharacterMage from './character_mage'
 import PrototypePete from '../test/PrototypePete';
+import { randomChoice } from '../../../Board'
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -63,9 +64,7 @@ interface AnimatedProps extends GroupProps {
 export default function AnimatedCharacter({anim, ...props}: AnimatedProps) {
   const group = useRef<THREE.Group>()
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/PrototypePete.gltf') as any
-console.log(nodes);
   const { nodes: peteNodes, materials: peteMaterials, animations } = useGLTF('/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb') as unknown as GLTFResult
-console.log(peteNodes);
   const { actions } = useAnimations<GLTFAction>(animations, group)
   
   useEffect(() => {
@@ -76,8 +75,12 @@ console.log(peteNodes);
   }, [anim, actions])
 
   return (
-    <group ref={group} {...props} dispose={null}>
-      <primitive scale={50} object={nodes.Scene} skeleton={peteNodes.PrototypePete.skeleton} />
+    <group ref={group} {...props} dispose={null} onClick={() => {
+      const newAction = randomChoice(Object.keys(actions));
+      console.log(newAction);
+      actions[newAction].play()
+    }}>
+      <primitive scale={10} object={nodes.Scene} skeleton={peteNodes.PrototypePete.skeleton} />
     </group>
   )
 }

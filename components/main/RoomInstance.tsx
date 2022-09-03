@@ -151,7 +151,7 @@ export default function Room({
               <ambientLight intensity={0.3} />
               <pointLight position={[10,10,10]} />
 
-              <Test scale={20} color={null} />
+              {/* <Test scale={20} color={null} /> */}
 
               { /*
               <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
