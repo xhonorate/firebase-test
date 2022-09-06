@@ -64,7 +64,8 @@ export default function AnimatedCharacter({anim, ...props}: AnimatedProps) {
   const group = useRef<THREE.Group>()
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/PrototypePete.gltf') as any
 console.log(nodes);
-  const { nodes: peteNodes, materials: peteMaterials, animations } = useGLTF('/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb') as unknown as GLTFResult
+console.log(materials);
+  const { nodes: peteNodes, materials: peteMaterials, animations } = useGLTF('/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb') as any
 console.log(peteNodes);
   const { actions } = useAnimations<GLTFAction>(animations, group)
   
@@ -77,7 +78,12 @@ console.log(peteNodes);
 
   return (
     <group ref={group} {...props} dispose={null}>
-      <primitive scale={50} object={nodes.Scene} skeleton={peteNodes.PrototypePete.skeleton} />
+      <primitive object={peteNodes.Body}>
+        <primitive object={peteNodes.Head} />
+        <primitive object={peteNodes.armLeft} />
+        <primitive object={peteNodes.armRight} />
+      </primitive>
+      <skinnedMesh geometry={nodes.Scene.children[0].geometry} material={materials.PrototypePete} skeleton={peteNodes.PrototypePete.skeleton} />
     </group>
   )
 }

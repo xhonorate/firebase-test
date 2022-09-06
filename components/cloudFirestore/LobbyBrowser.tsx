@@ -222,7 +222,7 @@ const LobbyBrowser = ({userData}) => {
     ],
     [joinLobby],
   )
-    console.log(passwordPrompt)
+  
   return (
     <>
       {!!data && <ReactTable columns={columns} data={data} />}

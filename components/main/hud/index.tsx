@@ -74,7 +74,7 @@ export default function HUD({
 
   if (paused) {
     return (
-      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={9999}>
+      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
         <Flex h={'full'} alignItems={'center'}>
           <Text fontSize={"4xl"}>
             {"Paused"}
@@ -86,7 +86,7 @@ export default function HUD({
 
   if (!!data.winner) {
     return (
-      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={9999}>
+      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
         <Stack
           direction={"column"}
           align={"center"}

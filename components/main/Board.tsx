@@ -336,11 +336,11 @@ function chooseSpawns(
 
     // Remove all duplicate yield types
     let idxsWithYields = adjIdxs.filter((idx) =>
-      possibleYields.includes(tiles[idx].type)
+      possibleYields.includes(tiles[idx]?.type)
     );
     const existingYields = [];
     idxsWithYields.forEach((idx) => {
-      if (existingYields.includes(tiles[idx].type)) {
+      if (existingYields.includes(tiles[idx]?.type)) {
         // If there is already another tile with this same yield type, reset it
         tiles[idx].odds = 1;
         tiles[idx].type = goldIndex; // Reset to base yield type
@@ -479,8 +479,11 @@ export function generateBoard({
 
     // Odds
     odds: [
+      { // NO Yield!
+        base: 0
+      },
       {
-        // 1 (each array index will be increased by 1)
+        // 1
         base: 30,
       },
       {
@@ -499,25 +502,25 @@ export function generateBoard({
     height: [
       {
         // 1 - FLAT
-        base: [100, 65, 20, 85, 50],
+        base: [100, 50, 20, 85, 50],
       },
       {
         // 2 - SHORT
-        base: [0, 30, 35, 15, 25],
+        base: [0, 30, 25, 15, 25],
         sameAdjacencyInfluance: (n) => 30 * n,
       },
       {
         // 3
-        base: [0, 5, 30, 0, 10],
+        base: [0, 15, 30, 0, 10],
         sameAdjacencyInfluance: (n) => 20 * n,
       },
       {
         // 4
-        base: [0, 0, 10, 0, 10],
+        base: [0, 5, 15, 0, 10],
       },
       {
         // 5 - TALL
-        base: [0, 0, 5, 0, 5],
+        base: [0, 0, 10, 0, 5],
         sameAdjacencyInfluance: (n) => -20 * n,
       },
     ],
@@ -656,11 +659,11 @@ export function generateBoard({
     const odds =
       type === findResourceIndexByName("Gold")
         ? 1
-        : makeChoice("odds", adjacentIndexes, hex, biome) + 1;
+        : makeChoice("odds", adjacentIndexes, hex, biome);
 
     //TODO: relative heights based on neighbors / biome
     const height =
-      type === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
+      biome === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
 
     // add to totals...
     return {
@@ -692,12 +695,8 @@ export function generateBoard({
   }
 
   //TODO: Run second pass for river generation?, height generation, and balance?
-
-  // Select spawn location for players
-  chooseSpawns(tiles, numPlayers, spawnStrength);
-
   // Assign transition types to tiles (e.g. half water half sand, etc.)
-  tiles.forEach((tile, idx) => {
+  tiles.forEach((tile: TileData, idx: number) => {
     const transition = getTransition(
       tile.biome,
       adjacentIndexes(idx).map((adjIdx) => tiles?.[adjIdx]?.biome)
@@ -705,7 +704,19 @@ export function generateBoard({
     if (transition) {
       tile.transition = transition;
     }
+
+    // Smoothe out heights
+    if (tile.biome !== 0) {
+      let val = tile.height * 6; // 1/2 weight for tiles own height, 1/2 weight for adjacent average
+      adjacentIndexes(idx).forEach((adjIdx) => {
+        val += (tiles?.[adjIdx]?.height ?? 0); // weight for adjacent tiles height (default 0)
+      });
+      tile.height = Math.round(val / 12);
+    }
   });
+
+  // Select spawn location for players
+  chooseSpawns(tiles, numPlayers, spawnStrength);
 
   return {
     tiles,

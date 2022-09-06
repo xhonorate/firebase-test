@@ -225,7 +225,7 @@ export default function Tile({
     const pos = cubeToPos(
       cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
     );
-    pos.splice(1, 1, height * 0.5);
+    pos.splice(1, 1, height * 0.1);
     return pos;
   }, [hex, height]);
 
@@ -313,7 +313,7 @@ export default function Tile({
         />
         
         { /* dirt underneath tile */ }
-        { height > 1 && <HexEmptyDetail scale-y={height} position-y={-height*0.5}/> }
+        { height > 5 && <HexEmptyDetail scale-y={height * 0.2} position-y={-height*0.1}/> }
 
         <TileGraphic
           rotation-y={

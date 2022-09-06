@@ -101,7 +101,11 @@ export const SettingsForm = ({
       // Set timeout for update to debounce rate
       changeTimeout.current = setTimeout(() => {
         console.log("Settings Updated");
-        onChange(newSettings);
+        try {
+          onChange(newSettings);
+        } catch (e) {
+          console.warn("Error in GameSettings: ", e);
+        }
         changeTimeout.current = null;
       }, debounce);
     }
