@@ -41,11 +41,11 @@ type GLTFResult = GLTF & {
   }
 }
 
-export default function CharacterMage(props: JSX.IntrinsicElements['skinnedMesh']) {
-  const ref = useRef<THREE.SkinnedMesh>()
+export default function CharacterMage(props: JSX.IntrinsicElements['group']) {
+  const ref = useRef<THREE.Group>()
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/character_mage.gltf') as unknown as GLTFResult
   return (
-    <skinnedMesh ref={ref} {...props} dispose={null}>
+    <group ref={ref} {...props} dispose={null}>
       <group position={[0, 1.49, -0.02]}>
         <mesh geometry={nodes.Cube021.geometry} material={nodes.Cube021.material} />
         <mesh geometry={nodes.Cube021_1.geometry} material={nodes.Cube021_1.material} />
@@ -75,7 +75,7 @@ export default function CharacterMage(props: JSX.IntrinsicElements['skinnedMesh'
         <mesh geometry={nodes.Cube017.geometry} material={nodes.Cube017.material} />
         <mesh geometry={nodes.Cube017_1.geometry} material={materials.Red} />
       </group>
-    </skinnedMesh>
+    </group>
   )
 }
 

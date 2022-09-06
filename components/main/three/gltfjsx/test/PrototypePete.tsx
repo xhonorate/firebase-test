@@ -19,33 +19,42 @@ type GLTFResult = GLTF & {
   }
 }
 
-export default function PrototypePete(props: JSX.IntrinsicElements['skinnedMesh']) {
+export default function PrototypePete({bones}: any) {
   const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/PrototypePete.gltf') as unknown as GLTFResult
-  console.log("!@#!@#@!")
-  console.log(nodes);
+  console.log(bones);
   return (
-    <skinnedMesh {...props}>
-      <mesh name={'Body'} geometry={nodes.PrototypePete_body.geometry} material={nodes.PrototypePete_body.material}>
-        <mesh
-          name={'armLeft'}
-          geometry={nodes.PrototypePete_armLeft.geometry}
-          material={nodes.PrototypePete_armLeft.material}
-          position={[0.2, 0.63, 0]}
-        />
-        <mesh
-          name={'armRight'}
-          geometry={nodes.PrototypePete_armRight.geometry}
-          material={nodes.PrototypePete_armRight.material}
-          position={[-0.2, 0.63, 0]}
-        />
-        <mesh
-          name={'Head'}
-          geometry={nodes.PrototypePete_head.geometry}
-          material={nodes.PrototypePete_head.material}
-          position={[0, 0.7, 0]}
-        />
-      </mesh>
-    </skinnedMesh>
+    <group>
+      <primitive object={bones.Body}>
+        <mesh name={'Body'} geometry={nodes.PrototypePete_body.geometry} material={nodes.PrototypePete_body.material} />
+        
+        <primitive object={bones.armLeft}>
+          <mesh
+            name={'armLeft'}
+            geometry={nodes.PrototypePete_armLeft.geometry}
+            material={nodes.PrototypePete_armLeft.material}
+            position={[0.2, 0.63, 0]}
+          />
+        </primitive>
+
+        <primitive object={bones.armRight}>
+          <mesh
+            name={'armRight'}
+            geometry={nodes.PrototypePete_armRight.geometry}
+            material={nodes.PrototypePete_armRight.material}
+            position={[-0.2, 0.63, 0]}
+          />
+        </primitive>
+
+        <primitive object={bones.Head}>
+          <mesh
+            name={'Head'}
+            geometry={nodes.PrototypePete_head.geometry}
+            material={nodes.PrototypePete_head.material}
+            position={[0, 0.7, 0]}
+          />
+        </primitive>
+      </primitive>
+    </group>
   )
 }
 
