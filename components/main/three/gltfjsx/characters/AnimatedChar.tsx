@@ -83,6 +83,7 @@ console.log(peteNodes);
         <primitive object={peteNodes.armLeft} />
         <primitive object={peteNodes.armRight} />
       </primitive>
+      
       <skinnedMesh geometry={nodes.Scene.children[0].geometry} material={materials.PrototypePete} skeleton={peteNodes.PrototypePete.skeleton} />
     </group>
   )

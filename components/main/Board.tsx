@@ -263,10 +263,10 @@ function chooseSpawns(
   const validIndexes = tiles
     .map((tile, idx) => {
       // FIRST MAP, then FILTER to keep original idx
-      if (tile.type === 0) return null; // Not a water tile
+      if (tile.biome === 0) return null; // Not a water tile
       let adjWaterTiles = 0;
       adjacentIndexes(idx).forEach((adjIdx) => {
-        if (tiles?.[adjIdx]?.type === 0) {
+        if (tiles?.[adjIdx]?.biome === 0) {
           adjWaterTiles += 1;
         }
       });

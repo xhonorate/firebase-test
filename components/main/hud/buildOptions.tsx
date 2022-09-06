@@ -106,6 +106,17 @@ const adjacentToSettlement = (
   );
 };
 
+const notAdjacentToSettlement = (
+  tile: TileData,
+  playerIndex: number,
+  tiles: TileData[]
+) => {
+  const tileIndex = hexToIndex(tile.hex);
+  return !adjacentIndexes(tileIndex).some((adjIdx) =>
+    hasObject("Settlement")(tiles?.[adjIdx])
+  );
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 export type Action = (
@@ -154,7 +165,7 @@ export const buildOptions: BuildOption[] = [
       };
     },
     req: [notOwned, hasNoObject, hasRoadToSettlement],
-    allAdjReq: [notOwned], // Adjacent tiles not claimed territory
+    allAdjReq: [notAdjacentToSettlement], // Adjacent tiles not claimed territory
     action: (target, playerIndex, tiles) => {
       const updates = {};
 
