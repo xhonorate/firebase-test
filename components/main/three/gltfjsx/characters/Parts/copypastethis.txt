@@ -1,0 +1,19 @@
+export default function ___Parts({ nodes, materials }: GLTFResult) {
+  return {
+    body: <>
+
+    </>,
+
+    head: <>
+
+    </>,
+
+    armLeft: <>
+
+    </>,
+
+    armRight: <>
+
+    </>    
+  }
+}
