@@ -1,4 +1,4 @@
-import { Flex, Text, ChakraProps, Box, chakra, Stack } from "@chakra-ui/react";
+import { Flex, Text, ChakraProps, Box, chakra, Stack, Button } from '@chakra-ui/react';
 import {
   useContext,
   useRef,
@@ -10,8 +10,8 @@ import { Action } from "./buildOptions";
 import TileControls from "./TileControls";
 import ResourceDisplay from "./ResourceDisplay";
 import TileInfo from "./TileInfo";
-import { Participant } from "../../cloudFirestore/LobbyBrowser";
 import { playerColors } from "../three/Tiles/Tile";
+import { Participant } from '../../cloudFirestore/GameLobby';
 
 const HUDContainer = ({ children, ...props }) => (
   <Flex
@@ -38,11 +38,11 @@ export interface HUDProps extends ChakraProps {
 export default function HUD({
   participants,
   playerIndex,
-  target = null,
+  target = null, //TODO: Allow target tile or target unit
   ...props
 }: HUDProps) {
   const hasPendingActions = useRef(false);
-  const { data, update, paused } = useContext(GameContext);
+  const { data, update } = useContext(GameContext);
 
   const resources = useMemo(
     () => data?.players?.[playerIndex]?.resources,
@@ -72,7 +72,7 @@ export default function HUD({
 
   if (!data || playerIndex === -1) return null; // If loading or player not found in game lobby (playerIndex = -1)
 
-  if (paused) {
+  if (data?.paused) {
     return (
       <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
         <Flex h={'full'} alignItems={'center'}>

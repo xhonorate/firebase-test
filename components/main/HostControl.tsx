@@ -5,13 +5,20 @@ import { GameSettings } from "../cloudFirestore/GameSettings";
 import findClosestSettlement from './helpers/findClosestSettlement';
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
-function procTiles(state: GameState, frequency: number): object {
+function procTiles(state: GameState, frequency: number): object { 
   const updates = {turn: state.turn + 1};
   // TODO: something with this number
   const multiplier = 20 - frequency;
 
   // Update tiles with number of times proc'd and assign resources to owners
   state.board.tiles.forEach((tile, idx) => {
+    if (tile?.obj?.t2c) { // If tile is under construction
+      let newT2C = tile.obj.t2c - 1;
+      if (newT2C === 0) newT2C = null; // If construction is complete
+      updates["board/tiles/" + idx + "/obj/t2c"] = newT2C; // Reemove t2c counter
+      updates["board/tiles/" + idx + "/obj/level"] = (tile.obj?.level ?? 0) + 1; // Increase level by 1 (enable)
+    }
+
     // Note: "owner" in tile -- requirement means that tiles will not show procs at all unless owned by a player
     if ("owner" in tile && tile.type !== 0 && tile.odds > Math.random() * multiplier) {
       updates["board/tiles/" + idx + "/procs"] = (tile.procs ?? 0) + 1;
@@ -74,7 +81,7 @@ function calcPoints(state: GameState, pointsToWin: number): object {
 }
 
 export default function HostControl(settings: GameSettings) {
-  const { data, set, update, paused } = useContext(GameContext);
+  const { data, update } = useContext(GameContext);
 
   // Store data in ref rather than state so we do not need to remount tick loop on data change
   const dataRef = useRef(data);
@@ -84,6 +91,7 @@ export default function HostControl(settings: GameSettings) {
 
   const hostTick = useCallback(() => {
     const state = dataRef.current;
+    if (!state) return;
 
     const updates = {
       // Proc Tiles
@@ -100,7 +108,7 @@ export default function HostControl(settings: GameSettings) {
   // Mount ticking timer to perform server actions
   useEffect(() => {
     // If paused, do not mount ticker
-    if (paused) {
+    if (data?.paused) {
       console.log("Game Paused");
       return;
     }
@@ -116,7 +124,7 @@ export default function HostControl(settings: GameSettings) {
       console.log("Host unmounted");
       clearInterval(interval);
     };
-  }, [paused, hostTick, settings.tickRate]);
+  }, [data?.paused, hostTick, settings.tickRate]);
 
   return <></>;
 }

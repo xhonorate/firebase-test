@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useEffect } from "react";
 import Tile, { TileData, HexCoords } from "./three/Tiles/Tile";
 import { biomeTypes } from "./three/Tiles/Tile";
 import { resourceTypes, findResourceIndexByName } from "./three/Tiles/Resource";
@@ -479,8 +479,9 @@ export function generateBoard({
 
     // Odds
     odds: [
-      { // NO Yield!
-        base: 0
+      {
+        // NO Yield!
+        base: 0,
       },
       {
         // 1
@@ -697,19 +698,17 @@ export function generateBoard({
   //TODO: Run second pass for river generation?, height generation, and balance?
   // Assign transition types to tiles (e.g. half water half sand, etc.)
   tiles.forEach((tile: TileData, idx: number) => {
-    const transition = getTransition(
+    // Tile transitions (between biome types)
+    tile.transition = getTransition(
       tile.biome,
       adjacentIndexes(idx).map((adjIdx) => tiles?.[adjIdx]?.biome)
     );
-    if (transition) {
-      tile.transition = transition;
-    }
 
     // Smoothe out heights
     if (tile.biome !== 0) {
       let val = tile.height * 6; // 1/2 weight for tiles own height, 1/2 weight for adjacent average
       adjacentIndexes(idx).forEach((adjIdx) => {
-        val += (tiles?.[adjIdx]?.height ?? 0); // weight for adjacent tiles height (default 0)
+        val += tiles?.[adjIdx]?.height ?? 0; // weight for adjacent tiles height (default 0)
       });
       tile.height = Math.round(val / 12);
     }

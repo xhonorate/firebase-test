@@ -1,6 +1,8 @@
 import { TileData } from "../three/Tiles/Tile";
 import { hexToIndex, cubeRing, adjacentIndexes } from "../Board";
 import { findResourceIndexByName } from "../three/Tiles/Resource";
+import { generateUUID } from "three/src/math/MathUtils";
+import { createUnit } from "../Units";
 
 //////////////////////// Requirement functions: ////////////////////////
 const notOwned = (tile: TileData) => !("owner" in tile);
@@ -267,7 +269,12 @@ export const buildOptions: BuildOption[] = [
         ).length,
       };
     },
-    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Gold")), hasBiome(3 /* sand */)],
+    req: [
+      ownedByMe,
+      hasNoObject,
+      hasType(findResourceIndexByName("Gold")),
+      hasBiome(3 /* sand */),
+    ],
     action: (target, playerIndex) => {
       return {
         ["/board/tiles/" + target + "/odds"]: 2, // Increase gold tick rate to 2 //TODO: remove this?
@@ -313,7 +320,12 @@ export const buildOptions: BuildOption[] = [
   {
     name: "Build Farm",
     cost: { Wood: 1, Ore: 1 },
-    req: [ownedByMe, hasNoObject, hasType(findResourceIndexByName("Food")), hasBiome(1 /* forest */)],
+    req: [
+      ownedByMe,
+      hasNoObject,
+      hasType(findResourceIndexByName("Food")),
+      hasBiome(1 /* forest */),
+    ],
     action: (target, playerIndex) => {
       return {
         ["/board/tiles/" + target + "/obj"]: {
@@ -321,6 +333,37 @@ export const buildOptions: BuildOption[] = [
           owner: playerIndex,
           level: 1,
         },
+      };
+    },
+  },
+
+  {
+    name: "Build Barracks",
+    cost: { Wood: 2, Ore: 4 },
+    req: [ownedByMe, hasNoObject],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Barracks",
+          owner: playerIndex,
+          // level: 1, // Level does not need to be set, will be 0 by default, set to 1 when t2c ends
+          t2c: 5, // Turns to construction
+        },
+      };
+    },
+  },
+
+  {
+    name: "Recruit Knight",
+    cost: { Ore: 2, Food: 3, Gold: 2 },
+    req: [ownedByMe, hasObject("Barracks"), objHasParams({ level: 1 })],
+    action: (target, playerIndex) => {
+      return {
+        ["/units/" + generateUUID()]: createUnit({
+          type: "Knight",
+          hex: target,
+          owner: playerIndex,
+        }),
       };
     },
   },

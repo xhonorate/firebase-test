@@ -9,20 +9,38 @@ import firebase from "firebase/app";
 import Room from "../main/RoomInstance";
 import { GameSettings, gameSettingOptions, SettingsForm } from './GameSettings';
 
-export interface GameData {
-  created: firebase.firestore.Timestamp;
+export interface Participant {
+  id: string,
+  name?: string,
+  connected: boolean,
+}
+
+export interface LobbyData {
+  created: Date;
   started: boolean;
   finished: boolean;
+  name?: string;
+  password?: string;
   settings: GameSettings;
   participants: { id: string; name: string; connected: boolean }[];
 }
+
+export interface LobbyContextProps {
+  data: LobbyData;
+  updateGame: (data: object) => any;
+}
+
+export const LobbyContext = React.createContext<LobbyContextProps>({
+  data: null,
+  updateGame: null
+});
 
 const GameLobby = ({ userData }) => {
   const {
     data,
     update: updateGame,
     deleteDocument,
-  } = useDocument<GameData>("games/" + userData?.active_game, { listen: true });
+  } = useDocument<LobbyData>("games/" + userData?.active_game, { listen: true });
   const [playerIndex, setPlayerIndex] = useState(-1); // Index of player in participants (0 is host, -1 means not found or loading)
 
   // Fetch player index
@@ -70,20 +88,22 @@ const GameLobby = ({ userData }) => {
   return (
     <VStack m={4} align={"start"}>
       {data?.started ? (
-        <Room
-          playerIndex={playerIndex}
-          id={data.id}
-          updateGame={updateGame}
-          participants={data.participants}
-          settings={ // Get all default game options for those not set, replace with populated options from database if set
-            {
-            ...gameSettingOptions.reduce( // Default for all game options
-              (obj, item) => ((obj[item.key] = item.default), obj),
-              {}
-            ),
-            ...data.settings, // Override with any set values
-          }}
-        />
+        <LobbyContext.Provider value={{data, updateGame}}>
+          <Room
+            playerIndex={playerIndex}
+            id={data.id}
+            updateGame={updateGame}
+            participants={data.participants}
+            settings={ // Get all default game options for those not set, replace with populated options from database if set
+              {
+              ...gameSettingOptions.reduce( // Default for all game options
+                (obj, item) => ((obj[item.key] = item.default), obj),
+                {}
+              ),
+              ...data.settings, // Override with any set values
+            }}
+          />
+        </LobbyContext.Provider>
       ) : (
         <>
           {data?.participants?.length &&

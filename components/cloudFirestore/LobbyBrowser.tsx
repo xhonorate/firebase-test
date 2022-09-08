@@ -6,28 +6,14 @@ import { useCollection, update } from "@nandorojo/swr-firestore"
 import React, { useMemo, useCallback, useState, ChangeEvent, useEffect } from "react";
 import ReactTable from "../ReactTable"
 import firebase from 'firebase/app'
-import { gameSettingOptions } from './GameSettings';
+import { gameSettingOptions, GameSettings } from './GameSettings';
+import { LobbyData } from './GameLobby';
 
 // browse existing games
 // buttons to host new game, join from list, or join from code (api endpoint meme)
 
 // lobby passwords
 // on host -> create game function, state change will handle from there
-
-export interface Participant {
-  id: string,
-  name?: string,
-  connected: boolean,
-}
-
-export interface GameData {
-  created: Date,
-  finished: boolean,
-  started: boolean,
-  name?: string,
-  password?: string,
-  participants: Participant[]
-}
 
 const CreateLobbyPopup = ({username, isOpen, onClose, onSubmit}) => {
   const [name, setName] = useState((username ?? 'Guest') + '\'s Room');
@@ -146,7 +132,7 @@ const LobbyBrowser = ({userData}) => {
 
   // TODO: fetch with pagination instead
   // use startafter / endbefore
-  const { data, add, unsubscribe } = useCollection<GameData>('games', {
+  const { data, add, unsubscribe } = useCollection<LobbyData>('games', {
     parseDates: ['created'],
     where: ['finished', '==', false],
     limit: 100,
@@ -171,7 +157,7 @@ const LobbyBrowser = ({userData}) => {
         created: new Date(),
         finished: false,
         started: false,
-        settings: gameSettingOptions.map((option) => option.default),
+        settings: gameSettingOptions.reduce((prev, option) => { return { ...prev, [option.key]: option.default }}, {}) as GameSettings,
         name: name,
         password: !!password ? password : null,
         participants: []

@@ -1,7 +1,7 @@
-import { Obj } from './Tile';
 import { adjacentIndexes } from '../../Board';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GameContext } from '../../RoomInstance';
+import { Obj } from '../Objects/Building';
 
 const roadTypes = [
   [0], //A

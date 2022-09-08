@@ -21,7 +21,7 @@ export const gameSettingOptions: {
   step?: number;
   valueLabels?: string[]; // Pass array of strings to display based on value (will clamp to closest, last is at max)
 }[] = [
-  { key: "numPlayers", label: "Number of Players", default: 2, min: 1, max: 8 },
+  { key: "numPlayers", label: "Number of Players", default: 1, min: 1, max: 8 },
   {
     key: "boardSize",
     label: "Board Size",

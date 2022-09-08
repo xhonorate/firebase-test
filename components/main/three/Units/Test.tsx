@@ -1,9 +1,7 @@
-import * as THREE from 'three'
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import { GroupProps } from '@react-three/fiber'
-import AnimatedCharacter, { ActionName } from '../gltfjsx/characters/AnimatedChar';
+import { ActionName } from '../gltfjsx/characters/AnimatedChar';
 import AnimatedPrototype from '../gltfjsx/characters/AnimatedPrototype';
-import useParts from '../gltfjsx/characters/Parts/useParts';
 import { CharacterType } from '../gltfjsx/characters/Parts/useParts';
 
 interface TestProps extends GroupProps {

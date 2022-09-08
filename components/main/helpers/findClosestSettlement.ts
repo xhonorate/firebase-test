@@ -1,5 +1,6 @@
-import { TileData, Obj } from '../three/Tiles/Tile';
+import { TileData } from '../three/Tiles/Tile';
 import { hexToIndex, adjacentIndexes, cubeRing } from '../Board';
+import { Obj } from '../three/Objects/Building';
 
 // Return closest settlement to tile, or array of settlements if there is a tie
 // If owner param is passed, will ignore settlements that dont have that owner

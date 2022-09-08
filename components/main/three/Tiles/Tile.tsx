@@ -59,6 +59,7 @@ import HexForest from '../gltfjsx/tiles/hex_forest';
 import HexRock from '../gltfjsx/tiles/hex_rock';
 import HexSand from '../gltfjsx/tiles/hex_sand';
 import HexEmptyDetail from '../gltfjsx/tiles/hex_empty_detail';
+import { Obj } from '../Objects/Building';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -177,11 +178,6 @@ export interface HexCoords {
   s: number;
 }
 
-export interface Obj {
-  type: string;
-  owner?: number;
-  level?: number;
-}
 
 export interface TileData {
   index?: number;
@@ -245,7 +241,7 @@ export default function Tile({
         : roadType !== null
         ? biomeTypes[biome].tile.road[roadType]
         : biomeTypes[biome].tile.default,
-    [biome, roadType]
+    [biome, roadType, transition]
   );
 
   //When procs increases, this has been rolled, play animation
