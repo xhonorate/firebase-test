@@ -29,3 +29,7 @@ Look at sampleA picture
 
 More goodies on the map, significantly increase cost of building / upgrading cities
 Passive territory gain?
+
+
+https://github.com/pmndrs/gltfjsx
+Suspense fallback for GLTF models might help some loading issues?

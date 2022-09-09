@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
 import { useEffect } from "react";
 import { Button, Box, useEventListener } from "@chakra-ui/react";
-import { Board, BoardProps, generateBoard } from "./Board";
+import { Board, generateBoard, BoardState } from "./Board";
 import { MapControls, Stars, RandomizedLight } from "@react-three/drei";
 import HostControl from "./HostControl";
 import HUD from "./hud";
@@ -14,6 +14,7 @@ import {
   EffectComposer,
 } from "@react-three/postprocessing";
 import { Participant } from "../cloudFirestore/GameLobby";
+import { UnitData, Units } from "./Units";
 
 export interface ResourceStates {
   wood: number;
@@ -29,7 +30,8 @@ export interface PlayerState {
 }
 
 export interface GameState {
-  board: BoardProps;
+  board: BoardState;
+  units?: UnitData[];
   players: PlayerState[];
   turn: number;
   paused?: boolean;
@@ -41,6 +43,8 @@ export interface GameContextProps {
   set: (data: object) => any;
   update: (data: object) => any;
 }
+
+export type Target = { type: string; val: any };
 
 export const GameContext = React.createContext<GameContextProps>({
   data: null,
@@ -61,7 +65,7 @@ export default function Room({
   const { data, set, update, loading, unsubscribe, deleteReference } =
     useRealtime<GameState>(`rooms/${id}`);
 
-  const [target, setTarget] = useState(null);
+  const [target, setTarget] = useState<Target>(null);
 
   // Deselect Tile on Escape key press
   // TODO: add pause menu
@@ -115,7 +119,7 @@ export default function Room({
 
   return (
     <GameContext.Provider value={{ data, set, update }}>
-      {playerIndex === 0 && ( 
+      {playerIndex === 0 && (
         // Host only //
         <>
           <Button onClick={returnToLobby}>Back to Lobby</Button>
@@ -162,9 +166,13 @@ export default function Room({
               {!!data?.board && (
                 <>
                   <Board {...data.board} onSelect={setTarget} />
-                  {/* <Territories {...data.board} numPlayers={settings.numPlayers} /> */}
+
+                  {!!data?.units && (
+                    <Units {...data.board} units={data.units} onSelect={setTarget} />
+                  )}
                 </>
               )}
+
               {/* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
                 return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
               }) */}

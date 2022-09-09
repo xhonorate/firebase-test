@@ -14,9 +14,11 @@ function procTiles(state: GameState, frequency: number): object {
   state.board.tiles.forEach((tile, idx) => {
     if (tile?.obj?.t2c) { // If tile is under construction
       let newT2C = tile.obj.t2c - 1;
-      if (newT2C === 0) newT2C = null; // If construction is complete
-      updates["board/tiles/" + idx + "/obj/t2c"] = newT2C; // Reemove t2c counter
-      updates["board/tiles/" + idx + "/obj/level"] = (tile.obj?.level ?? 0) + 1; // Increase level by 1 (enable)
+      if (newT2C === 0) {
+        newT2C = null; // If construction is complete, remove t2c counter (set to null)
+        updates["board/tiles/" + idx + "/obj/level"] = (tile.obj?.level ?? 0) + 1; // Increase level by 1 (enable)
+      }
+      updates["board/tiles/" + idx + "/obj/t2c"] = newT2C; 
     }
 
     // Note: "owner" in tile -- requirement means that tiles will not show procs at all unless owned by a player

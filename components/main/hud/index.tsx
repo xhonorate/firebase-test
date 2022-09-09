@@ -1,17 +1,21 @@
-import { Flex, Text, ChakraProps, Box, chakra, Stack, Button } from '@chakra-ui/react';
 import {
-  useContext,
-  useRef,
-  useMemo,
-  useCallback
-} from "react";
-import { GameContext } from "../RoomInstance";
-import { Action } from "./buildOptions";
-import TileControls from "./TileControls";
+  Flex,
+  Text,
+  ChakraProps,
+  Box,
+  chakra,
+  Stack,
+  Button,
+} from "@chakra-ui/react";
+import { useContext, useRef, useMemo, useCallback } from "react";
+import { GameContext, Target } from '../RoomInstance';
+import { Action } from "./Tiles/buildOptions";
+import TileControls from "./Tiles/TileControls";
 import ResourceDisplay from "./ResourceDisplay";
-import TileInfo from "./TileInfo";
+import TileInfo from "./Tiles/TileInfo";
 import { playerColors } from "../three/Tiles/Tile";
-import { Participant } from '../../cloudFirestore/GameLobby';
+import { Participant } from "../../cloudFirestore/GameLobby";
+import UnitInfo from "./Units/UnitInfo";
 
 const HUDContainer = ({ children, ...props }) => (
   <Flex
@@ -32,7 +36,7 @@ const HUDContainer = ({ children, ...props }) => (
 export interface HUDProps extends ChakraProps {
   participants: Participant[];
   playerIndex: number;
-  target?: number; // index of tile in tiles[]
+  target?: Target; // index of tile in tiles[]
 }
 
 export default function HUD({
@@ -49,14 +53,15 @@ export default function HUD({
     [data?.players, playerIndex]
   );
 
-  const updateTile = useCallback((action: Action, cost: object) => {
+  const updateTile = useCallback(
+    (action: Action, cost: object) => {
       // TODO: check pending actions on RTDB (from host tick, etc)
       // Do not allow users to double-submit an action by accident
       if (hasPendingActions.current) return;
       hasPendingActions.current = true;
 
       // Pass target as index, quicker for updates, access from tiles[target] if needed
-      const updates = action(target, playerIndex, data.board.tiles);
+      const updates = action(target.val, playerIndex, data.board.tiles);
 
       let updatedResources = {};
       Object.entries(resources).forEach(([key, value]) => {
@@ -75,13 +80,11 @@ export default function HUD({
   if (data?.paused) {
     return (
       <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
-        <Flex h={'full'} alignItems={'center'}>
-          <Text fontSize={"4xl"}>
-            {"Paused"}
-          </Text>
+        <Flex h={"full"} alignItems={"center"}>
+          <Text fontSize={"4xl"}>{"Paused"}</Text>
         </Flex>
       </HUDContainer>
-    )
+    );
   }
 
   if (!!data.winner) {
@@ -155,20 +158,33 @@ export default function HUD({
             })}
         </Box>
 
-        {target !== null && (
+        {/* If tile or unit is currently selected, display info and actions */}
+        {target !== null && ( 
           <HUDContainer>
-            <TileInfo
-              tile={data.board.tiles[target]}
-              participants={participants}
-              maxW={"50%"}
-            />
-            <TileControls
-              tiles={data.board.tiles}
-              playerIndex={playerIndex}
-              resources={resources}
-              tile={data.board.tiles[target]}
-              updateTile={updateTile}
-            />
+            {target.type === "tile" ? (
+              <>
+                <TileInfo
+                  tile={data.board.tiles[target.val]}
+                  participants={participants}
+                  maxW={"50%"}
+                />
+                <TileControls
+                  tiles={data.board.tiles}
+                  playerIndex={playerIndex}
+                  resources={resources}
+                  tile={data.board.tiles[target.val]}
+                  updateTile={updateTile}
+                />
+              </>
+            ) : (
+              <>
+                <UnitInfo 
+                  unit={target.val}
+                  participants={participants}
+                  maxW={"50%"}
+                />
+              </>
+            )}
           </HUDContainer>
         )}
       </Flex>

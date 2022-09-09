@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import { randomInt, cubeScale } from "../../Board";
 import { motion } from "framer-motion-3d";
 import { useAnimation } from "framer-motion";
 import useRoad from "./useRoad";
@@ -60,6 +59,8 @@ import HexRock from '../gltfjsx/tiles/hex_rock';
 import HexSand from '../gltfjsx/tiles/hex_sand';
 import HexEmptyDetail from '../gltfjsx/tiles/hex_empty_detail';
 import { Obj } from '../Objects/Building';
+import { cubeScale, cubeToPos, HexCoords } from "../../helpers/hexGrid";
+import { randomInt } from "../../helpers/random";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -172,12 +173,7 @@ export const playerColors = [
   "orange",
 ];
 
-export interface HexCoords {
-  q: number;
-  r: number;
-  s: number;
-}
-
+export const heightScale = 0.1;
 
 export interface TileData {
   index?: number;
@@ -191,14 +187,6 @@ export interface TileData {
   obj?: Obj; //any building or object on this tile
   procs?: number; //how many times this tile has been "rolled", use listener
   owner?: number; //index of player owning this tile
-}
-
-export function cubeToPos(hex: HexCoords): [number, number, number] {
-  return [
-    Math.sqrt(3) * hex.q + (Math.sqrt(3) / 2) * hex.r,
-    0,
-    (3 / 2) * hex.r,
-  ];
 }
 
 export default function Tile({
@@ -221,7 +209,7 @@ export default function Tile({
     const pos = cubeToPos(
       cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
     );
-    pos.splice(1, 1, height * 0.1);
+    pos.splice(1, 1, height * heightScale);
     return pos;
   }, [hex, height]);
 
@@ -266,12 +254,12 @@ export default function Tile({
   return (
     <>
       <group position={pos} dispose={null}>
-        {!!borders && <Borders borders={borders} color={playerColors[owner]} /> }
+        {!!borders && <Borders borders={borders} position={[0,0.55,0]} color={playerColors[owner]} /> }
 
         {type !== 0 && (
-          // Yield Proc Display //
-          <mesh position={[0, 1, 0]}>
-            <cylinderGeometry args={[1.0, 1.0, 0.16, 6]} />
+          // Yield Proc Display //TODO: switch to plane? or fx
+          <mesh position={[0, 0.52, 0]}>
+            <cylinderGeometry args={[1.0, 1.0, 0.01, 6]} />
             <motion.meshStandardMaterial
               initial={{ opacity: 0 }}
               animate={tileProc}
@@ -282,8 +270,9 @@ export default function Tile({
           </mesh>
         )}
 
-        <mesh position={[0, 0.425, 0]}>
-          <cylinderGeometry args={[1.16, 1.16, 1.16, 6]} />
+        { /* TODO: replace this hover effect */ }
+        <mesh position-y={0.51 - (height * heightScale / 2)}>
+          <cylinderGeometry args={[1.16, 1.16, height * heightScale + 0.02, 6]} />
           <motion.meshStandardMaterial
             animate={{ opacity: hovered ? 0.2 : 0 }}
             transition={{ duration: hovered ? 0.05 : 0.4, ease: "easeOut" }}
@@ -309,7 +298,7 @@ export default function Tile({
         />
         
         { /* dirt underneath tile */ }
-        { height > 5 && <HexEmptyDetail scale-y={height * 0.2} position-y={-height*0.1}/> }
+        { height > 5 && <HexEmptyDetail scale-y={height * heightScale * 2} position-y={-height*heightScale}/> }
 
         <TileGraphic
           rotation-y={

@@ -1,10 +1,10 @@
-import { TileData } from "../three/Tiles/Tile";
-import { hexToIndex, cubeRing, adjacentIndexes } from '../Board';
-import { ResourceStates } from "../RoomInstance";
+import { TileData } from "../../three/Tiles/Tile";
+import { ResourceStates } from "../../RoomInstance";
 import { Button, chakra, Flex, Text } from "@chakra-ui/react";
 import React from "react";
 import { buildOptions, Action } from "./buildOptions";
-import { findResourceTypeByName, resourceTypes } from '../three/Tiles/Resource';
+import { findResourceTypeByName, resourceTypes } from '../../three/Tiles/Resource';
+import { adjacentIndexes, hexToIndex } from "../../helpers/hexGrid";
 
 interface TileControlProps {
   tiles: TileData[];

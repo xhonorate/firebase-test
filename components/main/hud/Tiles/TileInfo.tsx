@@ -1,7 +1,7 @@
 import { Text, Stack, chakra, StackProps } from "@chakra-ui/react";
-import { TileData, playerColors } from "../three/Tiles/Tile";
-import { resourceTypes } from '../three/Tiles/Resource';
-import { Participant } from '../../cloudFirestore/GameLobby';
+import { TileData, playerColors } from "../../three/Tiles/Tile";
+import { resourceTypes } from '../../three/Tiles/Resource';
+import { Participant } from '../../../cloudFirestore/GameLobby';
 
 interface TileInfoProps extends StackProps {
   tile: TileData;
@@ -42,6 +42,12 @@ export default function TileInfo({
               {participants[tile.owner]?.name ?? "None"}
             </chakra.span>
           }
+        </Text>
+      )}
+
+      {tile?.obj?.t2c && (
+        <Text>
+          {"Complete in "}{tile.obj.t2c}{" Turns"}
         </Text>
       )}
       { /* Has been rolled text display

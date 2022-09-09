@@ -1,5 +1,5 @@
-import { adjacentIndexes } from '../../Board';
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { adjacentIndexes } from '../../helpers/hexGrid';
 import { GameContext } from '../../RoomInstance';
 import { Obj } from '../Objects/Building';
 

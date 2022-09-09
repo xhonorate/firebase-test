@@ -8,7 +8,7 @@ import { useGLTF, useAnimations } from '@react-three/drei'
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { GroupProps, useGraph } from '@react-three/fiber'
 import { SkeletonUtils } from 'three-stdlib';
-import { CharacterType, CharacterParts } from './Parts/useParts';
+import { CharacterType } from './Parts/useParts';
 import useParts from './Parts/useParts';
 
 type GLTFResult = GLTF & {

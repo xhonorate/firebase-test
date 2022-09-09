@@ -1,10 +1,15 @@
 import { Line } from "@react-three/drei";
-import { cubeToPos } from './Tile';
-import { cubeDirection } from '../../Board';
+import { GroupProps } from "@react-three/fiber";
+import { cubeDirection, cubeToPos } from "../../helpers/hexGrid";
 
-export default function Borders({borders, color}: {borders: boolean[], color: string}) {
+export interface BorderProps extends GroupProps {
+  borders: boolean[];
+  color: string;
+}
+
+export default function Borders({borders, color, ...props}: BorderProps) {
   return (
-    <group position={[0, 1.05, 0]}> 
+    <group {...props}> 
       { borders.map((hasBorder, idx) => {
         if (!hasBorder) return null;
         const edgePoint = cubeToPos(cubeDirection(idx));

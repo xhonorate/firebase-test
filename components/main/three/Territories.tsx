@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from "three";
-import { BoardProps, cubeDistance, cubeRing, cubeAdd, cubeScale, cubeDirection, cubeSubtract, cubeNeighbor } from '../Board';
-import { HexCoords, cubeToPos, playerColors } from './Tiles/Tile';
+import { BoardProps } from '../Board';
+import { HexCoords, cubeNeighbor, cubeDistance, cubeToPos } from '../helpers/hexGrid';
+import { playerColors } from './Tiles/Tile';
 
 export default function Territories ({ tiles, numPlayers }: BoardProps & { numPlayers: number }) {
   const [ownedHexes, setOwnedHexes] = useState<HexCoords[][]>(null);

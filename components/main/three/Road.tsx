@@ -2,15 +2,8 @@ import * as THREE from "three";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Edges, Extrude } from "@react-three/drei";
 import { GameContext } from "../RoomInstance";
-import { HexCoords, cubeToPos } from "./Tiles/Tile";
-import {
-  hexToIndex,
-  cubeRing,
-  cubeDirection,
-  cubeScale,
-  cubeAdd,
-} from "../Board";
 import { MeshProps } from "@react-three/fiber";
+import { HexCoords, cubeToPos, cubeScale, cubeDirection, cubeRing, hexToIndex } from "../helpers/hexGrid";
 
 interface RoadProps extends MeshProps {
   hex: HexCoords;

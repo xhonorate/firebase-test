@@ -1,8 +1,8 @@
-import { TileData } from "../three/Tiles/Tile";
-import { hexToIndex, cubeRing, adjacentIndexes } from "../Board";
-import { findResourceIndexByName } from "../three/Tiles/Resource";
+import { TileData } from "../../three/Tiles/Tile";
+import { findResourceIndexByName } from "../../three/Tiles/Resource";
 import { generateUUID } from "three/src/math/MathUtils";
-import { createUnit } from "../Units";
+import { createUnit } from "../../Units";
+import { hexToIndex, adjacentIndexes, cubeRing } from "../../helpers/hexGrid";
 
 //////////////////////// Requirement functions: ////////////////////////
 const notOwned = (tile: TileData) => !("owner" in tile);
@@ -358,12 +358,15 @@ export const buildOptions: BuildOption[] = [
     cost: { Ore: 2, Food: 3, Gold: 2 },
     req: [ownedByMe, hasObject("Barracks"), objHasParams({ level: 1 })],
     action: (target, playerIndex) => {
+      // Generate a new unit (comes with a uid)
+      const unit = createUnit({
+        type: "Knight",
+        hexIdx: target,
+        owner: playerIndex,
+      })
+
       return {
-        ["/units/" + generateUUID()]: createUnit({
-          type: "Knight",
-          hex: target,
-          owner: playerIndex,
-        }),
+        ["/units/" + unit.uid]: unit 
       };
     },
   },
