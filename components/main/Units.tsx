@@ -3,6 +3,7 @@ import Unit from "./three/Units/Unit";
 import { Target } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
 import { BoardProps } from './Board';
+import UnitControls from "./UnitControls";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -41,17 +42,22 @@ export function createUnit({
 
 export interface UnitsProps extends BoardProps {
   units: UnitData[];
+  target?: Target;
 }
 
-//TODO: maybe pass tiles here and handle heights and range display here??
-export function Units({ units, tiles, onSelect }: UnitsProps) {
+export function Units({ units, target, tiles, onSelect }: UnitsProps) {
   // Board graphics
   return (
     <>
+      { target.type === 'unit' && 
+        <UnitControls unit={target.val} />
+      }
+
       {Object.values(units).map((unit: UnitData) => (
         <Unit
           key={unit.uid}
-          tile={tiles[unit.hexIdx]}
+          // TODO: we do not need to be passing around all of the tile data, just locations and heights...
+          tile={tiles[unit.hexIdx]} 
           onClick={(e) => {
             e.stopPropagation();
             onSelect({ type: "unit", val: unit })}

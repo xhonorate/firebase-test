@@ -57,7 +57,11 @@ const GameLobby = ({ userData }) => {
   const leaveLobby = useCallback(() => {
     if (data["participants"]?.length <= 1) {
       // If the user leaving was the only user in the lobby, delete it
-      deleteDocument();
+      try { 
+        deleteDocument();
+      } catch (e) {
+        console.warn(e);
+      }
     } else {
       try { 
         updateGame({

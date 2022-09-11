@@ -42,6 +42,7 @@ export interface GameContextProps {
   data: GameState;
   set: (data: object) => any;
   update: (data: object) => any;
+  playerIndex: number;
 }
 
 export type Target = { type: string; val: any };
@@ -50,6 +51,7 @@ export const GameContext = React.createContext<GameContextProps>({
   data: null,
   set: null,
   update: null,
+  playerIndex: null,
 });
 
 export default function Room({
@@ -118,7 +120,7 @@ export default function Room({
   }, [data, intitializeGame, loading, playerIndex]);
 
   return (
-    <GameContext.Provider value={{ data, set, update }}>
+    <GameContext.Provider value={{ data, set, update, playerIndex }}>
       {playerIndex === 0 && (
         // Host only //
         <>
@@ -141,7 +143,6 @@ export default function Room({
           w={"650px"}
           h={"650px"}
           participants={participants}
-          playerIndex={playerIndex}
           target={target}
         />
         <Box w={"full"} h={"full"}>
@@ -162,13 +163,12 @@ export default function Room({
             {/*
             <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
             */}
-            <GameContext.Provider value={{ data, set, update }}>
               {!!data?.board && (
                 <>
                   <Board {...data.board} onSelect={setTarget} />
 
                   {!!data?.units && (
-                    <Units {...data.board} units={data.units} onSelect={setTarget} />
+                    <Units {...data.board} units={data.units} target={target} onSelect={setTarget} />
                   )}
                 </>
               )}
@@ -176,7 +176,6 @@ export default function Room({
               {/* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
                 return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
               }) */}
-            </GameContext.Provider>
             {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
             <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
             {/* TODO: Effects settings -- save to user account */}

@@ -35,18 +35,16 @@ const HUDContainer = ({ children, ...props }) => (
 
 export interface HUDProps extends ChakraProps {
   participants: Participant[];
-  playerIndex: number;
   target?: Target; // index of tile in tiles[]
 }
 
 export default function HUD({
   participants,
-  playerIndex,
   target = null, //TODO: Allow target tile or target unit
   ...props
 }: HUDProps) {
   const hasPendingActions = useRef(false);
-  const { data, update } = useContext(GameContext);
+  const { data, update, playerIndex } = useContext(GameContext);
 
   const resources = useMemo(
     () => data?.players?.[playerIndex]?.resources,
