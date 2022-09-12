@@ -68,7 +68,13 @@ export function cubeDistance(a: HexCoords, b: HexCoords) {
   return (Math.abs(vec.q) + Math.abs(vec.r) + Math.abs(vec.s)) / 2;
 }
 
+// Return whether array of hexCoords contains a given hex (since hexes are objects, array.includes(hex) would not work)
+export function includesHex(arr: HexCoords[], hex: HexCoords) {
+  return arr.some(arrHex => arrHex.q === hex.q && arrHex.r === hex.r && arrHex.s === hex.s)
+}
+
 // Return hex coordinates of all hexes less than or equal to <range> tiles from the given hex
+// Note: these hex coords may or may not exist on the board!
 export function cubeRange(hex: HexCoords, range: number) {
   const results = [];
   for (let q = -range; q <= range; q++) {

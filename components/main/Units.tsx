@@ -3,7 +3,7 @@ import Unit from "./three/Units/Unit";
 import { Target } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
 import { BoardProps } from './Board';
-import UnitControls from "./UnitControls";
+import UnitControls from "./three/Units/UnitControls";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -12,6 +12,8 @@ export interface UnitData {
   type: CharacterType; // Barbarian, Knight, etc.
   level?: number; // Level up ammount
   moves: number; // Moves left, resets to default every tick
+  actions: number; // Actions left (generally just 1)
+  range: number; // Attack range (1 for melee)
   hp: number; // Dies when hp reaches 0
   hexIdx: number; // Index of current hex position on board
 }
@@ -19,7 +21,9 @@ export interface UnitData {
 export const defaultStats: { [key in CharacterType]?: Partial<UnitData> } = {
   Knight: {
     moves: 2,
+    actions: 1,
     hp: 10,
+    range: 1,
   },
 };
 
@@ -34,14 +38,16 @@ export function createUnit({
     owner,
     type,
     moves: 0,
-    hp: 10, // TODO: access this stuff dynamically based on type / level
+    actions: 0,
+    range: defaultStats[type].range,
+    hp: defaultStats[type].hp, 
     hexIdx: 0, // Should be passed to overwrite
     ...props,
   };
 }
 
 export interface UnitsProps extends BoardProps {
-  units: UnitData[];
+  units: { [uid: string]: UnitData };
   target?: Target;
 }
 
@@ -49,20 +55,20 @@ export function Units({ units, target, tiles, onSelect }: UnitsProps) {
   // Board graphics
   return (
     <>
-      { target.type === 'unit' && 
-        <UnitControls unit={target.val} />
+      { !!target && target.type === 'unit' && 
+        <UnitControls {...target.val} />
       }
 
-      {Object.values(units).map((unit: UnitData) => (
+      {Object.keys(units).map((uid: string) => (
         <Unit
-          key={unit.uid}
+          key={uid}
           // TODO: we do not need to be passing around all of the tile data, just locations and heights...
-          tile={tiles[unit.hexIdx]} 
+          tile={tiles[units[uid].hexIdx]}
           onClick={(e) => {
             e.stopPropagation();
-            onSelect({ type: "unit", val: unit })}
+            onSelect({ type: "unit", val: units[uid] })}
           }
-          {...unit}
+          {...units[uid]}
         />
       ))}
     </>

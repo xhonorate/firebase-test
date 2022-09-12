@@ -3,6 +3,7 @@ import { GameContext, GameState } from "./RoomInstance";
 import { resourceTypes } from "./three/Tiles/Resource";
 import { GameSettings } from "../cloudFirestore/GameSettings";
 import findClosestSettlement from './helpers/findClosestSettlement';
+import { UnitData, defaultStats } from './Units';
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
 function procTiles(state: GameState, frequency: number): object { 
@@ -82,6 +83,25 @@ function calcPoints(state: GameState, pointsToWin: number): object {
   return updates;
 }
 
+// Reset movement and actions for all units
+function resetUnits(state: GameState): object {
+  const updates = {};
+
+  Object.keys(state.units).forEach((uid: string) => {
+    const { moves, actions } = defaultStats[state.units[uid].type];
+    if (state.units[uid].moves !== moves) {
+      // Reset unit movement to default
+      updates["/units/" + uid + "/moves"] = moves;
+    }
+    if (state.units[uid].moves !== actions) {
+      // Reset unit actions
+      updates["/units/" + uid + "/actions"] = actions;
+    }
+  });
+
+  return updates;
+}
+
 export default function HostControl(settings: GameSettings) {
   const { data, update } = useContext(GameContext);
 
@@ -99,7 +119,9 @@ export default function HostControl(settings: GameSettings) {
       // Proc Tiles
       ...procTiles(state, settings.yieldFrequency),
       // Calculate Points
-      ...calcPoints(state, settings.pointsToWin)
+      ...calcPoints(state, settings.pointsToWin),
+      // Reset Units
+      ...resetUnits(state)
     }    
 
     // Update state information -- tile procs and resources

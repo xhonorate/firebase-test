@@ -8,7 +8,7 @@ import FarmPlot from "../gltfjsx/objects/farm_plot";
 import Barracks from "../gltfjsx/objects/barracks";
 import { Billboard } from "@react-three/drei";
 import React, { useMemo } from "react";
-import Cloud from "../gltfjsx/fx/Cloud";
+import Cloud from "../FX/Cloud";
 
 export interface Obj {
   type: string;

@@ -174,6 +174,7 @@ export const playerColors = [
 ];
 
 export const heightScale = 0.1;
+export const tileSize = 1.16; // Diameter of "cylinder" of each tile
 
 export interface TileData {
   index?: number;
@@ -207,7 +208,7 @@ export default function Tile({
 
   const pos: [number, number, number] = useMemo(() => {
     const pos = cubeToPos(
-      cubeScale(hex, 1.15 /*scale for difference in size of hex mesh */)
+      cubeScale(hex, (tileSize - 0.01) /*scale for difference in size of hex mesh */)
     );
     pos.splice(1, 1, height * heightScale);
     return pos;
@@ -272,7 +273,7 @@ export default function Tile({
 
         { /* TODO: replace this hover effect */ }
         <mesh position-y={0.51 - (height * heightScale / 2)}>
-          <cylinderGeometry args={[1.16, 1.16, height * heightScale + 0.02, 6]} />
+          <cylinderGeometry args={[tileSize, tileSize, height * heightScale + 0.02, 6]} />
           <motion.meshStandardMaterial
             animate={{ opacity: hovered ? 0.2 : 0 }}
             transition={{ duration: hovered ? 0.05 : 0.4, ease: "easeOut" }}

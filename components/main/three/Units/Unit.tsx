@@ -8,6 +8,7 @@ import {
   indexToHex,
   cubeSubtract,
   cubeToPos,
+  cubeDistance,
 } from "../../helpers/hexGrid";
 import { TileData, heightScale } from '../Tiles/Tile';
 
@@ -27,24 +28,34 @@ export default function Unit({ type, hexIdx, tile, ...props }: UnitProps) {
       prevHex.current = indexToHex(hexIdx);
     } else {
       const newHex = indexToHex(hexIdx);
-      if (newHex !== prevHex.current) {
+      if (cubeDistance(newHex, prevHex.current)) { // If position has actually changed
         // Convert hex coordinate to x, y, z coords
         setPos(cubeToPos(newHex));
 
         const delta = cubeToPos(cubeSubtract(newHex, prevHex.current));
         // Determine rotation from hex
-        setFacing(Math.atan(delta[0] / delta[2]));
+        if (delta[2]) { // Avoid division by 0
+          setFacing(Math.atan(delta[0] / delta[2]));
+        }
 
         prevHex.current = newHex;
       }
     }
   }, [hexIdx, tile]);
-
+  
   return (
     <motion.group
-      scale={0.5}
-      whileHover={{ scale: 0.6 }}
+      scale={1}
+      whileHover={{ scale: 1.2 }}
+      initial={{
+        opacity: 0,
+        x: pos[0],
+        y: 5,
+        z: pos[2],
+        rotateY: 0,
+      }}
       animate={{
+        opacity: 1,
         x: pos[0],
         y: 0.5 + tile.height * heightScale, // Based on height of current tile
         z: pos[2],

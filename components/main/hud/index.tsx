@@ -40,7 +40,7 @@ export interface HUDProps extends ChakraProps {
 
 export default function HUD({
   participants,
-  target = null, //TODO: Allow target tile or target unit
+  target = null,
   ...props
 }: HUDProps) {
   const hasPendingActions = useRef(false);

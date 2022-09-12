@@ -1,20 +1,15 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
 import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
 import { useEffect } from "react";
 import { Button, Box, useEventListener } from "@chakra-ui/react";
 import { Board, generateBoard, BoardState } from "./Board";
-import { MapControls, Stars, RandomizedLight } from "@react-three/drei";
 import HostControl from "./HostControl";
 import HUD from "./hud";
 import { resourceTypes } from "./three/Tiles/Resource";
-import {
-  Bloom,
-  DepthOfField,
-  EffectComposer,
-} from "@react-three/postprocessing";
 import { Participant } from "../cloudFirestore/GameLobby";
 import { UnitData, Units } from "./Units";
+import useHax from "./helpers/useHax";
+import SceneWrapper from "./three/SceneWrapper";
 
 export interface ResourceStates {
   wood: number;
@@ -31,7 +26,7 @@ export interface PlayerState {
 
 export interface GameState {
   board: BoardState;
-  units?: UnitData[];
+  units?: { [uid: string]: UnitData};
   players: PlayerState[];
   turn: number;
   paused?: boolean;
@@ -77,6 +72,26 @@ export default function Room({
     }
   });
 
+  // Konami code
+  //useHax('arrowuparrowdownarrowuparrowdownarrowleftarrowrightarrowleftarrowrightba', () => console.log("AYYY"));
+  // TODO: remove hax...
+  const [visible, setVisible] = useState(true);
+
+  useHax([
+    [
+      "gimmegold",
+      () => update({ ["/players/" + playerIndex + "/resources/Gold"]: 9999 }),
+    ],
+    [
+      "h",
+      () => setVisible(false)
+    ],
+    [
+      "s",
+      () => setVisible(true)
+    ],
+  ]);
+
   const togglePaused = useCallback(
     () => update({ paused: !(data?.paused ?? false) }),
     [data?.paused, update]
@@ -121,7 +136,7 @@ export default function Room({
 
   return (
     <GameContext.Provider value={{ data, set, update, playerIndex }}>
-      {playerIndex === 0 && (
+      {playerIndex === 0 && visible && (
         // Host only //
         <>
           <Button onClick={returnToLobby}>Back to Lobby</Button>
@@ -135,6 +150,7 @@ export default function Room({
       <Box
         w={"650px"}
         h={"650px"}
+        visibility={visible ? 'visible' : 'hidden'}
         border={"1px solid darkblue"}
         bg={"gray.800"}
         color={"gray.100"}
@@ -146,53 +162,22 @@ export default function Room({
           target={target}
         />
         <Box w={"full"} h={"full"}>
-          <Canvas
-            orthographic={true}
-            camera={{
-              fov: 100,
-              near: -100,
-              far: 1000,
-              position: [0, 5, 10],
-              zoom: 10,
-            }}
-          >
-            {/* due to some issues with react, we must use a second provider inside of the canvas to pass props down */}
-            <ambientLight intensity={0.3} />
-            <pointLight position={[10, 10, 10]} />
+          <SceneWrapper>
+            <>
+            {!!data?.board && (<>
+                <Board {...data.board} onSelect={setTarget} />
 
-            {/*
-            <RandomizedLight castShadow mapSize={20} radius={20} intensity={0.7} amount={8} position={[0, 10, 0]} />
-            */}
-              {!!data?.board && (
-                <>
-                  <Board {...data.board} onSelect={setTarget} />
-
-                  {!!data?.units && (
-                    <Units {...data.board} units={data.units} target={target} onSelect={setTarget} />
-                  )}
-                </>
-              )}
-
-              {/* data?.count > 0 && [...Array(data?.count)].map((nan, idx) => {
-                return <Box key={idx} position={[-2 + idx/2, 1, 0]} />
-              }) */}
-            {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
-            <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
-            {/* TODO: Effects settings -- save to user account */}
-            <EffectComposer>
-              <DepthOfField
-                focusDistance={0.1}
-                focalLength={0.12}
-                bokehScale={4}
-                height={500}
-              />
-              <Bloom
-                luminanceThreshold={0}
-                luminanceSmoothing={0.9}
-                height={500}
-              />
-            </EffectComposer>
-          </Canvas>
+                {!!data?.units && (
+                  <Units
+                    {...data.board}
+                    units={data.units}
+                    target={target}
+                    onSelect={setTarget}
+                  />
+                )}
+            </>)}
+            </>
+          </SceneWrapper>
         </Box>
       </Box>
     </GameContext.Provider>

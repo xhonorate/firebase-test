@@ -30,7 +30,7 @@ export default function UnitInfo({
         <Text>Level: {[...Array(unit.level)].map(() => "★")}</Text>
       )}
 
-      <Text whiteSpace={"nowrap"}>
+      <Box whiteSpace={"nowrap"}>
         HP:{" "}
         <Progress
           ms={1}
@@ -40,7 +40,7 @@ export default function UnitInfo({
           w={"full"}
           value={Math.round((100 * unit.hp) / (defaultStats?.[unit.type]?.hp ?? 100))}
         />
-      </Text>
+      </Box>
 
       <Text>
         Owner:{" "}

@@ -22,15 +22,14 @@ export default function Home() {
       return <div>loading...</div>
     } else {
       return (
-        <div>
-          <h5>{JSON.stringify(user)}</h5>        
+        <div>     
           { userData.exists ?
             userData['active_game'] ?
-              <><h5>{/* load game data here... */ JSON.stringify(userData)}</h5>
-                   {/* check if game exists -> check exists -> check finished -> check started (not in lobby) -> check age -> 
-                    rejoin or throw err message and update user */}
-                  <GameLobby userData={userData} />
-                </>
+              <>
+                  {/* check if game exists -> check exists -> check finished -> check started (not in lobby) -> check age -> 
+                  rejoin or throw err message and update user */}
+                <GameLobby userData={userData} />
+              </>
               :
               // we can worry about host migration in the future...
               <>
