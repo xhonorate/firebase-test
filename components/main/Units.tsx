@@ -56,7 +56,7 @@ export function Units({ units, target, tiles, onSelect }: UnitsProps) {
   return (
     <>
       { !!target && target.type === 'unit' && 
-        <UnitControls {...target.val} />
+        <UnitControls {...units[target.val.uid]} />
       }
 
       {Object.keys(units).map((uid: string) => (

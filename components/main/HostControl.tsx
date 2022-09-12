@@ -87,6 +87,10 @@ function calcPoints(state: GameState, pointsToWin: number): object {
 function resetUnits(state: GameState): object {
   const updates = {};
 
+  if (!state.units) {
+    return updates;
+  }
+
   Object.keys(state.units).forEach((uid: string) => {
     const { moves, actions } = defaultStats[state.units[uid].type];
     if (state.units[uid].moves !== moves) {

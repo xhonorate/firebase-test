@@ -106,16 +106,19 @@ export default function UnitControls({
         return (
           <Instance
             key={idx}
-            onClick={() => {
+            onClick={(e) => {
               // TODO: different actions based on type of target
+              //TODO: clipping issue, render order?
               // Move Unit to target
+              e.stopPropagation();
+
               update({
                 ["/units/" + uid + "/moves"]:
                   moves - cubeDistance(hex, indexToHex(hexIdx)),
-                ["/units/" + uid + "/hex"]: hexToIndex(hex),
+                ["/units/" + uid + "/hexIdx"]: hexToIndex(hex),
               });
             }}
-            position={[pos[0] * tileSize, 0.5 + height, pos[2] * tileSize]}
+            position={[pos[0] * tileSize, 0.6 + height, pos[2] * tileSize]}
             rotation={[-Math.PI / 2, 0, Math.PI / 2]}
           />
         );
