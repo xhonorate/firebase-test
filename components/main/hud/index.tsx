@@ -8,7 +8,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useContext, useRef, useMemo, useCallback } from "react";
-import { GameContext, Target } from '../RoomInstance';
+import { GameContext } from '../RoomInstance';
 import { Action } from "./Tiles/buildOptions";
 import TileControls from "./Tiles/TileControls";
 import ResourceDisplay from "./ResourceDisplay";
@@ -16,6 +16,7 @@ import TileInfo from "./Tiles/TileInfo";
 import { playerColors } from "../three/Tiles/Tile";
 import { Participant } from "../../cloudFirestore/GameLobby";
 import UnitInfo from "./Units/UnitInfo";
+import { TargetContext } from '../MouseEvents';
 
 const HUDContainer = ({ children, ...props }) => (
   <Flex
@@ -35,21 +36,22 @@ const HUDContainer = ({ children, ...props }) => (
 
 export interface HUDProps extends ChakraProps {
   participants: Participant[];
-  target?: Target; // index of tile in tiles[]
 }
 
 export default function HUD({
   participants,
-  target = null,
   ...props
 }: HUDProps) {
   const hasPendingActions = useRef(false);
   const { data, update, playerIndex } = useContext(GameContext);
+  const { target } = useContext(TargetContext);
 
   const resources = useMemo(
     () => data?.players?.[playerIndex]?.resources,
     [data?.players, playerIndex]
   );
+
+  console.log(target);
 
   const updateTile = useCallback(
     (action: Action, cost: object) => {
@@ -59,7 +61,7 @@ export default function HUD({
       hasPendingActions.current = true;
 
       // Pass target as index, quicker for updates, access from tiles[target] if needed
-      const updates = action(target.val, playerIndex, data.board.tiles);
+      const updates = action(target.val.index, playerIndex, data.board.tiles);
 
       let updatedResources = {};
       Object.entries(resources).forEach(([key, value]) => {
@@ -162,7 +164,7 @@ export default function HUD({
             {target.type === "tile" ? (
               <>
                 <TileInfo
-                  tile={data.board.tiles[target.val]}
+                  tile={target.val}
                   participants={participants}
                   maxW={"50%"}
                 />
@@ -170,7 +172,7 @@ export default function HUD({
                   tiles={data.board.tiles}
                   playerIndex={playerIndex}
                   resources={resources}
-                  tile={data.board.tiles[target.val]}
+                  tile={target.val}
                   updateTile={updateTile}
                 />
               </>

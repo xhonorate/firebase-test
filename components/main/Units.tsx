@@ -1,9 +1,9 @@
 import { CharacterType } from "./three/gltfjsx/characters/Parts/useParts";
 import Unit from "./three/Units/Unit";
-import { Target } from "./RoomInstance";
+import { GameContext } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
-import { BoardProps } from './Board';
 import UnitControls from "./three/Units/UnitControls";
+import { useContext } from "react";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -46,29 +46,22 @@ export function createUnit({
   };
 }
 
-export interface UnitsProps extends BoardProps {
-  units: { [uid: string]: UnitData };
-  target?: Target;
-}
+export function Units() {
+  const { data } = useContext(GameContext);
 
-export function Units({ units, target, tiles, onSelect }: UnitsProps) {
+  if (!data?.units) {
+    return null;
+  }
+
   // Board graphics
   return (
     <>
-      { !!target && target.type === 'unit' && 
-        <UnitControls {...units[target.val.uid]} />
-      }
-
-      {Object.keys(units).map((uid: string) => (
+      {Object.keys(data.units).map((uid: string) => (
         <Unit
           key={uid}
           // TODO: we do not need to be passing around all of the tile data, just locations and heights...
-          tile={tiles[units[uid].hexIdx]}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect({ type: "unit", val: units[uid] })}
-          }
-          {...units[uid]}
+          unit={data.units[uid]}
+          tile={data.board.tiles[data.units[uid].hexIdx]}
         />
       ))}
     </>

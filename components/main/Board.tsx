@@ -1,11 +1,20 @@
 import React, { useEffect } from "react";
 import Tile, { TileData } from "./three/Tiles/Tile";
-import { biomeTypes } from "./three/Tiles/Tile";
+import { biomeTypes, tileSize } from "./three/Tiles/Tile";
 import { resourceTypes, findResourceIndexByName } from "./three/Tiles/Resource";
 import { getTransition } from "./three/Tiles/transitions";
 import { GameSettings } from "../cloudFirestore/GameSettings";
-import { Target } from './RoomInstance';
-import { adjacentIndexes, cubeDistance, center, cubeRing, hexToIndex, cubeScale, cubeDirection, cubeNeighbor, HexCoords } from "./helpers/hexGrid";
+import {
+  adjacentIndexes,
+  cubeDistance,
+  center,
+  cubeRing,
+  hexToIndex,
+  cubeScale,
+  cubeDirection,
+  cubeNeighbor,
+  HexCoords,
+} from "./helpers/hexGrid";
 import { randomChoice, weightedChoice } from "./helpers/random";
 
 // Place start spawns for players
@@ -481,14 +490,7 @@ export interface BoardState {
   tiles: TileData[];
 }
 
-export interface BoardProps extends BoardState {
-  onSelect: (target: Target) => void
-}
-
-export function Board({
-  tiles,
-  onSelect
-}: BoardProps) {
+export function Board({ tiles }: BoardState) {
   // Board graphics
   return (
     <>
@@ -506,7 +508,6 @@ export function Board({
                     )
                   : null
               }
-              onClick={() => onSelect({type: 'tile', val: idx})}
             />
           );
         })}

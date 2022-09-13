@@ -1,9 +1,10 @@
 import { MapControls, useContextBridge } from "@react-three/drei"
 import { GameContext } from '../RoomInstance';
 import { Canvas } from '@react-three/fiber';
-import { ThemeContext } from "@emotion/react";
-import React from "react";
-import { DepthOfField, Bloom, EffectComposer } from "@react-three/postprocessing";
+import React, { useContext } from "react";
+import { DepthOfField, Bloom, EffectComposer, Outline } from "@react-three/postprocessing";
+import TargetSelection, { TargetContext } from '../MouseEvents';
+import FX from "./FX/FX";
 
 // Wrapper for canvas, passes context to children inside of canvas
 export default function SceneWrapper({children}) {
@@ -25,27 +26,18 @@ export default function SceneWrapper({children}) {
       {/* due to some issues with react, we must use a second provider inside of the canvas to pass props down */}
       <ambientLight intensity={0.3} />
       <pointLight position={[10, 10, 10]} />
+      <TargetSelection>
+        <ContextBridge>
+          {children}
+        </ContextBridge>
 
-      <ContextBridge>
-        {children}
-      </ContextBridge>
+        { /* FX MUST BE INSIDE OF TARGET SELECTION TO CONSUME CONTEXT */ }
+        <FX />
+        {/* TODO: Effects settings -- save to user account */}    
+      </TargetSelection>
 
       {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
       <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
-      {/* TODO: Effects settings -- save to user account */}
-      <EffectComposer>
-        <DepthOfField
-          focusDistance={0.1}
-          focalLength={0.12}
-          bokehScale={4}
-          height={500}
-        />
-        <Bloom
-          luminanceThreshold={0}
-          luminanceSmoothing={0.9}
-          height={500}
-        />
-      </EffectComposer>
     </Canvas>
   )
 }

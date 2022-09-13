@@ -33,5 +33,6 @@ Passive territory gain?
 
 https://github.com/pmndrs/gltfjsx
 Suspense fallback for GLTF models might help some loading issues?
-- Instancing? Look at drei -> perfomance section
+- Instancing? Look at drei -> perfomance section 
+- Merged?
 Also, just using fog of war / changing camera clipping would prob help a lot on bigger maps

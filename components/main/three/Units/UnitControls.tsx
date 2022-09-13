@@ -59,10 +59,11 @@ export default function UnitControls({
   const handleClick = useCallback((tile: TileData) => {
     // TODO: different actions based on type of target
 
-    // Run calc for dmg here, adjust hp, actions -- maybe set inCombat on target unit?
-    // On Unit side, deal with timing of anims based on which variables are changed
-    // Determine whether we actually move into the hex based on hp of target
-
+    // SET TARGET
+    // unit will update its hex every turn - pathfinding on host side
+      // check next path option every turn, if enemy, start combat
+    // upon reaching target, start combat as well
+    
     // Move Unit to target
     update({
       ["/units/" + uid + "/moves"]:
@@ -83,6 +84,8 @@ export default function UnitControls({
     return { ...prev, [unit.hexIdx]: unit };
   }, {});
 
+  // TODO: allow multi-turn pathfinding - handle changes to board state / units to re-pathfind
+  // OOOOOR, just do 100% realtime, and movement is based on unit speed...?
   // Array of hexes in range for this unit -- uses bredth first pathfinding
   const hexesInRange: HexCoords[] = reachableHexes(
     indexToHex(hexIdx),

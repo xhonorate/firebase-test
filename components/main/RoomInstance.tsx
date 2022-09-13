@@ -10,6 +10,7 @@ import { Participant } from "../cloudFirestore/GameLobby";
 import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
+import TargetWrapper from "./MouseEvents";
 
 export interface ResourceStates {
   wood: number;
@@ -40,8 +41,6 @@ export interface GameContextProps {
   playerIndex: number;
 }
 
-export type Target = { type: string; val: any };
-
 export const GameContext = React.createContext<GameContextProps>({
   data: null,
   set: null,
@@ -61,16 +60,6 @@ export default function Room({
   // or is it like a ref and i can useEffect on specific child elements in the json??
   const { data, set, update, loading, unsubscribe, deleteReference } =
     useRealtime<GameState>(`rooms/${id}`);
-
-  const [target, setTarget] = useState<Target>(null);
-
-  // Deselect Tile on Escape key press
-  // TODO: add pause menu
-  useEventListener("keyup", (e: KeyboardEvent) => {
-    if (["27", "Escape"].includes(String(e.key))) {
-      setTarget(null);
-    }
-  });
 
   // Konami code
   //useHax('arrowuparrowdownarrowuparrowdownarrowleftarrowrightarrowleftarrowrightba', () => console.log("AYYY"));
@@ -159,21 +148,15 @@ export default function Room({
           w={"650px"}
           h={"650px"}
           participants={participants}
-          target={target}
         />
         <Box w={"full"} h={"full"}>
           <SceneWrapper>
             <>
             {!!data?.board && (<>
-                <Board {...data.board} onSelect={setTarget} />
+                <Board {...data.board} />
 
                 {!!data?.units && (
-                  <Units
-                    {...data.board}
-                    units={data.units}
-                    target={target}
-                    onSelect={setTarget}
-                  />
+                  <Units />
                 )}
             </>)}
             </>
