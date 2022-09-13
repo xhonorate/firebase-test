@@ -67,7 +67,7 @@ export default function UnitControls({
     update({
       ["/units/" + uid + "/moves"]:
         moves - cubeDistance(tile.hex, indexToHex(hexIdx)),
-      ["/units/" + uid + "/hex"]: tile.index,
+      ["/units/" + uid + "/hexIdx"]: tile.index,
     });
   }, [hexIdx, moves, uid, update])
 

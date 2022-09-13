@@ -35,9 +35,8 @@ export default function Unit({ type, hexIdx, tile, ...props }: UnitProps) {
 
         const delta = cubeToPos(cubeSubtract(newHex, prevHex.current));
         // Determine rotation from hex
-        if (delta[2]) { // Avoid division by 0
-          setFacing(Math.atan(delta[0] / delta[2]));
-        }
+        console.log(delta);
+        setFacing(Math.atan2(delta[2], -delta[0]) - Math.PI/2);
 
         prevHex.current = newHex;
       }
