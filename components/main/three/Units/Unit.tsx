@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import AnimatedCharacter from "../gltfjsx/characters/AnimatedChar";
 import { UnitData } from "../../Units";
 import { GroupProps } from "@react-three/fiber";
 import { motion } from "framer-motion-3d";
@@ -11,6 +10,7 @@ import {
   cubeDistance,
 } from "../../helpers/hexGrid";
 import { TileData, heightScale } from '../Tiles/Tile';
+import AnimatedCharacter, { ActionName } from '../gltfjsx/characters/AnimatedChar';
 
 interface UnitProps extends UnitData, Omit<GroupProps, "type"> {
   tile: TileData;
@@ -18,6 +18,7 @@ interface UnitProps extends UnitData, Omit<GroupProps, "type"> {
 
 export default function Unit({ type, hexIdx, tile, ...props }: UnitProps) {
   const prevHex = useRef<HexCoords>(null);
+  const [anim, setAnim] = useState<ActionName>('Idle');
   const [pos, setPos] = useState<number[]>(cubeToPos(indexToHex(hexIdx)));
   const [facing, setFacing] = useState<number>(0); // y-axis rotation
 
@@ -62,7 +63,7 @@ export default function Unit({ type, hexIdx, tile, ...props }: UnitProps) {
         rotateY: facing,
       }}
     >
-      <AnimatedCharacter character={type} anim={"Idle"} {...props} />
+      <AnimatedCharacter character={type} anim={anim} {...props} />
     </motion.group>
   );
 }

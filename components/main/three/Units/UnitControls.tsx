@@ -1,9 +1,8 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useCallback, useContext } from "react";
 import { GameContext } from "../../RoomInstance";
 import { UnitData } from "../../Units";
-import { Circle, Edges, Effects, Instance, Instances } from "@react-three/drei";
-import { tileSize, heightScale, playerColors } from '../Tiles/Tile';
-import { MeshProps } from "@react-three/fiber";
+import { Instance, Instances } from "@react-three/drei";
+import { tileSize, heightScale, playerColors, TileData } from '../Tiles/Tile';
 import {
   cubeToPos,
   indexToHex,
@@ -56,6 +55,22 @@ export default function UnitControls({
 }: UnitData) {
   const { data, update, playerIndex } = useContext(GameContext);
 
+  // Upon clicking on an available movement hex
+  const handleClick = useCallback((tile: TileData) => {
+    // TODO: different actions based on type of target
+
+    // Run calc for dmg here, adjust hp, actions -- maybe set inCombat on target unit?
+    // On Unit side, deal with timing of anims based on which variables are changed
+    // Determine whether we actually move into the hex based on hp of target
+
+    // Move Unit to target
+    update({
+      ["/units/" + uid + "/moves"]:
+        moves - cubeDistance(tile.hex, indexToHex(hexIdx)),
+      ["/units/" + uid + "/hex"]: tile.index,
+    });
+  }, [hexIdx, moves, uid, update])
+
   // Only show controls for units you own
   if (owner !== playerIndex || !data) {
     return null;
@@ -92,29 +107,26 @@ export default function UnitControls({
       <circleGeometry args={[tileSize, 6]} />
       <motion.meshStandardMaterial
         whileHover={{
+          // TODO: Show attack / move / range attack icon
           opacity: 1,
         }}
-        depthTest={false}
+        depthWrite={false}
+        // depthWrite - Whether rendering this material has any effect on the depth buffer. Default is true. 
+        // When drawing 2D overlays it can be useful to disable the depth writing in order to layer several 
+        // things together without creating z-index artifacts.
         transparent={true}
         opacity={0.5}
         color={playerColors[playerIndex]}
       />
       {hexesInRange.map((hex, idx) => {
         const pos = cubeToPos(hex);
-        const height = data.board.tiles[hexToIndex(hex)].height * heightScale;
+        const tile = data.board.tiles[hexToIndex(hex)];
+        const height = tile.height * heightScale;
 
         return (
           <Instance
             key={idx}
-            onClick={() => {
-              // TODO: different actions based on type of target
-              // Move Unit to target
-              update({
-                ["/units/" + uid + "/moves"]:
-                  moves - cubeDistance(hex, indexToHex(hexIdx)),
-                ["/units/" + uid + "/hex"]: hexToIndex(hex),
-              });
-            }}
+            onClick={() => handleClick(tile)}
             position={[pos[0] * tileSize, 0.5 + height, pos[2] * tileSize]}
             rotation={[-Math.PI / 2, 0, Math.PI / 2]}
           />
