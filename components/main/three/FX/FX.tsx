@@ -31,7 +31,7 @@ const FX = () => {
         edgeStrength={100}
         height={500}
         // @ts-ignore
-        visibleEdgeColor={'gray'}
+        visibleEdgeColor={'white'}
         selection={getMeshes(hovered)} 
       />
       <Outline 
@@ -39,7 +39,7 @@ const FX = () => {
         edgeStrength={100}
         height={500}
         // @ts-ignore
-        visibleEdgeColor={'white'}
+        visibleEdgeColor={'red'}
         selection={getMeshes(target?.ref)} 
       />
       <DepthOfField

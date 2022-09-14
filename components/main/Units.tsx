@@ -1,9 +1,10 @@
 import { CharacterType } from "./three/gltfjsx/characters/Parts/useParts";
 import Unit from "./three/Units/Unit";
-import { GameContext } from "./RoomInstance";
+import { GameContext, GameState } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
-import UnitControls from "./three/Units/UnitControls";
-import { useContext } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
+import { HexCoords, hexToIndex, cubeDistance } from './helpers/hexGrid';
+import { Target } from "./MouseEvents";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -15,7 +16,7 @@ export interface UnitData {
   actions: number; // Actions left (generally just 1)
   range: number; // Attack range (1 for melee)
   hp: number; // Dies when hp reaches 0
-  hexIdx: number; // Index of current hex position on board
+  hex: HexCoords; // Index of current hex position on board
 }
 
 export const defaultStats: { [key in CharacterType]?: Partial<UnitData> } = {
@@ -41,9 +42,61 @@ export function createUnit({
     actions: 0,
     range: defaultStats[type].range,
     hp: defaultStats[type].hp, 
-    hexIdx: 0, // Should be passed to overwrite
+    hex: {
+      q: 0,
+      r: 0,
+      s: 0
+    },
     ...props,
   };
+}
+
+// Pass to affect units
+export function useUnitActions() {
+  const { data, update } = useContext(GameContext);
+
+  const unitAction = useCallback((unit: UnitData, target: Target) => {
+    update(unitActionUpdates(data, unit, target));
+  }, [data, update])
+
+  return {
+    unitAction
+  }
+}
+
+// Return updates object - set target and move if moves are available
+function unitActionUpdates (state: GameState, unit: UnitData, target: Target) {
+  const updates = {};
+  if (unit.moves > 0) {
+    // TODO: Pathfind towards by moves
+    updates["/units/" + unit.uid + "/hex"] = target.val.hex;
+    updates["/units/" + unit.uid + "/moves"] = unit.moves - cubeDistance(target.val.hex, unit.hex);
+  }
+  updates["/units/" + unit.uid + "/target"] = target.val.hex;
+  return updates;
+}
+
+// Auto-move units towards their targets - return update object
+export function allUnitUpdates(state: GameState): object {
+  const updates = {};
+
+  if (!state.units) {
+    return updates;
+  }
+
+  Object.keys(state.units).forEach((uid: string) => {
+    const { moves, actions } = defaultStats[state.units[uid].type];
+    if (state.units[uid].moves !== moves) {
+      // Reset unit movement to default
+      updates["/units/" + uid + "/moves"] = moves;
+    }
+    if (state.units[uid].moves !== actions) {
+      // Reset unit actions
+      updates["/units/" + uid + "/actions"] = actions;
+    }
+  });
+
+  return updates;
 }
 
 export function Units() {
@@ -61,7 +114,7 @@ export function Units() {
           key={uid}
           // TODO: we do not need to be passing around all of the tile data, just locations and heights...
           unit={data.units[uid]}
-          tile={data.board.tiles[data.units[uid].hexIdx]}
+          tile={data.board.tiles[hexToIndex(data.units[uid].hex)]}
         />
       ))}
     </>

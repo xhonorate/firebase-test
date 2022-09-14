@@ -1,9 +1,7 @@
 import { useEventListener } from "@chakra-ui/hooks";
 import { ThreeEvent } from "@react-three/fiber"
 import React, { useRef, useState, createContext, useContext, useCallback } from "react"
-import { UnitData } from './Units';
-import { GameContext } from './RoomInstance';
-import { cubeDistance, indexToHex } from './helpers/hexGrid';
+import { UnitData, useUnitActions } from './Units';
 import { TileData } from './three/Tiles/Tile';
 
 export type Target = {
@@ -31,10 +29,10 @@ export const TargetContext = createContext<TargetContextProps>({
 });
 
 // Pass with {...useTarget()} to Three mesh or group, enables target selection and hover effects
-export function useTarget(type?: Target['type'], val?: Target['val']) {
+export function useTarget(newTarget: Target) {
   const ref = useRef()
   const { target, setTarget, setHovered } = useContext(TargetContext)
-  const { data, update } = useContext(GameContext) // Is this inefficient?
+  const { unitAction } = useUnitActions();
   
   // Hover Events
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
@@ -47,28 +45,19 @@ export function useTarget(type?: Target['type'], val?: Target['val']) {
   // Click Events
   const onClick = useCallback((event: ThreeEvent<PointerEvent>) => {
     // If onClick has val
-    if (val) {
+    if (newTarget.val) {
       // Only select first target
       event.stopPropagation();
+      // If a unit is currently selected, perform its action
       if (target?.type === 'unit') {
-        const unit = target?.val;
         // Unit actions
-        if (type === 'tile') {
-          // Unit clicking on tile
-          const tile = val;
-          update({
-            ["/units/" + unit.uid + "/moves"]:
-              unit.moves - cubeDistance(tile['hex'], indexToHex(unit.hexIdx)),
-            ["/units/" + unit.uid + "/hexIdx"]: tile['index'],
-          });
-        }
+        unitAction(target.val, newTarget);
       } else {
-        // Tile or nothing selected, select whatever is clicked on
-        //@ts-ignore
-        setTarget({type, val, ref: ref.current});
+        // Tile or nothing selected, select whatever is clicked
+        setTarget({...newTarget, ref: ref.current});
       }
     }
-  }, [val, target?.type, target?.val, type, update, setTarget]);
+  }, [newTarget, target?.type, target.val, unitAction, setTarget]);
   return { ref, onPointerOver, onPointerOut, onClick }
 }
 
