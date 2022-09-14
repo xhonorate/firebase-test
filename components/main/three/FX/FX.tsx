@@ -23,6 +23,7 @@ function getMeshes (item: THREE.Mesh | THREE.Group) {
 // BE SURE TO PLACE INSIDE OF TARGET SELECTION TO USE CONTEXT!
 const FX = () => {
   const { target, hovered } = useContext(TargetContext)
+  
   return (
     <EffectComposer multisampling={8} autoClear={false}>
       <Outline 

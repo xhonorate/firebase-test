@@ -1,6 +1,6 @@
 import { HStack, Text, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Switch, VStack, Box, Tooltip } from '@chakra-ui/react';
 import React, { useReducer, useState } from 'react'
-import { indexToHex, hexToIndex, cubeDistance, adjacentIndexes } from '../components/main/Board';
+import { indexToHex, hexToIndex, cubeDistance, adjacentIndexes } from '../components/main/helpers/hexGrid';
 
 function cubeToPos (hex, scale, count) {
   return { 

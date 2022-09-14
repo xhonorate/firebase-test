@@ -6,9 +6,15 @@ import { GameContext } from './RoomInstance';
 import { cubeDistance, indexToHex } from './helpers/hexGrid';
 import { TileData } from './three/Tiles/Tile';
 
-type TargetTypes = 'unit' | 'tile';
-type ValTypes = UnitData | TileData;
-export type Target = { type: 'unit'; val: UnitData, ref?: any } | { type: 'tile', val: TileData, ref?: any};
+export type Target = {
+  type: 'unit',
+  val: UnitData,
+  ref?: any;
+} | {
+  type: 'tile',
+  val: TileData,
+  ref?: any;
+}
 
 interface TargetContextProps {
   target: Target;
@@ -25,7 +31,7 @@ export const TargetContext = createContext<TargetContextProps>({
 });
 
 // Pass with {...useTarget()} to Three mesh or group, enables target selection and hover effects
-export function useTarget(type?: TargetTypes, val?: ValTypes) {
+export function useTarget(type?: Target['type'], val?: Target['val']) {
   const ref = useRef()
   const { target, setTarget, setHovered } = useContext(TargetContext)
   const { data, update } = useContext(GameContext) // Is this inefficient?
@@ -45,15 +51,15 @@ export function useTarget(type?: TargetTypes, val?: ValTypes) {
       // Only select first target
       event.stopPropagation();
       if (target?.type === 'unit') {
-        const unit = target?.val as UnitData;
+        const unit = target?.val;
         // Unit actions
         if (type === 'tile') {
           // Unit clicking on tile
-          const tile = val as TileData;
+          const tile = val;
           update({
             ["/units/" + unit.uid + "/moves"]:
-              unit.moves - cubeDistance(tile.hex, indexToHex(unit.hexIdx)),
-            ["/units/" + unit.uid + "/hexIdx"]: tile.index,
+              unit.moves - cubeDistance(tile['hex'], indexToHex(unit.hexIdx)),
+            ["/units/" + unit.uid + "/hexIdx"]: tile['index'],
           });
         }
       } else {

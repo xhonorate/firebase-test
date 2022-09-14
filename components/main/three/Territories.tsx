@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from "three";
-import { BoardProps } from '../Board';
+import { BoardState } from '../Board';
 import { HexCoords, cubeNeighbor, cubeDistance, cubeToPos } from '../helpers/hexGrid';
 import { playerColors } from './Tiles/Tile';
 
-export default function Territories ({ tiles, numPlayers }: BoardProps & { numPlayers: number }) {
+export default function Territories ({ tiles, numPlayers }: BoardState & { numPlayers: number }) {
   const [ownedHexes, setOwnedHexes] = useState<HexCoords[][]>(null);
   const justSet = useRef(false);
 

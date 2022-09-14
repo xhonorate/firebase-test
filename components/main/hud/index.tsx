@@ -51,8 +51,6 @@ export default function HUD({
     [data?.players, playerIndex]
   );
 
-  console.log(target);
-
   const updateTile = useCallback(
     (action: Action, cost: object) => {
       // TODO: check pending actions on RTDB (from host tick, etc)
@@ -61,7 +59,7 @@ export default function HUD({
       hasPendingActions.current = true;
 
       // Pass target as index, quicker for updates, access from tiles[target] if needed
-      const updates = action(target.val.index, playerIndex, data.board.tiles);
+      const updates = action(target.val['index'], playerIndex, data.board.tiles);
 
       let updatedResources = {};
       Object.entries(resources).forEach(([key, value]) => {

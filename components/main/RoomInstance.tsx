@@ -10,7 +10,7 @@ import { Participant } from "../cloudFirestore/GameLobby";
 import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
-import TargetWrapper from "./MouseEvents";
+import TargetWrapper from './MouseEvents';
 
 export interface ResourceStates {
   wood: number;
@@ -143,25 +143,27 @@ export default function Room({
         border={"1px solid darkblue"}
         bg={"gray.800"}
         color={"gray.100"}
-      >
-        <HUD
-          w={"650px"}
-          h={"650px"}
-          participants={participants}
-        />
-        <Box w={"full"} h={"full"}>
-          <SceneWrapper>
-            <>
-            {!!data?.board && (<>
-                <Board {...data.board} />
+      >      
+        <TargetWrapper>
+          <HUD
+            w={"650px"}
+            h={"650px"}
+            participants={participants}
+          />
+          <Box w={"full"} h={"full"}>
+            <SceneWrapper>
+              <>
+              {!!data?.board && (<>
+                  <Board {...data.board} />
 
-                {!!data?.units && (
-                  <Units />
-                )}
-            </>)}
-            </>
-          </SceneWrapper>
-        </Box>
+                  {!!data?.units && (
+                    <Units />
+                  )}
+              </>)}
+              </>
+            </SceneWrapper>
+          </Box>
+        </TargetWrapper>
       </Box>
     </GameContext.Provider>
   );
