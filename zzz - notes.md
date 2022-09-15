@@ -36,3 +36,9 @@ Suspense fallback for GLTF models might help some loading issues?
 - Instancing? Look at drei -> perfomance section 
 - Merged?
 Also, just using fog of war / changing camera clipping would prob help a lot on bigger maps
+
+
+
+
+CAREFUL WITH DATA AS DEPS!!!: https://kentcdodds.com/blog/usememo-and-usecallback 
+The reason this is problematic is because useEffect is going to do a referential equality check on options between every render, and thanks to the way JavaScript works, options will be new every time so when React tests whether options changed between renders it'll always evaluate to true, meaning the useEffect callback will be called after every render rather than only when bar and baz change.

@@ -1,9 +1,9 @@
 import { CharacterType } from "./three/gltfjsx/characters/Parts/useParts";
 import Unit from "./three/Units/Unit";
-import { GameContext, GameState } from "./RoomInstance";
+import { GameContext, GameState, TilesContext } from './RoomInstance';
 import { generateUUID } from "three/src/math/MathUtils";
 import { useCallback, useContext, useEffect, useRef } from "react";
-import { HexCoords, hexToIndex, cubeDistance } from './helpers/hexGrid';
+import { HexCoords, hexToIndex, cubeDistance, findTileByHex } from './helpers/hexGrid';
 import { Target } from "./MouseEvents";
 
 // Data to be stored in RTDB /units/
@@ -55,13 +55,24 @@ export function createUnit({
 export function useUnitActions() {
   const { data, update } = useContext(GameContext);
 
+  // Store as refs to avoid recalculating the callbacks - update does not actually trigger re-renders
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data])
+
   const unitAction = useCallback((unit: UnitData, target: Target) => {
-    update(unitActionUpdates(data, unit, target));
-  }, [data, update])
+    update(unitActionUpdates(dataRef.current, unit, target));
+  }, [update])
 
   return {
     unitAction
   }
+}
+
+// Return array of tiles that must be crossed to reach target
+function pathfindTo(state: GameState, currentHex: HexCoords, target: Target) {
+  
 }
 
 // Return updates object - set target and move if moves are available
@@ -101,6 +112,7 @@ export function allUnitUpdates(state: GameState): object {
 
 export function Units() {
   const { data } = useContext(GameContext);
+  const StaticTiles = useContext(TilesContext);
 
   if (!data?.units) {
     return null;
@@ -114,7 +126,7 @@ export function Units() {
           key={uid}
           // TODO: we do not need to be passing around all of the tile data, just locations and heights...
           unit={data.units[uid]}
-          tile={data.board.tiles[hexToIndex(data.units[uid].hex)]}
+          height={StaticTiles[hexToIndex(data.units[uid].hex)].height}
         />
       ))}
     </>

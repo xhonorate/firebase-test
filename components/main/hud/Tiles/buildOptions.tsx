@@ -2,7 +2,7 @@ import { TileData } from "../../three/Tiles/Tile";
 import { findResourceIndexByName } from "../../three/Tiles/Resource";
 import { generateUUID } from "three/src/math/MathUtils";
 import { createUnit } from "../../Units";
-import { hexToIndex, adjacentIndexes, cubeRing } from "../../helpers/hexGrid";
+import { hexToIndex, adjacentIndexes, cubeRing, indexToHex } from "../../helpers/hexGrid";
 
 //////////////////////// Requirement functions: ////////////////////////
 const notOwned = (tile: TileData) => !("owner" in tile);
@@ -361,7 +361,7 @@ export const buildOptions: BuildOption[] = [
       // Generate a new unit (comes with a uid)
       const unit = createUnit({
         type: "Knight",
-        hexIdx: target,
+        hex: indexToHex(target),
         owner: playerIndex,
       })
 

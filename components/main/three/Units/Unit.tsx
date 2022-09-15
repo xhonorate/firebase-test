@@ -15,22 +15,22 @@ import { useAnimationControls } from "framer-motion";
 
 interface UnitProps extends Omit<GroupProps, "type"> {
   unit: UnitData;
-  tile: TileData;
+  height: number; // Height of current tile
 }
 
-export default function Unit({ unit, tile, ...props }: UnitProps) {
+export default function Unit({ unit, height, ...props }: UnitProps) {
   const prevHex = useRef<HexCoords>(null);
   const [anim, setAnim] = useState<ActionName>('Idle');
   const motionControls = useAnimationControls();
   const onMotionComplete = useRef(null);
   
-  const pos = useMemo(() => tilePos(tile.hex, tile.height), [tile]);
+  const pos = useMemo(() => tilePos(unit.hex, height), [unit.hex, height]);
 
   // On moving to a new hex, update position and rotation
   useEffect(() => {
     if (!prevHex.current) {
       // First render, do not animate motion or run unneccessary calculations
-      prevHex.current = tile.hex;
+      prevHex.current = unit.hex;
 
       // Animate falling in from the sky
       motionControls.start({
@@ -40,8 +40,7 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
         z: pos[2],
       });
     } else {
-      const newHex = tile.hex;
-      if (cubeDistance(newHex, prevHex.current)) { // If position has actually changed
+      if (cubeDistance(unit.hex, prevHex.current)) { // If position has actually changed
         setAnim('Walk')
 
         // Animate change in hex
@@ -57,7 +56,7 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
           y: pos[1],
         }, { duration: 0.5 }));
 
-        const delta = cubeToPos(cubeSubtract(newHex, prevHex.current));
+        const delta = cubeToPos(cubeSubtract(unit.hex, prevHex.current));
         motionControls.start({
           rotateY: Math.atan2(delta[2], -delta[0]) - Math.PI/2
         });
@@ -67,14 +66,14 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
           setAnim('Idle');
         }
 
-        prevHex.current = newHex;
+        prevHex.current = unit.hex;
       }
     }
-  }, [motionControls, pos, tile]);
+  }, [motionControls, pos]);
   
   return (
     <motion.group
-      {...useTarget('unit', unit )}
+      {...useTarget({type: 'unit', val: unit})}
       scale={1}
       whileHover={{ scale: 1.2 }}
       initial={{

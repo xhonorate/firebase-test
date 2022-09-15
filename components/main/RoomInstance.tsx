@@ -1,8 +1,8 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { Ref, useCallback, useMemo, useRef, useState } from "react";
 import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
 import { useEffect } from "react";
 import { Button, Box, useEventListener } from "@chakra-ui/react";
-import { Board, generateBoard, BoardState } from "./Board";
+import Board, { generateBoard, BoardState } from "./Board";
 import HostControl from "./HostControl";
 import HUD from "./hud";
 import { resourceTypes } from "./three/Tiles/Resource";
@@ -11,6 +11,7 @@ import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
 import TargetWrapper from './MouseEvents';
+import { TileData } from './three/Tiles/Tile';
 
 export interface ResourceStates {
   wood: number;
@@ -47,6 +48,9 @@ export const GameContext = React.createContext<GameContextProps>({
   update: null,
   playerIndex: null,
 });
+
+type StaticTileData = Partial<TileData> & { ref: any }
+export const TilesContext = React.createContext<StaticTileData[]>(null);
 
 export default function Room({
   id,
@@ -115,56 +119,89 @@ export default function Room({
     }
   }, [deleteReference, unsubscribe, updateGame]);
 
+  // Pieces of tile data that do not change, pass down through context to prevent need to listen to all data
+  const [staticTiles, setStaticTiles] = useState<StaticTileData[]>(null);
+  const boardRef = useRef(null);
+
+  const board = useMemo(() => {
+    if (!data?.board) {
+      return null;
+    } else {
+      return <Board ref={boardRef} {...data.board} />
+    }
+  }, [data?.board]);
+
+  const units = useMemo(() => {
+    if (!data?.units) {
+      return null;
+    } else {
+      return <Units />
+    }
+  }, [data?.units]);
+
   useEffect(() => {
     // If no data is present, need to create new RTDB entry for room
     if (!data && !loading && playerIndex === 0) {
       intitializeGame();
       console.log("Initializing Room!");
     }
-  }, [data, intitializeGame, loading, playerIndex]);
+
+    // If data was updated, disect into seperate providers
+    if (data) {
+      // Only set once if not yet set
+      if (!staticTiles && boardRef.current) {
+        setStaticTiles(data.board.tiles.map((tile: TileData, idx: number) => {
+          return {
+            index: idx,
+            hex: tile.hex,
+            height: tile.height,
+            biome: tile.biome,
+            adjIdxs: tile.adjIdxs, // Expensive, so only calculate here
+            ref: boardRef.current.children[idx],
+          }
+        }));
+      }
+
+    }
+  }, [data, intitializeGame, loading, playerIndex, staticTiles]);
 
   return (
     <GameContext.Provider value={{ data, set, update, playerIndex }}>
-      {playerIndex === 0 && visible && (
-        // Host only //
-        <>
-          <Button onClick={returnToLobby}>Back to Lobby</Button>
-          <Button onClick={intitializeGame}>Restart</Button>
-          <Button onClick={togglePaused}>
-            {data?.paused ? "Unpause" : "Pause"}
-          </Button>
-          <HostControl {...settings} />
-        </>
-      )}
-      <Box
-        w={"650px"}
-        h={"650px"}
-        visibility={visible ? 'visible' : 'hidden'}
-        border={"1px solid darkblue"}
-        bg={"gray.800"}
-        color={"gray.100"}
-      >      
-        <TargetWrapper>
-          <HUD
-            w={"650px"}
-            h={"650px"}
-            participants={participants}
-          />
-          <Box w={"full"} h={"full"}>
-            <SceneWrapper>
-              <>
-              {!!data?.board && (<>
-                  <Board {...data.board} />
-
-                  {!!data?.units && (
-                    <Units />
-                  )}
-              </>)}
-              </>
-            </SceneWrapper>
-          </Box>
-        </TargetWrapper>
-      </Box>
+      <TilesContext.Provider value={staticTiles}>
+        {playerIndex === 0 && visible && (
+          // Host only //
+          <>
+            <Button onClick={returnToLobby}>Back to Lobby</Button>
+            <Button onClick={intitializeGame}>Restart</Button>
+            <Button onClick={togglePaused}>
+              {data?.paused ? "Unpause" : "Pause"}
+            </Button>
+            <HostControl {...settings} />
+          </>
+        )}
+        <Box
+          w={"650px"}
+          h={"650px"}
+          visibility={visible ? 'visible' : 'hidden'}
+          border={"1px solid darkblue"}
+          bg={"gray.800"}
+          color={"gray.100"}
+        >      
+          <TargetWrapper>
+            <HUD
+              w={"650px"}
+              h={"650px"}
+              participants={participants}
+            />
+            <Box w={"full"} h={"full"}>
+              <SceneWrapper>
+                {board}
+                {units}
+              </SceneWrapper>
+            </Box>
+          </TargetWrapper>
+        </Box>
+      </TilesContext.Provider>
     </GameContext.Provider>
   );
 }

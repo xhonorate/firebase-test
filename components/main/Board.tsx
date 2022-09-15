@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Ref, useEffect } from "react";
 import Tile, { TileData } from "./three/Tiles/Tile";
 import { biomeTypes, tileSize } from "./three/Tiles/Tile";
 import { resourceTypes, findResourceIndexByName } from "./three/Tiles/Resource";
@@ -409,26 +409,26 @@ export function generateBoard({
 
   // Select all options for tile at given hex
   const tileChoice = (hex: HexCoords): TileData => {
-    const adjacentIndexes = cubeRing(hex, 1)
+    const adjIdxs = cubeRing(hex, 1)
       .map((neighborHex) => hexToIndex(neighborHex))
       .filter((i) => i < tiles.length);
 
     // STEP 1: Choose biome - water or land
-    const biome = makeChoice("biome", adjacentIndexes, hex);
+    const biome = makeChoice("biome", adjIdxs, hex);
 
     // STEP 2: Choose additional resources (dependant on biome + neighbors + total # of resource)
-    const type = makeChoice("type", adjacentIndexes, hex, biome);
+    const type = makeChoice("type", adjIdxs, hex, biome);
 
     // STEP 3: Choose odds, based on neighbors
     // only 1 base odds for non-resource tiles
     const odds =
       type === findResourceIndexByName("Gold")
         ? 1
-        : makeChoice("odds", adjacentIndexes, hex, biome);
+        : makeChoice("odds", adjIdxs, hex, biome);
 
     //TODO: relative heights based on neighbors / biome
     const height =
-      biome === 0 ? 0 : makeChoice("height", adjacentIndexes, hex, biome);
+      biome === 0 ? 0 : makeChoice("height", adjIdxs, hex, biome);
 
     // add to totals...
     return {
@@ -462,16 +462,18 @@ export function generateBoard({
   //TODO: Run second pass for river generation?, height generation, and balance?
   // Assign transition types to tiles (e.g. half water half sand, etc.)
   tiles.forEach((tile: TileData, idx: number) => {
+    tile.adjIdxs = adjacentIndexes(idx).filter((adjIdx) => adjIdx < tiles.length);
+
     // Tile transitions (between biome types)
     tile.transition = getTransition(
       tile.biome,
-      adjacentIndexes(idx).map((adjIdx) => tiles?.[adjIdx]?.biome)
+      tile.adjIdxs.map((adjIdx) => tiles?.[adjIdx]?.biome)
     );
 
     // Smoothe out heights
     if (tile.biome !== 0) {
       let val = tile.height * 6; // 1/2 weight for tiles own height, 1/2 weight for adjacent average
-      adjacentIndexes(idx).forEach((adjIdx) => {
+      tile.adjIdxs.forEach((adjIdx) => {
         val += tiles?.[adjIdx]?.height ?? 0; // weight for adjacent tiles height (default 0)
       });
       tile.height = Math.round(val / 12);
@@ -490,27 +492,26 @@ export interface BoardState {
   tiles: TileData[];
 }
 
-export function Board({ tiles }: BoardState) {
-  // Board graphics
-  return (
-    <>
-      {tiles.length > 0 &&
-        tiles.map((tile: TileData, idx) => {
-          return (
-            <Tile
-              key={idx}
-              index={idx}
-              {...tile}
-              borders={
-                "owner" in tile
-                  ? adjacentIndexes(idx).map(
-                      (adjIdx) => tiles?.[adjIdx]?.owner !== tile.owner
-                    )
-                  : null
-              }
-            />
-          );
-        })}
-    </>
-  );
-}
+const Board = React.forwardRef(({tiles}: BoardState, ref: Ref<THREE.Group>) => (
+  <group ref={ref}>
+    {tiles.length > 0 &&
+      tiles.map((tile: TileData, idx) => {
+        return (
+          <Tile
+            key={idx}
+            index={idx}
+            {...tile}
+            borders={
+              "owner" in tile
+                ? tile.adjIdxs.map(
+                    (adjIdx) => tiles?.[adjIdx]?.owner !== tile.owner
+                  )
+                : null
+            }
+          />
+        );
+      })}
+  </group>
+));
+
+export default Board;

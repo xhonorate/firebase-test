@@ -1,5 +1,5 @@
 import { MapControls, useContextBridge } from "@react-three/drei"
-import { GameContext } from '../RoomInstance';
+import { GameContext, TilesContext } from '../RoomInstance';
 import { Canvas } from '@react-three/fiber';
 import React from "react";
 import { TargetContext } from '../MouseEvents';
@@ -10,7 +10,7 @@ export default function SceneWrapper({children}) {
   // bridge any number of contexts
   // Note: These contexts must be provided by something above this SceneWrapper component
   //       You cannot render the providers for these contexts inside this component
-  const ContextBridge = useContextBridge(GameContext, TargetContext);
+  const ContextBridge = useContextBridge(GameContext, TargetContext, TilesContext);
   return (
     <Canvas
       orthographic={true}

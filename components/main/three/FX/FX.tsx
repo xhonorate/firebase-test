@@ -4,43 +4,80 @@ import {
   EffectComposer,
   Outline,
 } from "@react-three/postprocessing";
-import React, { useContext } from "react";
-import { TargetContext } from '../../MouseEvents';
+import { BlendFunction } from "postprocessing";
+import React, { useContext, useMemo } from "react";
+import { Target, TargetContext } from "../../MouseEvents";
+import { TilesContext, GameContext } from '../../RoomInstance';
+import { pathfindTo } from '../../helpers/pathfinding';
+import { hexToIndex } from "../../helpers/hexGrid";
 
 // Convert array of items / groups into flat array of meshes (since groups cannot use outlines)
-function getMeshes (item: THREE.Mesh | THREE.Group) {
+function getMeshes(item: THREE.Object3D | THREE.Object3D[]) {
   if (Array.isArray(item)) {
     return item.flatMap(getMeshes);
-  }
-  if (item?.type === 'Mesh') {
-    return item;
-  } else if (item?.children?.length) {
-    return item.children.flatMap(getMeshes);
+  } else {
+    if (item?.type === "Mesh") {
+      return item;
+    } else if (item?.children?.length) {
+      return item.children.flatMap(getMeshes);
+    }
   }
   return [];
 }
 
 // BE SURE TO PLACE INSIDE OF TARGET SELECTION TO USE CONTEXT!
 const FX = () => {
-  const { target, hovered } = useContext(TargetContext)
-  
+  const { data } = useContext(GameContext);
+  const { target, hovered } = useContext(TargetContext);
+  const staticTiles = useContext(TilesContext);
+
+  const toBeHighlighted = useMemo(() => {
+    if (!hovered || !hovered.ref || hovered.ref === target.ref) {
+      // Do not higlight target clicked on for hover as well
+      return null;
+    } else {
+      if (target && target.type === "unit") {
+        // Highlight pathfinding path
+        const hoveredIdx = hovered.type === 'tile' ? hovered.val.index : hexToIndex(hovered.val.hex)
+        const path = pathfindTo(data.board.tiles, hexToIndex(target.val.hex), hoveredIdx);
+        if (path) {
+          return getMeshes(path.map((pathIdx: number) => staticTiles[pathIdx].ref));
+        } else {
+          // TODO: pathfind to closest point, maybe highlight issue?
+          return null;
+        }
+      }
+      // By default highlight mesh of target
+      return getMeshes(hovered.ref);
+    }
+  }, [target, hovered]);
+
+  const toBeTargeted = useMemo(() => {
+    if (!target || !target.ref) {
+      return null;
+    } else {
+      return getMeshes(target.ref);
+    }
+  }, [target]);
+
   return (
-    <EffectComposer multisampling={8} autoClear={false}>
-      <Outline 
+    <EffectComposer multisampling={4} autoClear={false}>
+      <Outline
         blur
         edgeStrength={100}
         height={500}
         // @ts-ignore
-        visibleEdgeColor={'white'}
-        selection={getMeshes(hovered)} 
+        visibleEdgeColor={"white"}
+        selection={toBeHighlighted}
       />
-      <Outline 
+      <Outline
         blur
         edgeStrength={100}
         height={500}
+        blendFunction={BlendFunction.ALPHA}
         // @ts-ignore
-        visibleEdgeColor={'red'}
-        selection={getMeshes(target?.ref)} 
+        visibleEdgeColor={"red"}
+        selection={toBeTargeted}
       />
       <DepthOfField
         focusDistance={0.1}

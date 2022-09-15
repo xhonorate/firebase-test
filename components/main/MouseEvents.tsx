@@ -1,6 +1,6 @@
 import { useEventListener } from "@chakra-ui/hooks";
-import { ThreeEvent } from "@react-three/fiber"
-import React, { useRef, useState, createContext, useContext, useCallback } from "react"
+import { ThreeEvent, MeshProps, GroupProps } from '@react-three/fiber';
+import React, { useRef, useState, createContext, useContext, useCallback, Ref } from "react"
 import { UnitData, useUnitActions } from './Units';
 import { TileData } from './three/Tiles/Tile';
 
@@ -17,7 +17,7 @@ export type Target = {
 interface TargetContextProps {
   target: Target;
   setTarget: (target: Target) => void;
-  hovered: any;
+  hovered: Target;
   setHovered: any;
 }
 
@@ -38,9 +38,9 @@ export function useTarget(newTarget: Target) {
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
     // Only select first target
     event.stopPropagation();
-    setHovered([ref.current])
+    setHovered({...newTarget, ref: ref.current})
   }, [setHovered])
-  const onPointerOut = useCallback(() => setHovered(state => state.filter(mesh => mesh !== ref.current)), [setHovered])
+  //const onPointerOut = useCallback(() => setHovered(state => state.filter(mesh => mesh !== ref.current)), [setHovered])
 
   // Click Events
   const onClick = useCallback((event: ThreeEvent<PointerEvent>) => {
@@ -57,14 +57,14 @@ export function useTarget(newTarget: Target) {
         setTarget({...newTarget, ref: ref.current});
       }
     }
-  }, [newTarget, target?.type, target.val, unitAction, setTarget]);
-  return { ref, onPointerOver, onPointerOut, onClick }
+  }, [newTarget, target?.type, target?.val, unitAction, setTarget]);
+  return { ref, onPointerOver, onClick }
 }
 
 // Wrapper for FX and targets that will use useTarget
 const TargetWrapper = ({ children }) => {
-  const [target, setTarget] = useState(null)
-  const [hovered, setHovered] = useState([])
+  const [target, setTarget] = useState<Target>(null)
+  const [hovered, setHovered] = useState<Target>(null)
 
   // TODO: add pause menu
   // Deselect Tile on Escape key press

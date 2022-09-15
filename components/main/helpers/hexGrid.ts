@@ -147,10 +147,10 @@ export function indexToHex(index: number) {
   );
 }
 
-// Search for tile with given hex coordinates in tiles list, return false if not found
+// Search for tile with given hex coordinates in tiles list, return null if not found
 export function findTileByHex(tiles: TileData[], hex: HexCoords) {
   const index = hexToIndex(hex);
-  if (index >= tiles.length) return false;
+  if (index >= tiles.length) return null;
   return tiles[index];
 }
 

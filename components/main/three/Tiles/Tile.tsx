@@ -179,6 +179,7 @@ export const tileSize = 1.16; // Diameter of "cylinder" of each tile
 
 export interface TileData {
   index?: number;
+  adjIdxs?: number[]; // Array of indexes of adjacent tiles (saves calculation time)
   type: number; // Yield type
   biome?: number;
   height?: number;
@@ -206,6 +207,7 @@ export function tilePos(hex: HexCoords, height: number = 0) {
 export default function Tile(tile: TileData) {
   const {
     index,
+    adjIdxs,
     hex,
     type,
     procs,
@@ -253,7 +255,7 @@ export default function Tile(tile: TileData) {
       <group
         position={pos}
         dispose={null}
-        {...useTarget('tile', tile)}
+        {...useTarget({type: 'tile', val: tile})}
       >
         {!!borders && (
           <Borders
