@@ -193,14 +193,15 @@ export interface TileData {
 }
 
 // Get real world position of tile based on hex and height
-export function tilePos(hex: HexCoords, height: number = 0) {
+export function tilePos(hex: HexCoords, height: number = 0, onTop: boolean = false) {
   const pos = cubeToPos(
     cubeScale(
       hex,
       tileSize - 0.01 /*scale for difference in size of hex mesh */
     )
   );
-  pos.splice(1, 1, height * heightScale);
+  //TODO: test this..
+  pos.splice(1, 1, height * heightScale + ( onTop ? 0.5 : 0 ));
   return pos;
 }
 
@@ -265,6 +266,9 @@ export default function Tile(tile: TileData) {
           />
         )}
 
+        {/* TODO: THIS CAUSES MEMORY LEAK!!! 
+          Move to HoverBoard file, or just set hovered thingy here - let FX deal with it?
+        */}
         <mesh 
           position-y={0.5 + height * heightScale}
           rotation={[-Math.PI / 2, 0, Math.PI / 2]}

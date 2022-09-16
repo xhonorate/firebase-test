@@ -6,7 +6,7 @@ import {
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import React, { useContext, useMemo } from "react";
-import { Target, TargetContext } from "../../MouseEvents";
+import { TargetContext } from "../../MouseEvents";
 import { TilesContext, GameContext } from '../../RoomInstance';
 import { pathfindTo } from '../../helpers/pathfinding';
 import { hexToIndex } from "../../helpers/hexGrid";
@@ -27,19 +27,19 @@ function getMeshes(item: THREE.Object3D | THREE.Object3D[]) {
 
 // BE SURE TO PLACE INSIDE OF TARGET SELECTION TO USE CONTEXT!
 const FX = () => {
-  const { data } = useContext(GameContext);
+  const { data, playerIndex } = useContext(GameContext);
   const { target, hovered } = useContext(TargetContext);
   const staticTiles = useContext(TilesContext);
 
   const toBeHighlighted = useMemo(() => {
-    if (!hovered || !hovered.ref || hovered.ref === target.ref) {
+    if (!hovered || !hovered.ref || hovered.ref === target?.ref) {
       // Do not higlight target clicked on for hover as well
       return null;
     } else {
-      if (target && target.type === "unit") {
+      if (target && target.type === "unit" && staticTiles !== null) {
         // Highlight pathfinding path
-        const hoveredIdx = hovered.type === 'tile' ? hovered.val.index : hexToIndex(hovered.val.hex)
-        const path = pathfindTo(data.board.tiles, hexToIndex(target.val.hex), hoveredIdx);
+        const hoveredIdx = hovered.type === 'tile' ? hovered.val.index : hovered.val.hexIdx
+        const path = pathfindTo(data, target.val.hexIdx, hoveredIdx, playerIndex);
         if (path) {
           return getMeshes(path.map((pathIdx: number) => staticTiles[pathIdx].ref));
         } else {

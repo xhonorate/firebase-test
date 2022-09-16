@@ -427,8 +427,7 @@ export function generateBoard({
         : makeChoice("odds", adjIdxs, hex, biome);
 
     //TODO: relative heights based on neighbors / biome
-    const height =
-      biome === 0 ? 0 : makeChoice("height", adjIdxs, hex, biome);
+    const height = biome === 0 ? 0 : makeChoice("height", adjIdxs, hex, biome);
 
     // add to totals...
     return {
@@ -462,7 +461,9 @@ export function generateBoard({
   //TODO: Run second pass for river generation?, height generation, and balance?
   // Assign transition types to tiles (e.g. half water half sand, etc.)
   tiles.forEach((tile: TileData, idx: number) => {
-    tile.adjIdxs = adjacentIndexes(idx).filter((adjIdx) => adjIdx < tiles.length);
+    tile.adjIdxs = adjacentIndexes(idx).filter(
+      (adjIdx) => adjIdx < tiles.length
+    );
 
     // Tile transitions (between biome types)
     tile.transition = getTransition(
@@ -492,11 +493,16 @@ export interface BoardState {
   tiles: TileData[];
 }
 
-const Board = React.forwardRef(({tiles}: BoardState, ref: Ref<THREE.Group>) => (
-  <group ref={ref}>
-    {tiles.length > 0 &&
-      tiles.map((tile: TileData, idx) => {
-        return (
+const Board = React.forwardRef(({ tiles }: BoardState, ref: Ref<THREE.Group>) => {
+  // TODO: there should be a way to do this much more intelligently, prevent remouting every time prop updates...
+  // Note - tiles import is better than full data import, but would be best to useMemo on tiles individually?
+  if (!tiles || !tiles.length) {
+    return null;
+  }
+  return (
+    <group ref={ref}>
+      {tiles.length > 0 &&
+        tiles.map((tile: TileData, idx) => (
           <Tile
             key={idx}
             index={idx}
@@ -509,9 +515,9 @@ const Board = React.forwardRef(({tiles}: BoardState, ref: Ref<THREE.Group>) => (
                 : null
             }
           />
-        );
-      })}
-  </group>
-));
+        ))}
+    </group>
+  );
+});
 
 export default Board;

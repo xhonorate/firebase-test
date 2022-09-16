@@ -1,10 +1,14 @@
 import { CharacterType } from "./three/gltfjsx/characters/Parts/useParts";
 import Unit from "./three/Units/Unit";
-import { GameContext, GameState, TilesContext } from './RoomInstance';
+import { GameContext, GameState } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
 import { useCallback, useContext, useEffect, useRef } from "react";
-import { HexCoords, hexToIndex, cubeDistance, findTileByHex } from './helpers/hexGrid';
 import { Target } from "./MouseEvents";
+import {
+  followPath,
+  pathfindTo,
+  stepTowardsTarget,
+} from "./helpers/pathfinding";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -14,19 +18,38 @@ export interface UnitData {
   level?: number; // Level up ammount
   moves: number; // Moves left, resets to default every tick
   actions: number; // Actions left (generally just 1)
-  range: number; // Attack range (1 for melee)
+  range?: number; // Attack range (null for melee)
   hp: number; // Dies when hp reaches 0
-  hex: HexCoords; // Index of current hex position on board
+  str: number; // combat strength
+  resting?: boolean;
+  hexIdx: number; // Index of current hex position on board
+  targetIdx?: number; // Array of steps to reach target
 }
 
-export const defaultStats: { [key in CharacterType]?: Partial<UnitData> } = {
-  Knight: {
-    moves: 2,
-    actions: 1,
-    hp: 10,
-    range: 1,
-  },
-};
+const defaultStats: { [key in CharacterType | "default"]?: Partial<UnitData> } =
+  {
+    Knight: {
+      moves: 2,
+      actions: 1,
+      hp: 40,
+      str: 10,
+    },
+    default: {
+      moves: 1,
+      actions: 1,
+      hp: 10,
+      str: 10,
+    },
+  };
+
+// Return default stats for building of given type
+export function getUnitStats(type: any): Partial<UnitData> {
+  if (type in defaultStats) {
+    return defaultStats[type];
+  } else {
+    return defaultStats["default"];
+  }
+}
 
 // Create new document in RTDB for unit with set props
 export function createUnit({
@@ -37,17 +60,14 @@ export function createUnit({
   return {
     uid: generateUUID(),
     owner,
+    hexIdx: 0,
     type,
-    moves: 0,
+    hp: 10,
+    str: 10,
+    ...defaultStats[type], // Stat overrides for unit type
+    moves: 0, // Initialize with 0 moves / actions (summoning sickness)
     actions: 0,
-    range: defaultStats[type].range,
-    hp: defaultStats[type].hp, 
-    hex: {
-      q: 0,
-      r: 0,
-      s: 0
-    },
-    ...props,
+    ...props, // Prop overrides
   };
 }
 
@@ -59,62 +79,94 @@ export function useUnitActions() {
   const dataRef = useRef(data);
   useEffect(() => {
     dataRef.current = data;
-  }, [data])
+  }, [data]);
 
-  const unitAction = useCallback((unit: UnitData, target: Target) => {
-    update(unitActionUpdates(dataRef.current, unit, target));
-  }, [update])
+  const setUnitTarget = useCallback(
+    (unit: UnitData, target: Target) => {
+      update(setTarget(dataRef.current, unit, target));
+    },
+    [update]
+  );
 
   return {
-    unitAction
-  }
-}
-
-// Return array of tiles that must be crossed to reach target
-function pathfindTo(state: GameState, currentHex: HexCoords, target: Target) {
-  
+    setUnitTarget,
+  };
 }
 
 // Return updates object - set target and move if moves are available
-function unitActionUpdates (state: GameState, unit: UnitData, target: Target) {
-  const updates = {};
-  if (unit.moves > 0) {
-    // TODO: Pathfind towards by moves
-    updates["/units/" + unit.uid + "/hex"] = target.val.hex;
-    updates["/units/" + unit.uid + "/moves"] = unit.moves - cubeDistance(target.val.hex, unit.hex);
+export function setTarget(
+  state: GameState,
+  unit: UnitData,
+  target: Target
+): object {
+  const targetIdx =
+    target.type === "tile" ? target.val.index : target.val.hexIdx;
+  if (targetIdx === unit.hexIdx || !(unit.hp > 0)) {
+    // Do not attempt to pathfind to hex we are already on
+    // or if unit is dead
+    return null;
   }
-  updates["/units/" + unit.uid + "/target"] = target.val.hex;
-  return updates;
+  // Set target for pathfinding
+  const path = pathfindTo(state, unit.hexIdx, targetIdx, unit.owner);
+  if (path) {
+    // If there is a possible path to this point - target is reachable
+    unit.targetIdx = targetIdx; // Set target
+    return followPath(state, unit, path); // Follow path as much as possible
+  }
+  return {};
 }
 
 // Auto-move units towards their targets - return update object
-export function allUnitUpdates(state: GameState): object {
+export function allUnitUpdates(state: GameState) {
   const updates = {};
+  // If unit has pathfinding set
+  Object.values(state?.units ?? {}).forEach((unit) => {
+    if (unit.hp === 0) {
+      // If unit is dying
+      updates["/units/" + unit.uid + "/hp"] = -1;
+    } else if (unit.hp === -1) {
+      // Play dying animation for one tick, then set unit to null;
+      updates["/unit/" + unit.uid] = null;
+    } else {
+      if (unit.targetIdx && (unit.actions || unit.moves)) {
+        // If unit target and has actions / moves, perform pathfinding
+        Object.assign(updates, stepTowardsTarget(state, unit));
+      }
 
-  if (!state.units) {
-    return updates;
-  }
+      const stats = defaultStats[unit.type];
 
-  Object.keys(state.units).forEach((uid: string) => {
-    const { moves, actions } = defaultStats[state.units[uid].type];
-    if (state.units[uid].moves !== moves) {
-      // Reset unit movement to default
-      updates["/units/" + uid + "/moves"] = moves;
-    }
-    if (state.units[uid].moves !== actions) {
-      // Reset unit actions
-      updates["/units/" + uid + "/actions"] = actions;
+      if (unit.resting) {
+        // Increase up to max hp
+        unit.hp = Math.min(stats.hp, unit.hp + 1);
+        if (unit.hp === stats.hp) {
+          unit.resting = false;
+        }
+      }
+
+      // Reset unit movement range and actions - mutate unit object inside of update
+      if (unit.actions < stats.actions) {
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].actions = stats.actions;
+        } else {
+          updates["/units/" + unit.uid + "/actions"] = stats.actions;
+        }
+      }
+      if (unit.moves < stats.moves) {
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].moves = stats.moves;
+        } else {
+          updates["/units/" + unit.uid + "/moves"] = stats.moves;
+        }
+      }
     }
   });
-
   return updates;
 }
 
 export function Units() {
   const { data } = useContext(GameContext);
-  const StaticTiles = useContext(TilesContext);
 
-  if (!data?.units) {
+  if (!data?.units?.length) {
     return null;
   }
 
@@ -126,7 +178,7 @@ export function Units() {
           key={uid}
           // TODO: we do not need to be passing around all of the tile data, just locations and heights...
           unit={data.units[uid]}
-          height={StaticTiles[hexToIndex(data.units[uid].hex)].height}
+          tile={data.board.tiles[data.units[uid].hexIdx]}
         />
       ))}
     </>

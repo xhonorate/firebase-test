@@ -32,7 +32,7 @@ export const TargetContext = createContext<TargetContextProps>({
 export function useTarget(newTarget: Target) {
   const ref = useRef()
   const { target, setTarget, setHovered } = useContext(TargetContext)
-  const { unitAction } = useUnitActions();
+  const { setUnitTarget } = useUnitActions();
   
   // Hover Events
   const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
@@ -51,13 +51,14 @@ export function useTarget(newTarget: Target) {
       // If a unit is currently selected, perform its action
       if (target?.type === 'unit') {
         // Unit actions
-        unitAction(target.val, newTarget);
+        setUnitTarget(target.val, newTarget);
+        setTarget(null);
       } else {
         // Tile or nothing selected, select whatever is clicked
         setTarget({...newTarget, ref: ref.current});
       }
     }
-  }, [newTarget, target?.type, target?.val, unitAction, setTarget]);
+  }, [newTarget, target?.type, target?.val, setUnitTarget, setTarget]);
   return { ref, onPointerOver, onClick }
 }
 

@@ -361,7 +361,7 @@ export const buildOptions: BuildOption[] = [
       // Generate a new unit (comes with a uid)
       const unit = createUnit({
         type: "Knight",
-        hex: indexToHex(target),
+        hexIdx: target,
         owner: playerIndex,
       })
 

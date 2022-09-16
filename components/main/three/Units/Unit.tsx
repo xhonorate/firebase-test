@@ -8,29 +8,55 @@ import {
   cubeToPos,
   cubeDistance,
 } from "../../helpers/hexGrid";
-import { TileData, heightScale, tilePos } from '../Tiles/Tile';
-import AnimatedCharacter, { ActionName } from '../gltfjsx/characters/AnimatedChar';
+import { TileData, tilePos } from "../Tiles/Tile";
+import AnimatedCharacter, {
+  ActionName,
+} from "../gltfjsx/characters/AnimatedChar";
 import { useTarget } from "../../MouseEvents";
 import { useAnimationControls } from "framer-motion";
 
 interface UnitProps extends Omit<GroupProps, "type"> {
   unit: UnitData;
-  height: number; // Height of current tile
+  tile: TileData;
 }
 
-export default function Unit({ unit, height, ...props }: UnitProps) {
+export default function Unit({ unit, tile, ...props }: UnitProps) {
   const prevHex = useRef<HexCoords>(null);
-  const [anim, setAnim] = useState<ActionName>('Idle');
+  const prevHeight = useRef<number>(0);
+  const [anim, setAnim] = useState<ActionName>("Idle");
   const motionControls = useAnimationControls();
   const onMotionComplete = useRef(null);
-  
-  const pos = useMemo(() => tilePos(unit.hex, height), [unit.hex, height]);
+
+  const pos = useMemo(() => tilePos(tile.hex, tile.height, true), [tile]);
+
+  useEffect(() => {
+    if (!prevHex.current) {
+      // If not mounted yet, do not play animations
+      return;
+    }
+    if (unit.hp) {
+      // Unit recieved damage, but not dead
+      //TODO: obviously this is a bad way to do this... need better way to chain
+      setAnim("Block");
+    } else {
+      // Unit dying
+      setAnim("Defeat");
+      motionControls
+        .start(
+          {
+            opacity: 0,
+          },
+          { duration: 2, ease: "linear" }
+      )
+    }
+  }, [unit.hp]);
 
   // On moving to a new hex, update position and rotation
   useEffect(() => {
     if (!prevHex.current) {
       // First render, do not animate motion or run unneccessary calculations
-      prevHex.current = unit.hex;
+      prevHex.current = tile.hex;
+      prevHeight.current = pos[1];
 
       // Animate falling in from the sky
       motionControls.start({
@@ -40,40 +66,44 @@ export default function Unit({ unit, height, ...props }: UnitProps) {
         z: pos[2],
       });
     } else {
-      if (cubeDistance(unit.hex, prevHex.current)) { // If position has actually changed
-        setAnim('Walk')
-
-        // Animate change in hex
-        motionControls.start({
-          x: pos[0],
-          z: pos[2],
-        }, { duration: 1, ease: 'linear' });
-        
-        // Animate y, 2 parts jump up and down
-        motionControls.start({
-          y: 5,
-        }, { duration: 0.5 }).then(() => motionControls.start({
-          y: pos[1],
-        }, { duration: 0.5 }));
-
-        const delta = cubeToPos(cubeSubtract(unit.hex, prevHex.current));
-        motionControls.start({
-          rotateY: Math.atan2(delta[2], -delta[0]) - Math.PI/2
-        });
-
-        // Once character has finished walking, go back to idle
-        onMotionComplete.current = () => {  
-          setAnim('Idle');
-        }
-
-        prevHex.current = unit.hex;
+      const newHex = tile.hex;
+      const dist = cubeDistance(newHex, prevHex.current);
+      // Check if position has actually changed
+      if (dist > 0) {
+        const delta = cubeToPos(cubeSubtract(newHex, prevHex.current));
+        // Rotate to face direction, then move
+        motionControls
+          .start({
+            rotateY: Math.atan2(delta[2], -delta[0]) - Math.PI / 2,
+          })
+          .then(() => {
+            // If position has actually changed
+            setAnim("Run");
+            // Animate change in hex
+            motionControls
+              .start(
+                {
+                  x: pos[0],
+                  y: pos[1], // Animate y, 2 parts jump up and down
+                  //TODO: bounce multiple times if moving multiple tiles
+                  z: pos[2],
+                },
+                { duration: dist, ease: "linear" }
+              )
+              .then(() => {
+                // Once character has finished walking, go back to idle
+                prevHeight.current = pos[1];
+                prevHex.current = newHex;
+                setAnim("Idle");
+              });
+          });
       }
     }
-  }, [motionControls, pos]);
-  
+  }, [motionControls, pos, tile]);
+
   return (
     <motion.group
-      {...useTarget({type: 'unit', val: unit})}
+      {...useTarget({ type: "unit", val: unit })}
       scale={1}
       whileHover={{ scale: 1.2 }}
       initial={{

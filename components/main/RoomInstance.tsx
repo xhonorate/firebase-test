@@ -123,22 +123,6 @@ export default function Room({
   const [staticTiles, setStaticTiles] = useState<StaticTileData[]>(null);
   const boardRef = useRef(null);
 
-  const board = useMemo(() => {
-    if (!data?.board) {
-      return null;
-    } else {
-      return <Board ref={boardRef} {...data.board} />
-    }
-  }, [data?.board]);
-
-  const units = useMemo(() => {
-    if (!data?.units) {
-      return null;
-    } else {
-      return <Units />
-    }
-  }, [data?.units]);
-
   useEffect(() => {
     // If no data is present, need to create new RTDB entry for room
     if (!data && !loading && playerIndex === 0) {
@@ -195,8 +179,8 @@ export default function Room({
             />
             <Box w={"full"} h={"full"}>
               <SceneWrapper>
-                {board}
-                {units}
+                <Board ref={boardRef} tiles={data?.board?.tiles} />
+                <Units />
               </SceneWrapper>
             </Box>
           </TargetWrapper>

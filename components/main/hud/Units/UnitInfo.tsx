@@ -8,7 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { playerColors } from "../../three/Tiles/Tile";
 import { Participant } from "../../../cloudFirestore/GameLobby";
-import { UnitData, defaultStats } from "../../Units";
+import { getUnitStats, UnitData } from "../../Units";
 import React from "react";
 
 interface UnitInfoProps extends StackProps {
@@ -24,6 +24,7 @@ export default function UnitInfo({
 }: UnitInfoProps) {
   return (
     <Stack direction={"column"} spacing={1} {...props}>
+      <Text>{JSON.stringify(unit)}</Text>
       <Text fontSize={"lg"}>{unit.type}</Text>
 
       {unit.level && (
@@ -38,7 +39,7 @@ export default function UnitInfo({
           colorScheme="green"
           size="md"
           w={"full"}
-          value={Math.round((100 * unit.hp) / (defaultStats?.[unit.type]?.hp ?? 100))}
+          value={Math.round((100 * unit.hp) / getUnitStats(unit.type).hp)}
         />
       </Box>
 

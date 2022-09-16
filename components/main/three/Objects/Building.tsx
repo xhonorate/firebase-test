@@ -10,8 +10,44 @@ import { Billboard } from "@react-three/drei";
 import React, { useMemo } from "react";
 import Cloud from "../FX/Cloud";
 
+interface DefaultStats {
+  hp: number;
+  str: number; // Defensive strength (dmg delt to attackers)
+}
+
+// Return default stats for building of given type
+export function getBuildingStats(type: ObjectType): DefaultStats {
+  if (type in defaultStats) {
+    return defaultStats[type];
+  } else {
+    return defaultStats['default'];
+  }
+}
+
+const defaultStats: { [key in ObjectType | 'default']?: DefaultStats } = {
+  Settlement: {
+    hp: 100,
+    str: 5
+  },
+  default: {
+    hp: 10,
+    str: 1
+  }
+};
+
+type ObjectType =
+  | "Road"
+  | "Settlement"
+  | "Market"
+  | "Lumbermill"
+  | "Mine"
+  | "Farm"
+  | "Barracks"
+
 export interface Obj {
-  type: string;
+  type: ObjectType;
+  hp?: number;
+  str?: number;
   owner?: number;
   level?: number;
   t2c?: number; //Turns until construction is complete
@@ -44,7 +80,7 @@ export default function Building({
       case "Market":
         return <Market {...props} />;
       case "Lumbermill":
-        return <Lumbermill {...props} />
+        return <Lumbermill {...props} />;
       case "Mine":
         return <Mine {...props} />;
       case "Farm":
