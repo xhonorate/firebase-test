@@ -31,6 +31,8 @@ const FX = () => {
   const { target, hovered } = useContext(TargetContext);
   const staticTiles = useContext(TilesContext);
 
+  // TODO: move to another function
+  // ALSO add better ui for popups (billboards)
   const toBeHighlighted = useMemo(() => {
     if (!hovered || !hovered.ref || hovered.ref === target?.ref) {
       // Do not higlight target clicked on for hover as well
@@ -50,10 +52,10 @@ const FX = () => {
       // By default highlight mesh of target
       return getMeshes(hovered.ref);
     }
-  }, [target, hovered]);
+  }, [hovered, target, staticTiles, data, playerIndex]);
 
   const toBeTargeted = useMemo(() => {
-    if (!target || !target.ref) {
+    if (!target || !target?.ref) {
       return null;
     } else {
       return getMeshes(target.ref);
@@ -61,23 +63,18 @@ const FX = () => {
   }, [target]);
 
   return (
-    <EffectComposer multisampling={4} autoClear={false}>
-      <Outline
-        blur
-        edgeStrength={100}
-        height={500}
-        // @ts-ignore
-        visibleEdgeColor={"white"}
-        selection={toBeHighlighted}
-      />
+    <EffectComposer multisampling={8} autoClear={false}>
       <Outline
         blur
         edgeStrength={100}
         height={500}
         blendFunction={BlendFunction.ALPHA}
         // @ts-ignore
-        visibleEdgeColor={"red"}
-        selection={toBeTargeted}
+        visibleEdgeColor={"white"}
+        // @ts-ignore
+        hiddenEdgeColor={"white"}
+        selection={[...(toBeHighlighted ?? []), ...(toBeTargeted ?? [])]}
+        // TODO: ^^^ not this, switch to just targeted, and use something else for highlights
       />
       <DepthOfField
         focusDistance={0.1}

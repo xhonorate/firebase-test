@@ -69,7 +69,9 @@ export function initiateCombat(
   // Apply defender dmg only if attacker is melee
   // Only apply hp weight if defender is unit (not building)
   const defDmg = attacker?.range ? 0 : dmgDealt(defender, defIsUnit, true);
-  
+  console.log(atkDmg, defDmg)
   // Apply damage to unit (will be updated outside of this function)
-  [attacker.hp, defender.hp] = fightUntilDeath(atkDmg, defDmg, attacker.hp, defender.hp);
+  const [atkHp2, defHp2] = fightUntilDeath(atkDmg, defDmg, attacker.hp, defender.hp);
+  attacker.hp = atkHp2;
+  defender.hp = defHp2;
 }

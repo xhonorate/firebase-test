@@ -28,7 +28,6 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
   const onMotionComplete = useRef(null);
 
   const pos = useMemo(() => tilePos(tile.hex, tile.height, true), [tile]);
-
   useEffect(() => {
     if (!prevHex.current) {
       // If not mounted yet, do not play animations
@@ -49,7 +48,7 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
           { duration: 2, ease: "linear" }
       )
     }
-  }, [unit.hp]);
+  }, [motionControls, unit.hp]);
 
   // On moving to a new hex, update position and rotation
   useEffect(() => {

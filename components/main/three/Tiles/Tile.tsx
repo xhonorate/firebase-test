@@ -268,7 +268,6 @@ export default function Tile(tile: TileData) {
 
         {/* TODO: THIS CAUSES MEMORY LEAK!!! 
           Move to HoverBoard file, or just set hovered thingy here - let FX deal with it?
-        */}
         <mesh 
           position-y={0.5 + height * heightScale}
           rotation={[-Math.PI / 2, 0, Math.PI / 2]}
@@ -286,22 +285,9 @@ export default function Tile(tile: TileData) {
             color={'white'}
           />
         </mesh>
+        */}
 
-        {/* OLD YIELD ANIM:
-        {type !== 0 && (
-          // Yield Proc Display //TODO: switch to plane? or fx
-          <mesh position={[0, 0.52, 0]}>
-            <cylinderGeometry args={[1.0, 1.0, 0.01, 6]} />
-            <motion.meshStandardMaterial
-              initial={{ opacity: 0 }}
-              animate={tileProc}
-              transition={{ duration: 3, ease: "easeOut" }}
-              transparent={true}
-              color={"white"}
-            />
-          </mesh>
-        )}
-
+        {/* OLD HOVER ANIM: 
         <mesh position-y={0.51 - (height * heightScale / 2)}>
           <cylinderGeometry args={[tileSize, tileSize, height * heightScale + 0.02, 6]} />
           <motion.meshStandardMaterial

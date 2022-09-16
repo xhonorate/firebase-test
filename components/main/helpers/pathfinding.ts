@@ -38,13 +38,6 @@ export function followPath (state: GameState, unit: UnitData, path: number[]): o
         unit.actions -= 1;
         initiateCombat(unit, blocking);
 
-        // If other unit was destroyed, move in
-        if (unit.hp && blocking.hp === 0) {
-          unit.hexIdx = unit.targetIdx;
-          unit.moves -= 1;
-          unit.targetIdx = null;
-        }
-
         if ('uid' in blocking) {
           // If blocker was another unit
           //TODO: unit death
@@ -58,29 +51,35 @@ export function followPath (state: GameState, unit: UnitData, path: number[]): o
             // TODO: animations?
             updates["/board/tiles/" + unit.targetIdx + "/obj"] = blocking;
             // Gain control of tile
-            updates["/board/tiles/" + unit.targetIdx].owner = unit.owner;
+            updates["/board/tiles/" + unit.targetIdx + "/owner"] = unit.owner;
             if (blocking.type === 'Settlement') {
               // Gain control of surrounding tiles
               state.board.tiles[unit.targetIdx].adjIdxs.forEach((adjIdx) => {
-                updates["/board/tiles/" + adjIdx].owner = unit.owner;
+                updates["/board/tiles/" + adjIdx + "/owner"] = unit.owner;
               })
             }
           } else {
             // update damage taken
-            updates["/board/tiles/" + unit.targetIdx + "/obj/hp"] = blocking.hp;
+            updates["/board/tiles/" + unit.targetIdx + "/obj"] = blocking;
           }
         }
 
+        // If other unit was destroyed, move in
+        if (unit.hp && blocking.hp === 0) {
+          unit.hexIdx = unit.targetIdx;
+          unit.moves -= 1;
+          unit.targetIdx = null;
+        }
       } else {
         // Simply move in
         unit.moves -= 1;
         unit.hexIdx = next;
-      }
 
-      // Check if we have reached the end of the path
-      if (!path.length) {
-        unit.targetIdx = null;
-        break;
+        // Check if we have reached the end of the path
+        if (!path.length) {
+          unit.targetIdx = null;
+          break;
+        }
       }
     }
   }

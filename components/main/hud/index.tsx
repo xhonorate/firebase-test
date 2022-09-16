@@ -177,7 +177,7 @@ export default function HUD({
             ) : (
               <>
                 <UnitInfo 
-                  unit={target.val}
+                  unit={data.units[target.val.uid]}
                   participants={participants}
                   maxW={"50%"}
                 />

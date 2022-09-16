@@ -23,6 +23,9 @@ export default function TileControls({
   //NOTE: most unit controls should be handled in Units file, since it has access to board info
   // Just do stuff like Automate / Delete unit here
 
+  // Set resting button
+  // defend?
+  // other interactions
 
   return (
     <>

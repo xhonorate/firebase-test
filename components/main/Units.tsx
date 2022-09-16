@@ -126,7 +126,7 @@ export function allUnitUpdates(state: GameState) {
       updates["/units/" + unit.uid + "/hp"] = -1;
     } else if (unit.hp === -1) {
       // Play dying animation for one tick, then set unit to null;
-      updates["/unit/" + unit.uid] = null;
+      updates["/units/" + unit.uid] = null;
     } else {
       if (unit.targetIdx && (unit.actions || unit.moves)) {
         // If unit target and has actions / moves, perform pathfinding
@@ -137,7 +137,8 @@ export function allUnitUpdates(state: GameState) {
 
       if (unit.resting) {
         // Increase up to max hp
-        unit.hp = Math.min(stats.hp, unit.hp + 1);
+        // TODO: health per turn
+        unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
         if (unit.hp === stats.hp) {
           unit.resting = false;
         }
@@ -166,7 +167,7 @@ export function allUnitUpdates(state: GameState) {
 export function Units() {
   const { data } = useContext(GameContext);
 
-  if (!data?.units?.length) {
+  if (!(data?.units)) {
     return null;
   }
 
