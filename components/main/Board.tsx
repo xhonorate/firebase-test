@@ -520,4 +520,5 @@ const Board = React.forwardRef(({ tiles }: BoardState, ref: Ref<THREE.Group>) =>
   );
 });
 
+Board.displayName = "Board";
 export default Board;

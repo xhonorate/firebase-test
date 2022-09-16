@@ -39,7 +39,7 @@ export function useTarget(newTarget: Target) {
     // Only select first target
     event.stopPropagation();
     setHovered({...newTarget, ref: ref.current})
-  }, [setHovered])
+  }, [newTarget, setHovered])
   //const onPointerOut = useCallback(() => setHovered(state => state.filter(mesh => mesh !== ref.current)), [setHovered])
 
   // Click Events
