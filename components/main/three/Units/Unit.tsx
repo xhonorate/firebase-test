@@ -1,45 +1,48 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { UnitData } from "../../Units";
-import { GroupProps } from "@react-three/fiber";
 import { motion } from "framer-motion-3d";
-import {
-  HexCoords,
-  cubeSubtract,
-  cubeToPos,
-  cubeDistance,
-} from "../../helpers/hexGrid";
-import { TileData, tilePos } from "../Tiles/Tile";
-import AnimatedCharacter, {
-  ActionName,
-} from "../gltfjsx/characters/AnimatedChar";
 import { useTarget } from "../../MouseEvents";
-import { useAnimationControls } from "framer-motion";
+import useAnimatedChar from "../gltfjsx/characters/useAnimatedChar";
+import { Transition } from "framer-motion";
 
-interface UnitProps extends Omit<GroupProps, "type"> {
-  unit: UnitData;
-  tile: TileData;
+interface UnitProps extends UnitData {
+  x: number;
+  y: number;
+  z: number;
 }
 
-export default function Unit({ unit, tile, ...props }: UnitProps) {
-  const prevHex = useRef<HexCoords>(null);
-  const prevHeight = useRef<number>(0);
-  const [anim, setAnim] = useState<ActionName>("Idle");
-  const motionControls = useAnimationControls();
-  const onMotionComplete = useRef(null);
+function normalDistance(
+  dx: number,
+  dy: number,
+): number {
+  return Math.sqrt(dx ** 2 + dy ** 2);
+}
 
-  const pos = useMemo(() => tilePos(tile.hex, tile.height, true), [tile]);
+export default function Unit({ x, y, z, ...unit }: UnitProps) {
+  const prevData = useRef<Partial<UnitProps>>(null);
+  const transition = useRef<Transition>(null);
+  const onMotionComplete = useRef<() => void>(null);
+  const [motionPos, setMotionPos] = useState<{
+    x: number;
+    y: number;
+    z: number;
+    rotateY: number;
+  }>({ x, y, z, rotateY: 0 });
+  const { play, Model } = useAnimatedChar(unit.type);
+
+  /*
   useEffect(() => {
-    if (!prevHex.current) {
+    if (!prevData.current) {
       // If not mounted yet, do not play animations
       return;
     }
     if (unit.hp) {
       // Unit recieved damage, but not dead
       //TODO: obviously this is a bad way to do this... need better way to chain
-      setAnim("Block");
+      anim.play("Block", false, { anim: 'Idle', loop: true });
     } else {
       // Unit dying
-      setAnim("Defeat");
+      anim.play("Defeat", false, null);
       motionControls
         .start(
           {
@@ -48,57 +51,47 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
           { duration: 2, ease: "linear" }
       )
     }
-  }, [motionControls, unit.hp]);
+  }, [anim, motionControls, unit]); */
 
   // On moving to a new hex, update position and rotation
   useEffect(() => {
-    if (!prevHex.current) {
+    console.log("effect!");
+    if (!prevData.current) {
+      console.log("Initial unit motion");
       // First render, do not animate motion or run unneccessary calculations
-      prevHex.current = tile.hex;
-      prevHeight.current = pos[1];
-
-      // Animate falling in from the sky
-      motionControls.start({
-        opacity: 1,
-        x: pos[0],
-        y: pos[1],
-        z: pos[2],
-      });
     } else {
-      const newHex = tile.hex;
-      const dist = cubeDistance(newHex, prevHex.current);
+      const deltaX = x - prevData.current.x;
+      const deltaY = y - prevData.current.y;
+      const delta = normalDistance(
+        deltaX,
+        deltaY
+      );
       // Check if position has actually changed
-      if (dist > 0) {
-        const delta = cubeToPos(cubeSubtract(newHex, prevHex.current));
+      if (delta > 0) {
         // Rotate to face direction, then move
-        motionControls
-          .start({
-            rotateY: Math.atan2(delta[2], -delta[0]) - Math.PI / 2,
-          })
-          .then(() => {
-            // If position has actually changed
-            setAnim("Run");
-            // Animate change in hex
-            motionControls
-              .start(
-                {
-                  x: pos[0],
-                  y: pos[1], // Animate y, 2 parts jump up and down
-                  //TODO: bounce multiple times if moving multiple tiles
-                  z: pos[2],
-                },
-                { duration: dist, ease: "linear" }
-              )
-              .then(() => {
-                // Once character has finished walking, go back to idle
-                prevHeight.current = pos[1];
-                prevHex.current = newHex;
-                setAnim("Idle");
-              });
-          });
+        const rotateY = Math.atan2(deltaY, -deltaX) - Math.PI / 2;
+        console.log(rotateY);
+
+        transition.current = { duration: 0.25, ease: "easeInOut" };
+        setMotionPos({
+          x: prevData.current.x,
+          y: prevData.current.y,
+          z: prevData.current.z,
+          rotateY,
+        });
+        onMotionComplete.current = () => {
+          console.log("hello?", x, y, z);
+          play("Run", true);
+          transition.current = { duration: delta, ease: "linear" };
+          setMotionPos({ x, y, z, rotateY });
+          onMotionComplete.current = () => {
+            play("Idle", true);
+          };
+        };
       }
-    }
-  }, [motionControls, pos, tile]);
+    }// Update previous data
+    prevData.current = { x, y, z, hp: unit.hp };
+  }, [play, x, y, z, unit.hp]);
 
   return (
     <motion.group
@@ -107,15 +100,19 @@ export default function Unit({ unit, tile, ...props }: UnitProps) {
       whileHover={{ scale: 1.2 }}
       initial={{
         opacity: 0,
-        x: pos[0],
+        x: x,
         y: 5,
-        z: pos[2],
+        z: z,
         rotateY: 0,
       }}
-      animate={motionControls}
+      animate={{
+        opacity: 1,
+        ...motionPos,
+      }}
+      transition={transition.current}
       onAnimationComplete={onMotionComplete.current}
     >
-      <AnimatedCharacter character={unit.type} anim={anim} {...props} />
+      {Model}
     </motion.group>
   );
 }

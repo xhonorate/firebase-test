@@ -9,6 +9,7 @@ import {
   pathfindTo,
   stepTowardsTarget,
 } from "./helpers/pathfinding";
+import { tilePos } from "./three/Tiles/Tile";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -174,14 +175,22 @@ export function Units() {
   // Board graphics
   return (
     <>
-      {Object.keys(data.units).map((uid: string) => (
-        <Unit
-          key={uid}
-          // TODO: we do not need to be passing around all of the tile data, just locations and heights...
-          unit={data.units[uid]}
-          tile={data.board.tiles[data.units[uid].hexIdx]}
-        />
-      ))}
+      {Object.keys(data.units).map((uid: string) => {
+        // TODO: should be a way to memo this?
+        const tile = data.board.tiles[data.units[uid].hexIdx];
+        const pos = tilePos(tile.hex, tile.height, true);
+      
+        return (
+          <Unit
+            key={uid}
+            // TODO: we do not need to be passing around all of the tile data, just locations and heights...
+            x={pos[0]}
+            y={pos[1]}
+            z={pos[2]}
+            {...data.units[uid]}
+          />
+        )}
+      )}
     </>
   );
 }
