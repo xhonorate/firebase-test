@@ -4,6 +4,7 @@ import { resourceTypes } from "./three/Tiles/Resource";
 import { GameSettings } from "../cloudFirestore/GameSettings";
 import findClosestSettlement from './helpers/findClosestSettlement';
 import { allUnitUpdates } from './Units';
+import { getBuildingStats } from "./three/Objects/Building";
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
 function procTiles(state: GameState, frequency: number): object { 

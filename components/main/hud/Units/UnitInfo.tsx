@@ -24,7 +24,7 @@ export default function UnitInfo({
 }: UnitInfoProps) {
   return (
     <Stack direction={"column"} spacing={1} {...props}>
-      <Text>{JSON.stringify(unit)}</Text>
+      { /* <Text>{JSON.stringify(unit)}</Text> */ }
       <Text fontSize={"lg"}>{unit.type}</Text>
 
       {unit.level && (

@@ -137,11 +137,21 @@ export function allUnitUpdates(state: GameState) {
       const stats = defaultStats[unit.type];
 
       if (unit.resting) {
+        console.log("ASD")
         // Increase up to max hp
-        // TODO: health per turn
         unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].hp = unit.hp;
+        } else {
+          updates["/units/" + unit.uid + "/hp"] = unit.hp;
+        }
         if (unit.hp === stats.hp) {
           unit.resting = false;
+          if (updates["/units/" + unit.uid]) {
+            updates["/units/" + unit.uid].resting = false;
+          } else {
+            updates["/units/" + unit.uid + "/resting"] = false;
+          }
         }
       }
 

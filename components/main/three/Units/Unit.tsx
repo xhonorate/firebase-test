@@ -64,6 +64,7 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
       const deltaZ = z - prevData.current.z;
       const delta = normalDistance(deltaX, deltaZ);
       if (unit.hp !== prevData.current.hp) {
+        //TODO: probs set anims in db? idk
         if (unit.hp) {
           // Unit recieved damage, but not dead
           //TODO: obviously this is a bad way to do this... need better way to chain

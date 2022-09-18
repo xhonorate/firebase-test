@@ -73,7 +73,7 @@ const FX = () => {
         visibleEdgeColor={"white"}
         // @ts-ignore
         hiddenEdgeColor={"white"}
-        selection={[...(toBeHighlighted ?? []), ...(toBeTargeted ?? [])]}
+        selection={toBeTargeted}
         // TODO: ^^^ not this, switch to just targeted, and use something else for highlights
       />
       <DepthOfField

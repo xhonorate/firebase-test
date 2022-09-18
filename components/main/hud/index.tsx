@@ -17,6 +17,7 @@ import { playerColors } from "../three/Tiles/Tile";
 import { Participant } from "../../cloudFirestore/GameLobby";
 import UnitInfo from "./Units/UnitInfo";
 import { TargetContext } from '../MouseEvents';
+import UnitControls from "./Units/UnitControls";
 
 const HUDContainer = ({ children, ...props }) => (
   <Flex
@@ -180,6 +181,9 @@ export default function HUD({
                   unit={data.units[target.val.uid]}
                   participants={participants}
                   maxW={"50%"}
+                />
+                <UnitControls 
+                  uid={target.val.uid}
                 />
               </>
             )}
