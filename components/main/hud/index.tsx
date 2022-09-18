@@ -162,7 +162,7 @@ export default function HUD({
             {target.type === "tile" ? (
               <>
                 <TileInfo
-                  tile={target.val}
+                  tile={data.board.tiles[target.val.index]}
                   participants={participants}
                   maxW={"50%"}
                 />
@@ -170,7 +170,7 @@ export default function HUD({
                   tiles={data.board.tiles}
                   playerIndex={playerIndex}
                   resources={resources}
-                  tile={target.val}
+                  tile={data.board.tiles[target.val.index]}
                   updateTile={updateTile}
                 />
               </>

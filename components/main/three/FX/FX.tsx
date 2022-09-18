@@ -68,7 +68,7 @@ const FX = () => {
         blur
         edgeStrength={100}
         height={500}
-        blendFunction={BlendFunction.ALPHA}
+        // blendFunction={BlendFunction.ALPHA}
         // @ts-ignore
         visibleEdgeColor={"white"}
         // @ts-ignore

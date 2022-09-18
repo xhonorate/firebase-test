@@ -11,10 +11,7 @@ interface UnitProps extends UnitData {
   z: number;
 }
 
-function normalDistance(
-  dx: number,
-  dy: number,
-): number {
+function normalDistance(dx: number, dy: number): number {
   return Math.sqrt(dx ** 2 + dy ** 2);
 }
 
@@ -22,12 +19,15 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
   const prevData = useRef<Partial<UnitProps>>(null);
   const transition = useRef<Transition>(null);
   const onMotionComplete = useRef<() => void>(null);
-  const [motionPos, setMotionPos] = useState<{
-    x: number;
-    y: number;
-    z: number;
-    rotateY: number;
-  }>({ x, y, z, rotateY: 0 });
+  const [motionPos, setMotionPos] = useState<
+    Partial<{
+      opacity?: number;
+      x: number;
+      y: number;
+      z: number;
+      rotateY: number;
+    }>
+  >({ x, y, z, rotateY: 0, opacity: 1 });
   const { play, Model } = useAnimatedChar(unit.type);
 
   /*
@@ -61,16 +61,30 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
       // First render, do not animate motion or run unneccessary calculations
     } else {
       const deltaX = x - prevData.current.x;
-      const deltaY = y - prevData.current.y;
-      const delta = normalDistance(
-        deltaX,
-        deltaY
-      );
+      const deltaZ = z - prevData.current.z;
+      const delta = normalDistance(deltaX, deltaZ);
+      if (unit.hp !== prevData.current.hp) {
+        if (unit.hp) {
+          // Unit recieved damage, but not dead
+          //TODO: obviously this is a bad way to do this... need better way to chain
+          play("Block", false, { anim: "Idle", loop: true });
+        } else {
+          // Unit dying
+          play("Defeat", false, null);
+          transition.current = { duration: 1, ease: "linear" };
+          setMotionPos({
+            x: prevData.current.x,
+            y: prevData.current.y,
+            z: prevData.current.z,
+            opacity: 0,
+          });
+        }
+      }
       // Check if position has actually changed
       if (delta > 0) {
         // Rotate to face direction, then move
-        const rotateY = Math.atan2(deltaY, -deltaX) - Math.PI / 2;
-        console.log(rotateY);
+        // TODO: random 360s?
+        const rotateY = Math.atan2(-deltaZ, deltaX) + Math.PI / 2;
 
         transition.current = { duration: 0.25, ease: "easeInOut" };
         setMotionPos({
@@ -80,16 +94,16 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
           rotateY,
         });
         onMotionComplete.current = () => {
-          console.log("hello?", x, y, z);
           play("Run", true);
           transition.current = { duration: delta, ease: "linear" };
           setMotionPos({ x, y, z, rotateY });
           onMotionComplete.current = () => {
+            transition.current = { duration: 0.25, ease: "easeInOut" };
             play("Idle", true);
           };
         };
       }
-    }// Update previous data
+    } // Update previous data
     prevData.current = { x, y, z, hp: unit.hp };
   }, [play, x, y, z, unit.hp]);
 
@@ -105,10 +119,7 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
         z: z,
         rotateY: 0,
       }}
-      animate={{
-        opacity: 1,
-        ...motionPos,
-      }}
+      animate={motionPos}
       transition={transition.current}
       onAnimationComplete={onMotionComplete.current}
     >

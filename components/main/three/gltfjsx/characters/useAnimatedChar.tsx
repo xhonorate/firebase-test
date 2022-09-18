@@ -94,15 +94,14 @@ export default function useAnimatedChar(character: CharacterType, equipment: Equ
 
   const { actions, mixer } = useAnimations<GLTFAction>(animations, group)
 
-  const play = useCallback((anim: ActionName = "Idle", loop = false, upNext: AnimPlayProps = null) => {
+  const play = useCallback((anim: ActionName = "Idle", loop = true, upNext: AnimPlayProps = null) => {
     console.log('Play: ', anim);
     if (!actions[anim].isRunning()) {
       if (action.current && action.current !== anim) {
         // TODO: Animation blending depending on which two are being interpolated 
-        actions[action.current].crossFadeTo(actions[anim], 1, true).play();
-      } else {
-        actions[anim].play();
+        actions[action.current].crossFadeTo(actions[anim], 1, true).stop();
       }
+      actions[anim].setLoop(loop ? 1 : 0, 0).play();
       action.current = anim;
       next.current = upNext;
     }
@@ -114,8 +113,8 @@ export default function useAnimatedChar(character: CharacterType, equipment: Equ
       console.log("complete, playnext:", next.current);
       // If a next action is queued - move queue forward
       if (next.current) {
-        next.current = next.current?.next ?? null;
         play(next.current.anim, next.current.loop, next.current.next);
+        next.current = next.current?.next ?? null;
       }
     }
 
@@ -133,7 +132,6 @@ export default function useAnimatedChar(character: CharacterType, equipment: Equ
   // Import Parts for character type, then place them within respective bone primatives
   // TODO: should this be useMemo or not? idk check for mem leaks ----- I think its good?
   const Model = useMemo(() => { 
-    console.log("UPDATE MODEL")
     return(
     <group ref={group} dispose={null}>
       <primitive object={bones.Body}>
