@@ -1,17 +1,22 @@
-import React, { Ref, useCallback, useMemo, useRef, useState } from "react";
-import { useRealtime } from "../realtimeDatabase/Hooks/useRealtime";
-import { useEffect } from "react";
+import React, {
+  Ref,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button, Box, useEventListener } from "@chakra-ui/react";
 import Board, { generateBoard, BoardState } from "./Board";
 import HostControl from "./HostControl";
 import HUD from "./hud";
-import { resourceTypes } from "./three/Tiles/Resource";
-import { Participant } from "../cloudFirestore/GameLobby";
+import { Participant, LobbyContext } from "../cloudFirestore/GameLobby";
 import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
-import TargetWrapper from './MouseEvents';
-import { TileData } from './three/Tiles/Tile';
+import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomGeneration";
+import FX from "./three/FX/FX";
+import { TargetContext, useTargetWrapper } from './MouseEvents';
 
 export interface ResourceStates {
   wood: number;
@@ -28,13 +33,14 @@ export interface PlayerState {
 
 export interface GameState {
   board: BoardState;
-  units?: { [uid: string]: UnitData};
+  units?: { [uid: string]: UnitData };
   players: PlayerState[];
   turn: number;
   paused?: boolean;
   winner?: string;
 }
 
+/*
 export interface GameContextProps {
   data: GameState;
   set: (data: object) => any;
@@ -49,87 +55,59 @@ export const GameContext = React.createContext<GameContextProps>({
   playerIndex: null,
 });
 
-type StaticTileData = Partial<TileData> & { ref: any }
+type StaticTileData = Partial<TileData> & { ref: any };
 export const TilesContext = React.createContext<StaticTileData[]>(null);
+*/
 
-export default function Room({
-  id,
-  settings,
-  updateGame,
-  playerIndex,
-  participants,
-}) {
-  /// TODO: I would like this to act like swr
-  // is this triggering full refresh on every change?
-  // or is it like a ref and i can useEffect on specific child elements in the json??
-  const { data, set, update, loading, unsubscribe, deleteReference } =
-    useRealtime<GameState>(`rooms/${id}`);
+export default function Room() {
+  const { id, settings, participants, playerIndex, paused, updateGame } =
+    useContext(LobbyContext);
 
   // Konami code
   //useHax('arrowuparrowdownarrowuparrowdownarrowleftarrowrightarrowleftarrowrightba', () => console.log("AYYY"));
   // TODO: remove hax...
   const [visible, setVisible] = useState(true);
+  
+  const { target, hovered, TargetWrapper } = useTargetWrapper();
 
   useHax([
     [
       "gimmegold",
-      () => update({ ["/players/" + playerIndex + "/resources/Gold"]: 9999 }),
+      () => updateRoom(id, { ["/players/" + playerIndex + "/resources/Gold"]: 9999 }),
     ],
-    [
-      "h",
-      () => setVisible(false)
-    ],
-    [
-      "s",
-      () => setVisible(true)
-    ],
+    ["h", () => setVisible(false)],
+    ["s", () => setVisible(true)],
   ]);
 
-  const togglePaused = useCallback(
-    () => update({ paused: !(data?.paused ?? false) }),
-    [data?.paused, update]
-  );
-
-  const intitializeGame = useCallback(() => {
-    set({
-      board: generateBoard(settings),
-      players: participants.map((player: Participant) => {
-        return {
-          id: player.id,
-          resources: resourceTypes.reduce(
-            (a, v) => (v.name === "None" ? a : { ...a, [v.name]: 1 }),
-            {}
-          ),
-          points: 1,
-        };
-      }),
-      turn: 0,
-    });
-  }, [participants, set, settings]);
+  const togglePaused = useCallback(() => {
+    try {
+      updateGame({
+        paused: !paused
+      })
+    }
+    catch (e) {
+      console.warn(e);
+    }
+  }, []);
 
   const returnToLobby = useCallback(() => {
     try {
       updateGame({
         started: false,
       });
-      unsubscribe();
-      deleteReference(); //Delete game lobby -- force regeneration on next instance
+      deleteRoom(id);
     } catch (e) {
       console.warn(e);
     }
-  }, [deleteReference, unsubscribe, updateGame]);
+  }, [updateGame]);
 
+  /*
   // Pieces of tile data that do not change, pass down through context to prevent need to listen to all data
   const [staticTiles, setStaticTiles] = useState<StaticTileData[]>(null);
   const boardRef = useRef(null);
 
   useEffect(() => {
-    // If no data is present, need to create new RTDB entry for room
-    if (!data && !loading && playerIndex === 0) {
-      intitializeGame();
-      console.log("Initializing Room!");
-    }
-
+    /*
     // If data was updated, disect into seperate providers
     if (data) {
       // Only set once if not yet set
@@ -145,47 +123,43 @@ export default function Room({
           }
         }));
       }
-
     }
   }, [data, intitializeGame, loading, playerIndex, staticTiles]);
-
+*/
+  const board = useMemo(() => <Board id={id} size={settings.boardSize} />, [id, settings.boardSize]);
+  const units = useMemo(() => <Units />, []);
   return (
-    <GameContext.Provider value={{ data, set, update, playerIndex }}>
-      <TilesContext.Provider value={staticTiles}>
-        {playerIndex === 0 && visible && (
-          // Host only //
-          <>
-            <Button onClick={returnToLobby}>Back to Lobby</Button>
-            <Button onClick={intitializeGame}>Restart</Button>
-            <Button onClick={togglePaused}>
-              {data?.paused ? "Unpause" : "Pause"}
-            </Button>
-            <HostControl {...settings} />
-          </>
-        )}
-        <Box
-          w={"650px"}
-          h={"650px"}
-          visibility={visible ? 'visible' : 'hidden'}
-          border={"1px solid darkblue"}
-          bg={"gray.800"}
-          color={"gray.100"}
-        >      
-          <TargetWrapper>
-            <HUD
-              w={"650px"}
-              h={"650px"}
-              participants={participants}
-            />
-            <Box w={"full"} h={"full"}>
-              <SceneWrapper>
-                <Board ref={boardRef} tiles={data?.board?.tiles} />
-                <Units />
-              </SceneWrapper>
-            </Box>
-          </TargetWrapper>
+    <>
+      {playerIndex === 0 && visible && (
+        // Host only //
+        <>
+          <Button onClick={returnToLobby}>Back to Lobby</Button>
+          <Button onClick={() => intitializeRoom(id, settings, participants)}>Restart</Button>
+          <Button onClick={togglePaused}>
+            {paused ? "Unpause" : "Pause"}
+          </Button>
+          <HostControl />
+        </>
+      )}
+      <Box
+        w={"650px"}
+        h={"650px"}
+        visibility={visible ? "visible" : "hidden"}
+        border={"1px solid darkblue"}
+        bg={"gray.800"}
+        color={"gray.100"}
+      >
+        <HUD w={"650px"} h={"650px"} target={target} />
+        <Box w={"full"} h={"full"}>
+          <SceneWrapper>
+            <TargetWrapper>
+              {board}
+              {units}
+            </TargetWrapper>
+            <FX hovered={hovered} target={target} />
+          </SceneWrapper>
         </Box>
-      </TilesContext.Provider>
-    </GameContext.Provider>
+      </Box>
+    </>
   );
 }

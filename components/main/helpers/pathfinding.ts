@@ -100,7 +100,7 @@ function mustFight(state: GameState, targetIdx: number, playerIndex: number): Un
   // If tile is owned by another player
   if ('owner' in tile && tile.owner !== playerIndex) {
     // If there is an object on this tile (besides roads)
-    if ('obj' in tile && tile.obj.type !== 'Road') {
+    if ('obj' in tile) {
       return tile.obj;
     }
   }

@@ -4,19 +4,36 @@ import { motion } from "framer-motion-3d";
 import { useTarget } from "../../MouseEvents";
 import useAnimatedChar from "../gltfjsx/characters/useAnimatedChar";
 import { Transition } from "framer-motion";
+import { useRealtime } from "../../../realtimeDatabase/Hooks/useRealtime";
+import { indexToHex } from "../../helpers/hexGrid";
+import { tilePos } from "../Tiles/Tile";
 
-interface UnitProps extends UnitData {
-  x: number;
-  y: number;
-  z: number;
+interface UnitProps {
+  id: string; //Id of room
+  uid: string;
 }
 
 function normalDistance(dx: number, dy: number): number {
   return Math.sqrt(dx ** 2 + dy ** 2);
 }
 
-export default function Unit({ x, y, z, ...unit }: UnitProps) {
-  const prevData = useRef<Partial<UnitProps>>(null);
+export default function Unit({ id, uid }: UnitProps) {
+  const { data } = useRealtime<UnitData>(`rooms/${id}/units/${uid}`);
+
+  // TODO: board height at pos...
+  const [x, y, z] = useMemo(
+    () => tilePos(indexToHex(data.hexIdx), 0.5, false),
+    [data.hexIdx]
+  );
+
+  const prevData = useRef<
+    {
+      x: number;
+      y: number;
+      z: number;
+      hp: number
+    }
+  >(null);
   const transition = useRef<Transition>(null);
   const onMotionComplete = useRef<() => void>(null);
   const [motionPos, setMotionPos] = useState<
@@ -28,7 +45,7 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
       rotateY: number;
     }>
   >({ x, y, z, rotateY: 0, opacity: 1 });
-  const { play, Model } = useAnimatedChar(unit.type);
+  const { play, Model } = useAnimatedChar(data.type);
 
   /*
   useEffect(() => {
@@ -63,9 +80,9 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
       const deltaX = x - prevData.current.x;
       const deltaZ = z - prevData.current.z;
       const delta = normalDistance(deltaX, deltaZ);
-      if (unit.hp !== prevData.current.hp) {
+      if (data.hp !== prevData.current.hp) {
         //TODO: probs set anims in db? idk
-        if (unit.hp) {
+        if (data.hp) {
           // Unit recieved damage, but not dead
           //TODO: obviously this is a bad way to do this... need better way to chain
           play("Block", false, { anim: "Idle", loop: true });
@@ -105,12 +122,12 @@ export default function Unit({ x, y, z, ...unit }: UnitProps) {
         };
       }
     } // Update previous data
-    prevData.current = { x, y, z, hp: unit.hp };
-  }, [play, x, y, z, unit.hp]);
+    prevData.current = { x, y, z, hp: data.hp };
+  }, [play, x, y, z, data.hp]);
 
   return (
     <motion.group
-      {...useTarget({ type: "unit", val: unit })}
+      {...useTarget({ type: "unit", val: uid })}
       scale={1}
       whileHover={{ scale: 1.2 }}
       initial={{

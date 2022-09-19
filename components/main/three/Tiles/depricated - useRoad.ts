@@ -1,6 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { adjacentIndexes } from '../../helpers/hexGrid';
-import { GameContext } from '../../RoomInstance';
 import { Obj } from '../Objects/Building';
 
 const roadTypes = [
@@ -20,7 +19,7 @@ const roadTypes = [
 ]
 
 export default function useRoad(tileIndex: number, obj: Obj): [type: number, orientation: number] {
-  const { data } = useContext(GameContext);
+  const data = null;// const { data } = useContext(GameContext); 
   // Keep track of connections to avoid additional calculations on every board change
   const [connections, setConnections] = useState([]);
 

@@ -1,9 +1,7 @@
 import { TileData } from "../../three/Tiles/Tile";
 import { ResourceStates } from "../../RoomInstance";
-import { Button, chakra, Flex, Text } from "@chakra-ui/react";
 import React from "react";
-import { buildOptions, Action } from "./buildOptions";
-import { findResourceTypeByName, resourceTypes } from '../../three/Tiles/Resource';
+import { BuildAction, buildOptions } from "./buildOptions";
 import { adjacentIndexes, hexToIndex } from "../../helpers/hexGrid";
 import CostButton from "./CostButton";
 
@@ -12,7 +10,7 @@ interface TileControlProps {
   playerIndex: number;
   resources: ResourceStates;
   tile: TileData;
-  updateTile: (action: Action, cost: object) => void;
+  callback: (action: BuildAction, cost: object) => void;
 }
 
 // Display buttons to interact with tile that has been selected
@@ -21,7 +19,7 @@ export default function TileControls({
   playerIndex,
   resources,
   tile,
-  updateTile,
+  callback,
 }: TileControlProps) {
   const options = [];
 
@@ -90,7 +88,7 @@ export default function TileControls({
         option.cost[key] = (option.cost[key] ?? 0) + value;
       })
 
-      return <CostButton key={idx} option={option} resources={resources} callback={updateTile}/>
+      return <CostButton key={idx} option={option} resources={resources} callback={callback}/>
     })}
   </>)
 }

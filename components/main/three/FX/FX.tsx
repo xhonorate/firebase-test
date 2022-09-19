@@ -7,9 +7,6 @@ import {
 import { BlendFunction } from "postprocessing";
 import React, { useContext, useMemo } from "react";
 import { TargetContext } from "../../MouseEvents";
-import { TilesContext, GameContext } from '../../RoomInstance';
-import { pathfindTo } from '../../helpers/pathfinding';
-import { hexToIndex } from "../../helpers/hexGrid";
 
 // Convert array of items / groups into flat array of meshes (since groups cannot use outlines)
 function getMeshes(item: THREE.Object3D | THREE.Object3D[]) {
@@ -26,9 +23,11 @@ function getMeshes(item: THREE.Object3D | THREE.Object3D[]) {
 }
 
 // BE SURE TO PLACE INSIDE OF TARGET SELECTION TO USE CONTEXT!
-const FX = () => {
+const FX = ({ target, hovered }) => {
+  //const  { target, hovered } = useContext(TargetContext);
+
+  /*
   const { data, playerIndex } = useContext(GameContext);
-  const { target, hovered } = useContext(TargetContext);
   const staticTiles = useContext(TilesContext);
 
   // TODO: move to another function
@@ -53,6 +52,7 @@ const FX = () => {
       return getMeshes(hovered.ref);
     }
   }, [hovered, target, staticTiles, data, playerIndex]);
+  */
 
   const toBeTargeted = useMemo(() => {
     if (!target || !target?.ref) {

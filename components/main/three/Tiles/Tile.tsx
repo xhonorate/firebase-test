@@ -1,6 +1,4 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion-3d";
-import useRoad from "./useRoad";
 import Resource from "./Resource";
 import Borders from "./Borders";
 import Building from "../Objects/Building";
@@ -61,7 +59,7 @@ import { Obj } from "../Objects/Building";
 import { cubeScale, cubeToPos, HexCoords } from "../../helpers/hexGrid";
 import { randomInt } from "../../helpers/random";
 import { useTarget } from "../../MouseEvents";
-import { Instance } from "@react-three/drei";
+import { useRealtime } from "../../../realtimeDatabase/Hooks";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -183,6 +181,7 @@ export interface TileData {
   type: number; // Yield type
   biome?: number;
   height?: number;
+  road?: { owner: number, type: number, orientation: number };
   transition?: { type: number; orientation: number }; // Which type of transition based on neighboring biomes
   hex: HexCoords;
   borders?: boolean[]; // array of sides of this tile touching unowed terrirory (true if border; false if not)
@@ -205,15 +204,32 @@ export function tilePos(hex: HexCoords, height: number = 0, onTop: boolean = fal
   return pos;
 }
 
-export default function Tile(tile: TileData) {
+interface TileProps {
+  id: string,
+  index: number,
+}
+
+export default function Tile({id, index}: TileProps) {
+  const { data } = useRealtime<TileData>(`rooms/${id}/board/tiles/${index}`);
+
+  if (!data) {
+    return null;
+  }
+
+  return <TileGraphic index={index} {...data} />
+
+}
+
+function TileGraphic(tile: TileData) {
   const {
     index,
-    adjIdxs,
+    //adjIdxs,
     hex,
     type,
     procs,
     biome = 0,
     height = 0,
+    road = null,
     transition = null,
     odds,
     obj,
@@ -231,17 +247,14 @@ export default function Tile(tile: TileData) {
   // Randomly rotate each tile some multiple of 60 deg
   const rotation = useMemo(() => (randomInt(6) * Math.PI) / 3, []);
 
-  // If tile has a road on it, figure out which shape it should be based on neighbors
-  const [roadType, roadOrientation] = useRoad(index, obj);
-
-  const TileGraphic = useMemo(
+  const TileMesh = useMemo(
     () =>
       transition !== null
         ? biomeTypes[biome].tile.transition[transition.type]
-        : roadType !== null
-        ? biomeTypes[biome].tile.road[roadType]
+        : road !== null
+        ? biomeTypes[biome].tile.road[road.type]
         : biomeTypes[biome].tile.default,
-    [biome, roadType, transition]
+    [biome, road, transition]
   );
 
   // If procs count just increased, display glow animation
@@ -249,14 +262,23 @@ export default function Tile(tile: TileData) {
   if (justProcd) {
     prevProcs.current = procs;
   }
+  
+  /* Debug
+  useEffect(() => {
+    console.log('Tile Mount:', index);
 
-  //useFrame((state, delta) => (ref.current.rotation.x += 0.01))
+    return () => {
+        console.log("Tile Unmount", index)
+    };
+  }, []);
+  */
+
   return (
     <>
       <group
         position={pos}
         dispose={null}
-        {...useTarget({type: 'tile', val: tile})}
+        {...useTarget({type: 'tile', val: index})}
       >
         {!!borders && (
           <Borders
@@ -324,9 +346,9 @@ export default function Tile(tile: TileData) {
           />
         )}
 
-        <TileGraphic
+        <TileMesh
           rotation-y={
-            (transition?.orientation ?? roadOrientation ?? 0) * (-Math.PI / 3)
+            (transition?.orientation ?? road?.orientation ?? 0) * (-Math.PI / 3)
           }
           scale-y={0.5}
         />

@@ -1,15 +1,17 @@
 import { CharacterType } from "./three/gltfjsx/characters/Parts/useParts";
-import Unit from "./three/Units/Unit";
-import { GameContext, GameState } from "./RoomInstance";
+import { GameState } from "./RoomInstance";
 import { generateUUID } from "three/src/math/MathUtils";
-import { useCallback, useContext, useEffect, useRef } from "react";
 import { Target } from "./MouseEvents";
 import {
   followPath,
   pathfindTo,
   stepTowardsTarget,
 } from "./helpers/pathfinding";
+import React, { useEffect, useMemo, useState } from "react";
+import Unit from "./three/Units/Unit";
 import { tilePos } from "./three/Tiles/Tile";
+import { useRealtime } from "../realtimeDatabase/Hooks";
+import { indexToHex } from './helpers/hexGrid';
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -71,7 +73,7 @@ export function createUnit({
     ...props, // Prop overrides
   };
 }
-
+/*
 // Pass to affect units
 export function useUnitActions() {
   const { data, update } = useContext(GameContext);
@@ -93,6 +95,7 @@ export function useUnitActions() {
     setUnitTarget,
   };
 }
+*/
 
 // Return updates object - set target and move if moves are available
 export function setTarget(
@@ -101,7 +104,7 @@ export function setTarget(
   target: Target
 ): object {
   const targetIdx =
-    target.type === "tile" ? target.val.index : target.val.hexIdx;
+    target.type === "tile" ? target.val : state.units[target.val].hexIdx;
   if (targetIdx === unit.hexIdx || !(unit.hp > 0)) {
     // Do not attempt to pathfind to hex we are already on
     // or if unit is dead
@@ -137,7 +140,6 @@ export function allUnitUpdates(state: GameState) {
       const stats = defaultStats[unit.type];
 
       if (unit.resting) {
-        console.log("ASD")
         // Increase up to max hp
         unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
         if (updates["/units/" + unit.uid]) {
@@ -175,29 +177,35 @@ export function allUnitUpdates(state: GameState) {
   return updates;
 }
 
-export function Units() {
-  const { data } = useContext(GameContext);
+export function Units({id}) {
+  const { data } = useRealtime(`rooms/${id}/units`);
 
-  if (!(data?.units)) {
-    return null;
-  }
+  // uids of all units in list
+  const [uids, setUids] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    const newUids = Object.keys(data);
+    
+    // If uid has been added/removed or changed
+    if (newUids.length !== uids.length || newUids.some(uid => !uids.includes(uid))) {
+      setUids(newUids);
+    }
+  }, [data])
+
+  console.log(data);
 
   // Board graphics
   return (
     <>
-      {Object.keys(data.units).map((uid: string) => {
-        // TODO: should be a way to memo this?
-        const tile = data.board.tiles[data.units[uid].hexIdx];
-        const pos = tilePos(tile.hex, tile.height, true);
-      
+      {uids.map((uid: string) => {
         return (
           <Unit
             key={uid}
-            // TODO: we do not need to be passing around all of the tile data, just locations and heights...
-            x={pos[0]}
-            y={pos[1]}
-            z={pos[2]}
-            {...data.units[uid]}
+            id={id}
+            uid={uid}
           />
         )}
       )}

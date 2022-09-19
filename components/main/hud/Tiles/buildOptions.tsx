@@ -1,8 +1,13 @@
 import { TileData } from "../../three/Tiles/Tile";
 import { findResourceIndexByName } from "../../three/Tiles/Resource";
-import { generateUUID } from "three/src/math/MathUtils";
 import { createUnit } from "../../Units";
-import { hexToIndex, adjacentIndexes, cubeRing, indexToHex } from "../../helpers/hexGrid";
+import {
+  hexToIndex,
+  adjacentIndexes,
+  cubeRing,
+  indexToHex,
+} from "../../helpers/hexGrid";
+import { getRoadType } from "../../helpers/road";
 
 //////////////////////// Requirement functions: ////////////////////////
 const notOwned = (tile: TileData) => !("owner" in tile);
@@ -15,6 +20,11 @@ const ownedByOther = (tile: TileData, playerIndex: number) => {
 const notOwnedByOther = (tile: TileData, playerIndex: number) => {
   return !tile?.owner || tile?.owner === playerIndex;
 };
+
+const hasRoad = (tile: TileData) => !!tile?.road;
+const roadOwnedByMe = (tile: TileData, playerIndex: number) =>
+  tile.road?.owner === playerIndex;
+
 // Pass one or more string of object names, if array is passed, return true if object in array
 const hasObject = (objs: string | string[]) => {
   return (tile: TileData) => objs.includes(tile?.obj?.type);
@@ -77,12 +87,10 @@ const hasRoadToSettlement = (
       hasObject("Settlement")(currentTile) &&
       objOwnedByMe(currentTile, playerIndex)
     ) {
+      console.log("has settlmeent")
       // If we have reached another settlement/city owned by us, return true;
       return true;
-    } else if (
-      hasObject("Road")(currentTile) &&
-      objOwnedByMe(currentTile, playerIndex)
-    ) {
+    } else if (hasRoad(currentTile) && roadOwnedByMe(currentTile, playerIndex)) {
       // If we reach another road, add all tiles adjacent to it to our tilesToCheck list
       const adjTiles = adjacentIndexes(currentIndex);
       adjTiles.forEach((index) => {
@@ -121,7 +129,7 @@ const notAdjacentToSettlement = (
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-export type Action = (
+export type BuildAction = (
   target: number, // INDEX of tile
   playerIndex?: number,
   tiles?: TileData[]
@@ -146,7 +154,7 @@ interface BuildOption {
     playerIndex?: number,
     tiles?: TileData[]
   ) => boolean)[]; // ALL adjacent tiles must fit condition
-  action: Action; // action that occurs when built
+  action: BuildAction; // action that occurs when built
 }
 
 // Name of object when built
@@ -177,11 +185,10 @@ export const buildOptions: BuildOption[] = [
 
       // Claim territory of adjacent tiles
       updatedTile.owner = playerIndex;
-      cubeRing(updatedTile.hex, 1).forEach((hex) => {
-        let index = hexToIndex(hex);
+      updatedTile.adjIdxs.forEach((adjIdx) => {
         // If tile exists (not outside of board)
-        if (index < tiles.length) {
-          updates["/board/tiles/" + index + "/owner"] = playerIndex;
+        if (adjIdx < tiles.length) {
+          updates["/board/tiles/" + adjIdx + "/owner"] = playerIndex;
         }
       });
 
@@ -204,15 +211,33 @@ export const buildOptions: BuildOption[] = [
         ),
       };
     },
-    req: [notOwnedByOther, hasNoObject],
-    anyAdjReq: [hasObject(["Road", "Settlement"]), objOwnedByMe], // Must have an adjacent settlment or road owned by me
-    action: (target, playerIndex) => {
-      return {
-        ["/board/tiles/" + target + "/obj"]: {
-          type: "Road",
-          owner: playerIndex,
-        },
+    req: [notOwnedByOther /*, hasNoObject*/],
+    anyAdjReq: [ //Has road or settlement owned by me
+      (tile: TileData, playerIndex: number) => {
+        return (
+          (!!tile?.road && tile.road.owner === playerIndex) ||
+          (tile?.obj?.type === "Settlement" && tile?.obj?.owner === playerIndex)
+        );
+      },
+    ], // Must have an adjacent settlment or road owned by me
+    action: (target, playerIndex, tiles) => {
+      const updates = {};
+      updates["/board/tiles/" + target + "/road"] = {
+        owner: playerIndex,
+        ...getRoadType(target, tiles),
       };
+
+      // Update adjacent roads to connect to this one
+      tiles[target].adjIdxs.forEach((adjIdx) => {
+        if (tiles[adjIdx].road) {
+          updates["/board/tiles/" + adjIdx + "/road"] = {
+            owner: playerIndex,
+            ...getRoadType(adjIdx, tiles),
+          };
+        }
+      });
+
+      return updates;
     },
   },
   {
@@ -363,10 +388,10 @@ export const buildOptions: BuildOption[] = [
         type: "Knight",
         hexIdx: target,
         owner: playerIndex,
-      })
+      });
 
       return {
-        ["/units/" + unit.uid]: unit 
+        ["/units/" + unit.uid]: unit,
       };
     },
   },

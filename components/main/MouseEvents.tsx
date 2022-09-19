@@ -1,71 +1,72 @@
 import { useEventListener } from "@chakra-ui/hooks";
-import { ThreeEvent, MeshProps, GroupProps } from '@react-three/fiber';
-import React, { useRef, useState, createContext, useContext, useCallback, Ref } from "react"
-import { UnitData, useUnitActions } from './Units';
-import { TileData } from './three/Tiles/Tile';
+import { ThreeEvent } from "@react-three/fiber";
+import React, {
+  useRef,
+  useState,
+  createContext,
+  useContext,
+  useCallback,
+  Ref,
+  useMemo,
+} from "react";
 
-export type Target = {
-  type: 'unit',
-  val: UnitData,
-  ref?: any;
-} | {
-  type: 'tile',
-  val: TileData,
-  ref?: any;
-}
+export type Target =
+  | {
+      type: "unit";
+      val: string; //uid
+      ref?: any;
+    }
+  | {
+      type: "tile";
+      val: number; //index
+      ref?: any;
+    };
 
 interface TargetContextProps {
-  target: Target;
   setTarget: (target: Target) => void;
-  hovered: Target;
   setHovered: any;
 }
 
 export const TargetContext = createContext<TargetContextProps>({
-  target: null,
   setTarget: null,
-  hovered: null,
   setHovered: null,
 });
 
 // Pass with {...useTarget()} to Three mesh or group, enables target selection and hover effects
 export function useTarget(newTarget: Target) {
-  const ref = useRef()
-  const { target, setTarget, setHovered } = useContext(TargetContext)
-  const { setUnitTarget } = useUnitActions();
-  
+  const ref = useRef();
+  const { setTarget, setHovered } = useContext(TargetContext);
+  //const { setUnitTarget } = useUnitActions();
+
   // Hover Events
-  const onPointerOver = useCallback((event: ThreeEvent<PointerEvent>) => {
-    // Only select first target
-    event.stopPropagation();
-    setHovered({...newTarget, ref: ref.current})
-  }, [newTarget, setHovered])
+  const onPointerOver = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      // Only select first target
+      event.stopPropagation();
+      setHovered({ ...newTarget, ref: ref.current });
+    },
+    [newTarget, setHovered]
+  );
   //const onPointerOut = useCallback(() => setHovered(state => state.filter(mesh => mesh !== ref.current)), [setHovered])
 
   // Click Events
-  const onClick = useCallback((event: ThreeEvent<PointerEvent>) => {
-    // If onClick has val
-    if (newTarget.val) {
+  const onClick = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
       // Only select first target
       event.stopPropagation();
-      // If a unit is currently selected, perform its action
-      if (target?.type === 'unit') {
-        // Unit actions
-        setUnitTarget(target.val, newTarget);
-        setTarget(null);
-      } else {
-        // Tile or nothing selected, select whatever is clicked
-        setTarget({...newTarget, ref: ref.current});
-      }
-    }
-  }, [newTarget, target?.type, target?.val, setUnitTarget, setTarget]);
-  return { ref, onPointerOver, onClick }
+      setTarget({ ...newTarget, ref: ref.current });
+    },
+    [newTarget, setTarget]
+  );
+  return { ref, onPointerOver, onClick };
 }
 
 // Wrapper for FX and targets that will use useTarget
-const TargetWrapper = ({ children }) => {
-  const [target, setTarget] = useState<Target>(null)
-  const [hovered, setHovered] = useState<Target>(null)
+export const useTargetWrapper = () => {
+  const [target, setTarget] = useState<Target>(null);
+  const [hovered, setHovered] = useState<Target>(null);
+
+  //TODO: unit actions...
 
   // TODO: add pause menu
   // Deselect Tile on Escape key press
@@ -74,12 +75,15 @@ const TargetWrapper = ({ children }) => {
       setTarget(null);
     }
   });
-  
-  return (
-    <TargetContext.Provider value={{target, setTarget, hovered, setHovered }}>
-      {children}
-    </TargetContext.Provider>
-  )
-}
 
-export default TargetWrapper
+  const TargetWrapper = useMemo(() => ({children}) => (
+    <TargetContext.Provider value={{ setTarget, setHovered }}>
+      {children}
+    </TargetContext.Provider>), []);
+
+  return {
+    target: target,
+    hovered: hovered,
+    TargetWrapper
+  };
+};

@@ -155,7 +155,7 @@ export function findTileByHex(tiles: TileData[], hex: HexCoords) {
 }
 
 // Get number of tiles inside of a given radius
-function containedTiles(radius: number): number {
+export function containedTiles(radius: number): number {
   // sum of first n numbers = (1/2)*n*(n-1);
   // multiply by 6 (6 sections * radius hex's per section)
   // add 1 for center tile

@@ -8,6 +8,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import firebase from "firebase/app";
 import Room from "../main/RoomInstance";
 import { GameSettings, gameSettingOptions, SettingsForm } from './GameSettings';
+import { intitializeRoom } from "../realtimeDatabase/roomGeneration";
 
 export interface Participant {
   id: string,
@@ -19,6 +20,7 @@ export interface LobbyData {
   created: Date;
   started: boolean;
   finished: boolean;
+  paused: boolean
   name?: string;
   password?: string;
   settings: GameSettings;
@@ -26,12 +28,20 @@ export interface LobbyData {
 }
 
 export interface LobbyContextProps {
-  data: LobbyData;
+  id: string;
+  settings: GameSettings,
+  participants: Participant[];
+  playerIndex: number;
+  paused: boolean;
   updateGame: (data: object) => any;
 }
 
 export const LobbyContext = React.createContext<LobbyContextProps>({
-  data: null,
+  id: null,
+  settings: null,
+  participants: null,
+  playerIndex: null,
+  paused: null,
   updateGame: null
 });
 
@@ -83,7 +93,9 @@ const GameLobby = ({ userData }) => {
   // Create a game lobby in RTDB and set status to started
   const startGame = useCallback(() => {
     try {
-      updateGame({ started: true });
+      intitializeRoom(data.id, data.settings, data.participants).then(() => {
+        updateGame({ started: true });
+      })
     } catch (e) {
       console.warn(e);
     }
@@ -92,21 +104,15 @@ const GameLobby = ({ userData }) => {
   return (
     <VStack m={4} align={"start"}>
       {data?.started ? (
-        <LobbyContext.Provider value={{data, updateGame}}>
-          <Room
-            playerIndex={playerIndex}
-            id={data.id}
-            updateGame={updateGame}
-            participants={data.participants}
-            settings={ // Get all default game options for those not set, replace with populated options from database if set
-              {
-              ...gameSettingOptions.reduce( // Default for all game options
-                (obj, item) => ((obj[item.key] = item.default), obj),
-                {}
-              ),
-              ...data.settings, // Override with any set values
-            }}
-          />
+        <LobbyContext.Provider value={{id: data.id, paused: data.paused, settings:  // Get all default game options for those not set, replace with populated options from database if set
+          {
+          ...gameSettingOptions.reduce( // Default for all game options
+            (obj, item) => ((obj[item.key] = item.default), obj),
+            {}
+          ),
+          ...data.settings, // Override with any set values
+        }, participants: data.participants, playerIndex: playerIndex, updateGame}}>
+          <Room />
         </LobbyContext.Provider>
       ) : (
         <>

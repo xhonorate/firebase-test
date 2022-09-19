@@ -14,6 +14,7 @@ import {
   cubeDirection,
   cubeNeighbor,
   HexCoords,
+  containedTiles,
 } from "./helpers/hexGrid";
 import { randomChoice, weightedChoice } from "./helpers/random";
 
@@ -166,6 +167,10 @@ interface SpawnWeight {
   diffGlobalInfluance?: (n: number) => number; // Affect of total tiles with different property value
   radiusInfluance?: (n: number) => number; // Increases affect at farther out radius
   verticalInfluance?: (n: number) => number;
+}
+
+export interface BoardState {
+  tiles: TileData[];
 }
 
 // Called by Host to generate new board with random tile distribution based on settings
@@ -489,13 +494,28 @@ export function generateBoard({
   };
 }
 
-export interface BoardState {
-  tiles: TileData[];
+interface BoardProps {
+  id: string; //Room id
+  size: number;
 }
 
+const Board = ({ id, size }: BoardProps) => {
+  console.log("BOARD REMOUNT")
+  return (
+  <>
+    {[...Array(containedTiles(size))].map((_, idx) => <Tile key={idx} id={id} index={idx} />)
+    }
+  </>
+)}
+
+export default Board;
+
+/*
 const Board = React.forwardRef(({ tiles }: BoardState, ref: Ref<THREE.Group>) => {
   // TODO: there should be a way to do this much more intelligently, prevent remouting every time prop updates...
   // Note - tiles import is better than full data import, but would be best to useMemo on tiles individually?
+
+  console.log("RERENDER!")
   if (!tiles || !tiles.length) {
     return null;
   }
@@ -521,4 +541,4 @@ const Board = React.forwardRef(({ tiles }: BoardState, ref: Ref<THREE.Group>) =>
 });
 
 Board.displayName = "Board";
-export default Board;
+export default Board; */

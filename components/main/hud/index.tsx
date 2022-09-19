@@ -8,16 +8,18 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useContext, useRef, useMemo, useCallback } from "react";
-import { GameContext } from '../RoomInstance';
-import { Action } from "./Tiles/buildOptions";
+import { GameState } from '../RoomInstance';
+import { BuildAction } from "./Tiles/buildOptions";
 import TileControls from "./Tiles/TileControls";
 import ResourceDisplay from "./ResourceDisplay";
 import TileInfo from "./Tiles/TileInfo";
 import { playerColors } from "../three/Tiles/Tile";
-import { Participant } from "../../cloudFirestore/GameLobby";
+import { Participant, LobbyContext } from '../../cloudFirestore/GameLobby';
 import UnitInfo from "./Units/UnitInfo";
-import { TargetContext } from '../MouseEvents';
 import UnitControls from "./Units/UnitControls";
+import { useRealtime } from '../../realtimeDatabase/Hooks/useRealtime';
+import { UnitAction } from "./Units/unitOptions";
+import { Target } from "../MouseEvents";
 
 const HUDContainer = ({ children, ...props }) => (
   <Flex
@@ -36,38 +38,41 @@ const HUDContainer = ({ children, ...props }) => (
 );
 
 export interface HUDProps extends ChakraProps {
-  participants: Participant[];
+  target: Target;
 }
 
-export default function HUD({
-  participants,
-  ...props
-}: HUDProps) {
+export default function HUD({target, ...props}: HUDProps) {
   const hasPendingActions = useRef(false);
-  const { data, update, playerIndex } = useContext(GameContext);
-  const { target } = useContext(TargetContext);
+  const { id, paused, playerIndex, participants } = useContext(LobbyContext);
+  const { data, update } = useRealtime<GameState>(`rooms/${id}`);
 
   const resources = useMemo(
     () => data?.players?.[playerIndex]?.resources,
     [data?.players, playerIndex]
   );
 
-  const updateTile = useCallback(
-    (action: Action, cost: object) => {
+  const updateCallback = useCallback(
+    (action: BuildAction | UnitAction, cost: object = null) => {
       // TODO: check pending actions on RTDB (from host tick, etc)
       // Do not allow users to double-submit an action by accident
       if (hasPendingActions.current) return;
       hasPendingActions.current = true;
 
       // Pass target as index, quicker for updates, access from tiles[target] if needed
-      const updates = action(target.val['index'], playerIndex, data.board.tiles);
+      const updates = (target.type === 'unit') ? 
+        (action as UnitAction)(data.units[target.val], data.board.tiles[data.units[target.val].hexIdx])
+        :
+        (action as BuildAction)(target.val, playerIndex, data.board.tiles);
 
-      let updatedResources = {};
-      Object.entries(resources).forEach(([key, value]) => {
-        updatedResources[key] = Math.max(0, value - (cost[key] ?? 0));
-      });
-      // Subtract cost of build from player resources
-      updates["/players/" + playerIndex + "/resources/"] = updatedResources;
+      if (cost) {
+        let updatedResources = {};
+        Object.entries(resources).forEach(([key, value]) => {
+          updatedResources[key] = Math.max(0, value - (cost[key] ?? 0));
+        });
+        // Subtract cost of build from player resources
+        updates["/players/" + playerIndex + "/resources/"] = updatedResources;
+      }
+
 
       update(updates).then(() => (hasPendingActions.current = false));
     },
@@ -76,7 +81,7 @@ export default function HUD({
 
   if (!data || playerIndex === -1) return null; // If loading or player not found in game lobby (playerIndex = -1)
 
-  if (data?.paused) {
+  if (paused) {
     return (
       <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
         <Flex h={"full"} alignItems={"center"}>
@@ -163,7 +168,7 @@ export default function HUD({
             {target.type === "tile" ? (
               <>
                 <TileInfo
-                  tile={data.board.tiles[target.val.index]}
+                  tile={data.board.tiles[target.val]}
                   participants={participants}
                   maxW={"50%"}
                 />
@@ -171,19 +176,23 @@ export default function HUD({
                   tiles={data.board.tiles}
                   playerIndex={playerIndex}
                   resources={resources}
-                  tile={data.board.tiles[target.val.index]}
-                  updateTile={updateTile}
+                  tile={data.board.tiles[target.val]}
+                  callback={updateCallback}
                 />
               </>
             ) : (
               <>
                 <UnitInfo 
-                  unit={data.units[target.val.uid]}
+                  unit={data.units[target.val]}
                   participants={participants}
                   maxW={"50%"}
                 />
-                <UnitControls 
-                  uid={target.val.uid}
+                <UnitControls
+                  unit={data.units[target.val]}
+                  playerIndex={playerIndex}
+                  tile={data.board.tiles[data.units[target.val].hexIdx]}
+                  callback={updateCallback}
+                  resources={resources}
                 />
               </>
             )}
