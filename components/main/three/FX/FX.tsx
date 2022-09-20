@@ -4,9 +4,7 @@ import {
   EffectComposer,
   Outline,
 } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
 import React, { useContext, useMemo } from "react";
-import { TargetContext } from "../../MouseEvents";
 
 // Convert array of items / groups into flat array of meshes (since groups cannot use outlines)
 function getMeshes(item: THREE.Object3D | THREE.Object3D[]) {

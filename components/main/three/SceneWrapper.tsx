@@ -1,8 +1,6 @@
 import { MapControls, useContextBridge } from "@react-three/drei"
 import { Canvas } from '@react-three/fiber';
 import React, { useMemo } from "react";
-import FX from "./FX/FX";
-import { TargetContext } from '../MouseEvents';
 
 // Wrapper for canvas, passes context to children inside of canvas
 export default function SceneWrapper({children}) {

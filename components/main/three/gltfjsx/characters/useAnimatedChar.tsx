@@ -63,7 +63,7 @@ interface GLTFAction extends THREE.AnimationClip {
   name: ActionName;
 }
 
-interface Equipment {
+export interface Equipment {
   head?: JSX.Element,
   body?: JSX.Element,
   armLeft?: JSX.Element,

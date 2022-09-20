@@ -53,7 +53,6 @@ export default function HUD({target, ...props}: HUDProps) {
 
   const updateCallback = useCallback(
     (action: BuildAction | UnitAction, cost: object = null) => {
-      // TODO: check pending actions on RTDB (from host tick, etc)
       // Do not allow users to double-submit an action by accident
       if (hasPendingActions.current) return;
       hasPendingActions.current = true;

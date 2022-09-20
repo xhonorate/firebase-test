@@ -9,6 +9,8 @@ import Barracks from "../gltfjsx/objects/barracks";
 import { Billboard } from "@react-three/drei";
 import React, { useMemo } from "react";
 import Cloud from "../FX/Cloud";
+import Archeryrange from '../gltfjsx/objects/archeryrange';
+import Watchtower from "../gltfjsx/objects/watchtower";
 
 interface DefaultStats {
   hp: number;
@@ -43,6 +45,8 @@ type ObjectType =
   | "Mine"
   | "Farm"
   | "Barracks"
+  | "Archeryrange"
+  | "Watchtower"
 
 export interface Obj {
   type: ObjectType;
@@ -87,6 +91,10 @@ export default function Building({
         return <FarmPlot {...props} />;
       case "Barracks":
         return <Barracks {...props} />;
+      case "Archeryrange":
+        return <Archeryrange {...props} />;
+      case "Watchtower":
+        return <Watchtower {...props} />;
       default:
         return null;
     }

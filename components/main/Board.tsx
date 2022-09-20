@@ -17,6 +17,7 @@ import {
   containedTiles,
 } from "./helpers/hexGrid";
 import { randomChoice, weightedChoice } from "./helpers/random";
+import { getBorders } from "./helpers/borders";
 
 // Place start spawns for players
 // Spawns will be spaced out as well as possible, and then balanced
@@ -78,13 +79,22 @@ function chooseSpawns(
     tiles[choice].odds = 1;
     tiles[choice].owner = playerNum;
 
+    const adjIdxs = tiles[choice].adjIdxs;
+
     // Set ownership of adjacent tiles
-    const adjIdxs = adjacentIndexes(choice);
     adjIdxs.forEach((adjIdx) => {
       // If tile exists
       if (adjIdx < tiles.length) {
         // Assign ownership
         tiles[adjIdx].owner = playerNum;
+      }
+    });
+
+    // AFTER assigning all ownership, calculate borders
+    adjIdxs.forEach((adjIdx) => {
+      // If tile exists
+      if (adjIdx < tiles.length) {
+        tiles[adjIdx].borders = getBorders(adjIdx, tiles);
       }
     });
 

@@ -184,7 +184,7 @@ export interface TileData {
   road?: { owner: number, type: number, orientation: number };
   transition?: { type: number; orientation: number }; // Which type of transition based on neighboring biomes
   hex: HexCoords;
-  borders?: boolean[]; // array of sides of this tile touching unowed terrirory (true if border; false if not)
+  borders?: number; // array of sides of this tile touching unowed terrirory (as byte)
   odds: number; //weighted likelyhood of being "rolled"
   obj?: Obj; //any building or object on this tile
   procs?: number; //how many times this tile has been "rolled", use listener
@@ -263,7 +263,6 @@ function TileGraphic(tile: TileData) {
     prevProcs.current = procs;
   }
   
-  /* Debug
   useEffect(() => {
     console.log('Tile Mount:', index);
 
@@ -271,7 +270,7 @@ function TileGraphic(tile: TileData) {
         console.log("Tile Unmount", index)
     };
   }, []);
-  */
+  
 
   return (
     <>
@@ -280,13 +279,11 @@ function TileGraphic(tile: TileData) {
         dispose={null}
         {...useTarget({type: 'tile', val: index})}
       >
-        {!!borders && (
-          <Borders
-            borders={borders}
-            position={[0, 0.55, 0]}
-            color={playerColors[owner]}
-          />
-        )}
+        <Borders
+          borders={borders}
+          position={[0, 0.55, 0]}
+          color={playerColors[owner]}
+        />
 
         {/* TODO: THIS CAUSES MEMORY LEAK!!! 
           Move to HoverBoard file, or just set hovered thingy here - let FX deal with it?

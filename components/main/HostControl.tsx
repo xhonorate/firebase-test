@@ -2,10 +2,10 @@ import React, { useEffect, useCallback, useContext } from "react";
 import { GameState } from './RoomInstance';
 import { resourceTypes } from "./three/Tiles/Resource";
 import findClosestSettlement from "./helpers/findClosestSettlement";
-import { allUnitUpdates } from "./Units";
-import { getSnapshot } from "../realtimeDatabase/Hooks";
-import { updateRoom } from "../realtimeDatabase/roomGeneration";
+import { getUnitStats } from "./Units";
+import { snapshot, updateRoom } from "../realtimeDatabase/roomFunctions";
 import { LobbyContext } from '../cloudFirestore/GameLobby';
+import { stepTowardsTarget } from "./helpers/pathfinding";
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
 function procTiles(state: GameState, frequency: number): object {
@@ -100,12 +100,80 @@ function calcPoints(state: GameState, pointsToWin: number): object {
   return updates;
 }
 
+
+
+
+
+// TODO: let units update themselves individually! Just make sure no dupe updates (only let owner send updates?)
+
+
+
+
+
+// Auto-move units towards their targets - return update object
+function allUnitUpdates(state: GameState) {
+  const updates = {};
+  // If unit has pathfinding set
+  Object.values(state?.units ?? {}).forEach((unit) => {
+    if (unit.hp === 0) {
+      // If unit is dying
+      updates["/units/" + unit.uid + "/hp"] = -1;
+    } else if (unit.hp === -1) {
+      // Play dying animation for one tick, then set unit to null;
+      updates["/units/" + unit.uid] = null;
+    } else {
+      if (unit.targetIdx && (unit.actions || unit.moves)) {
+        // If unit target and has actions / moves, perform pathfinding
+        Object.assign(updates, stepTowardsTarget(state, unit));
+      }
+
+      const stats = getUnitStats(unit.type);
+
+      if (unit.resting) {
+        // Increase up to max hp
+        unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].hp = unit.hp;
+        } else {
+          updates["/units/" + unit.uid + "/hp"] = unit.hp;
+        }
+        if (unit.hp === stats.hp) {
+          unit.resting = false;
+          if (updates["/units/" + unit.uid]) {
+            updates["/units/" + unit.uid].resting = false;
+          } else {
+            updates["/units/" + unit.uid + "/resting"] = false;
+          }
+        }
+      }
+
+      // Reset unit movement range and actions - mutate unit object inside of update
+      if (unit.actions < stats.actions) {
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].actions = stats.actions;
+        } else {
+          updates["/units/" + unit.uid + "/actions"] = stats.actions;
+        }
+      }
+      if (unit.moves < stats.moves) {
+        if (updates["/units/" + unit.uid]) {
+          updates["/units/" + unit.uid].moves = stats.moves;
+        } else {
+          updates["/units/" + unit.uid + "/moves"] = stats.moves;
+        }
+      }
+    }
+  });
+  return updates;
+}
+
+
 export default function HostControl() {
   const { id, settings, paused } = useContext(LobbyContext);
 
   const hostTick = useCallback(() => {
     // Get data at moment of tick (no need to listen constantly)
-    getSnapshot<GameState>(`rooms/${id}`).then((state: GameState) => {
+    snapshot(id).then((state: GameState) => {
       const updates = {
         // Proc Tiles
         ...procTiles(state, settings.yieldFrequency),

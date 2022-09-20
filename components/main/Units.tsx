@@ -9,9 +9,8 @@ import {
 } from "./helpers/pathfinding";
 import React, { useEffect, useMemo, useState } from "react";
 import Unit from "./three/Units/Unit";
-import { tilePos } from "./three/Tiles/Tile";
 import { useRealtime } from "../realtimeDatabase/Hooks";
-import { indexToHex } from './helpers/hexGrid';
+import { snapshot, updateRoom } from "../realtimeDatabase/roomFunctions";
 
 // Data to be stored in RTDB /units/
 export interface UnitData {
@@ -34,8 +33,28 @@ const defaultStats: { [key in CharacterType | "default"]?: Partial<UnitData> } =
     Knight: {
       moves: 2,
       actions: 1,
-      hp: 40,
-      str: 10,
+      hp: 50,
+      str: 12,
+    },
+    Barbarian: {
+      moves: 2,
+      actions: 1,
+      hp: 30,
+      str: 10
+    },
+    Rogue: {
+      moves: 2,
+      actions: 1,
+      range: 1,
+      hp: 20,
+      str: 10
+    },
+    Mage: {
+      moves: 1,
+      actions: 1,
+      range: 1,
+      hp: 15,
+      str: 15
     },
     default: {
       moves: 1,
@@ -73,113 +92,33 @@ export function createUnit({
     ...props, // Prop overrides
   };
 }
-/*
-// Pass to affect units
-export function useUnitActions() {
-  const { data, update } = useContext(GameContext);
-
-  // Store as refs to avoid recalculating the callbacks - update does not actually trigger re-renders
-  const dataRef = useRef(data);
-  useEffect(() => {
-    dataRef.current = data;
-  }, [data]);
-
-  const setUnitTarget = useCallback(
-    (unit: UnitData, target: Target) => {
-      update(setTarget(dataRef.current, unit, target));
-    },
-    [update]
-  );
-
-  return {
-    setUnitTarget,
-  };
-}
-*/
 
 // Return updates object - set target and move if moves are available
-export function setTarget(
-  state: GameState,
-  unit: UnitData,
-  target: Target
-): object {
-  const targetIdx =
-    target.type === "tile" ? target.val : state.units[target.val].hexIdx;
-  if (targetIdx === unit.hexIdx || !(unit.hp > 0)) {
-    // Do not attempt to pathfind to hex we are already on
-    // or if unit is dead
-    return null;
-  }
-  // Set target for pathfinding
-  const path = pathfindTo(state, unit.hexIdx, targetIdx, unit.owner);
-  if (path) {
-    // If there is a possible path to this point - target is reachable
-    unit.targetIdx = targetIdx; // Set target
-    return followPath(state, unit, path); // Follow path as much as possible
-  }
-  return {};
-}
+export function setUnitTarget(id: string, uid: string, target: Target) {
+  snapshot(id).then((state: GameState) => {
+    const unit = state.units[uid];
 
-// Auto-move units towards their targets - return update object
-export function allUnitUpdates(state: GameState) {
-  const updates = {};
-  // If unit has pathfinding set
-  Object.values(state?.units ?? {}).forEach((unit) => {
-    if (unit.hp === 0) {
-      // If unit is dying
-      updates["/units/" + unit.uid + "/hp"] = -1;
-    } else if (unit.hp === -1) {
-      // Play dying animation for one tick, then set unit to null;
-      updates["/units/" + unit.uid] = null;
-    } else {
-      if (unit.targetIdx && (unit.actions || unit.moves)) {
-        // If unit target and has actions / moves, perform pathfinding
-        Object.assign(updates, stepTowardsTarget(state, unit));
-      }
-
-      const stats = defaultStats[unit.type];
-
-      if (unit.resting) {
-        // Increase up to max hp
-        unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
-        if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].hp = unit.hp;
-        } else {
-          updates["/units/" + unit.uid + "/hp"] = unit.hp;
-        }
-        if (unit.hp === stats.hp) {
-          unit.resting = false;
-          if (updates["/units/" + unit.uid]) {
-            updates["/units/" + unit.uid].resting = false;
-          } else {
-            updates["/units/" + unit.uid + "/resting"] = false;
-          }
-        }
-      }
-
-      // Reset unit movement range and actions - mutate unit object inside of update
-      if (unit.actions < stats.actions) {
-        if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].actions = stats.actions;
-        } else {
-          updates["/units/" + unit.uid + "/actions"] = stats.actions;
-        }
-      }
-      if (unit.moves < stats.moves) {
-        if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].moves = stats.moves;
-        } else {
-          updates["/units/" + unit.uid + "/moves"] = stats.moves;
-        }
-      }
+    const targetIdx =
+      target.type === "tile" ? target.val : state.units[target.val].hexIdx;
+    if (targetIdx === unit.hexIdx || !(unit.hp > 0)) {
+      // Do not attempt to pathfind to hex we are already on
+      // or if unit is dead
+      return null;
+    }
+    // Set target for pathfinding
+    const path = pathfindTo(state, unit.hexIdx, targetIdx, unit.owner);
+    if (path) {
+      // If there is a possible path to this point - target is reachable
+      unit.targetIdx = targetIdx; // Set target
+      
+      // Update unit in RTDB
+      updateRoom(id, followPath(state, unit, path));
     }
   });
-  return updates;
 }
 
 export function Units({id}) {
   const { data } = useRealtime(`rooms/${id}/units`);
-
   // uids of all units in list
   const [uids, setUids] = useState<string[]>([]);
   
@@ -194,8 +133,6 @@ export function Units({id}) {
       setUids(newUids);
     }
   }, [data])
-
-  console.log(data);
 
   // Board graphics
   return (

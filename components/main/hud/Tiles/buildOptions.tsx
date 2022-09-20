@@ -8,8 +8,11 @@ import {
   indexToHex,
 } from "../../helpers/hexGrid";
 import { getRoadType } from "../../helpers/road";
+import { getBorders } from "../../helpers/borders";
 
 //////////////////////// Requirement functions: ////////////////////////
+const not = (fn: (params?: any) => boolean) => (params?: any) => !fn(params);
+
 const notOwned = (tile: TileData) => !("owner" in tile);
 const ownedByMe = (tile: TileData, playerIndex: number) => {
   return tile?.owner === playerIndex;
@@ -87,10 +90,12 @@ const hasRoadToSettlement = (
       hasObject("Settlement")(currentTile) &&
       objOwnedByMe(currentTile, playerIndex)
     ) {
-      console.log("has settlmeent")
       // If we have reached another settlement/city owned by us, return true;
       return true;
-    } else if (hasRoad(currentTile) && roadOwnedByMe(currentTile, playerIndex)) {
+    } else if (
+      hasRoad(currentTile) &&
+      roadOwnedByMe(currentTile, playerIndex)
+    ) {
       // If we reach another road, add all tiles adjacent to it to our tilesToCheck list
       const adjTiles = adjacentIndexes(currentIndex);
       adjTiles.forEach((index) => {
@@ -188,8 +193,22 @@ export const buildOptions: BuildOption[] = [
       updatedTile.adjIdxs.forEach((adjIdx) => {
         // If tile exists (not outside of board)
         if (adjIdx < tiles.length) {
+          tiles[adjIdx].owner = playerIndex;
           updates["/board/tiles/" + adjIdx + "/owner"] = playerIndex;
+        
+          // Update all adjacent roads to connect
+          if (tiles[adjIdx].road) {
+            updates["/board/tiles/" + adjIdx + "/road"] = {
+              owner: playerIndex,
+              ...getRoadType(adjIdx, tiles),
+            };
+          }
         }
+      });
+
+      // AFTER setting ownership of all tiles, recalculate borders
+      updatedTile.adjIdxs.forEach((adjIdx) => {
+        updates["/board/tiles/" + adjIdx + "/borders"] = getBorders(adjIdx, tiles);
       });
 
       // Update selected tile (by index === target)
@@ -211,8 +230,9 @@ export const buildOptions: BuildOption[] = [
         ),
       };
     },
-    req: [notOwnedByOther /*, hasNoObject*/],
-    anyAdjReq: [ //Has road or settlement owned by me
+    req: [notOwnedByOther, not(hasRoad)],
+    anyAdjReq: [
+      //Has road or settlement owned by me
       (tile: TileData, playerIndex: number) => {
         return (
           (!!tile?.road && tile.road.owner === playerIndex) ||
@@ -222,10 +242,12 @@ export const buildOptions: BuildOption[] = [
     ], // Must have an adjacent settlment or road owned by me
     action: (target, playerIndex, tiles) => {
       const updates = {};
-      updates["/board/tiles/" + target + "/road"] = {
+      tiles[target].road = {
         owner: playerIndex,
         ...getRoadType(target, tiles),
       };
+
+      updates["/board/tiles/" + target + "/road"] = tiles[target].road;
 
       // Update adjacent roads to connect to this one
       tiles[target].adjIdxs.forEach((adjIdx) => {
@@ -379,6 +401,38 @@ export const buildOptions: BuildOption[] = [
   },
 
   {
+    name: "Build Archery Range",
+    cost: { Wood: 4, Ore: 2 },
+    req: [ownedByMe, hasNoObject],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Archeryrange",
+          owner: playerIndex,
+          // level: 1, // Level does not need to be set, will be 0 by default, set to 1 when t2c ends
+          t2c: 5, // Turns to construction
+        },
+      };
+    },
+  },
+
+  {
+    name: "Build Watchtower",
+    cost: { Wood: 3, Ore: 5 },
+    req: [ownedByMe, hasNoObject],
+    action: (target, playerIndex) => {
+      return {
+        ["/board/tiles/" + target + "/obj"]: {
+          type: "Watchtower",
+          owner: playerIndex,
+          // level: 1, // Level does not need to be set, will be 0 by default, set to 1 when t2c ends
+          t2c: 5, // Turns to construction
+        },
+      };
+    },
+  },
+
+  {
     name: "Recruit Knight",
     cost: { Ore: 2, Food: 3, Gold: 2 },
     req: [ownedByMe, hasObject("Barracks"), objHasParams({ level: 1 })],
@@ -386,6 +440,60 @@ export const buildOptions: BuildOption[] = [
       // Generate a new unit (comes with a uid)
       const unit = createUnit({
         type: "Knight",
+        hexIdx: target,
+        owner: playerIndex,
+      });
+
+      return {
+        ["/units/" + unit.uid]: unit,
+      };
+    },
+  },
+
+  {
+    name: "Recruit Barbarian",
+    cost: { Wood: 1, Food: 3, Gold: 1 },
+    req: [ownedByMe, hasObject("Barracks"), objHasParams({ level: 1 })],
+    action: (target, playerIndex) => {
+      // Generate a new unit (comes with a uid)
+      const unit = createUnit({
+        type: "Barbarian",
+        hexIdx: target,
+        owner: playerIndex,
+      });
+
+      return {
+        ["/units/" + unit.uid]: unit,
+      };
+    },
+  },
+
+  {
+    name: "Recruit Archer",
+    cost: { Wood: 1, Food: 3, Gold: 1 },
+    req: [ownedByMe, hasObject("Archeryrange"), objHasParams({ level: 1 })],
+    action: (target, playerIndex) => {
+      // Generate a new unit (comes with a uid)
+      const unit = createUnit({
+        type: "Rogue",
+        hexIdx: target,
+        owner: playerIndex,
+      });
+
+      return {
+        ["/units/" + unit.uid]: unit,
+      };
+    },
+  },
+
+  {
+    name: "Recruit Mage",
+    cost: { Wood: 1, Food: 2, Gold: 3 },
+    req: [ownedByMe, hasObject("Watchtower"), objHasParams({ level: 1 })],
+    action: (target, playerIndex) => {
+      // Generate a new unit (comes with a uid)
+      const unit = createUnit({
+        type: "Mage",
         hexIdx: target,
         owner: playerIndex,
       });
@@ -414,10 +522,18 @@ export const buildOptions: BuildOption[] = [
     },
     req: [notOwned],
     anyAdjReq: [ownedByMe, adjacentToSettlement], //an adjacent tile has to be adjacent to a setltment (e.g. max 2 away)
-    action: (target, playerIndex) => {
-      return {
-        ["/board/tiles/" + target + "/owner"]: playerIndex, // Gain control of tile
-      };
+    action: (target, playerIndex, tiles) => {
+      const updates = {}
+      
+      tiles[target].owner = playerIndex;
+      updates["/board/tiles/" + target + "/owner"] = playerIndex, // Gain control of tile
+
+      tiles[target].adjIdxs.forEach((adjIdx) => {
+        // Update adjacent tile borders
+        updates["/board/tiles/" + adjIdx + "/borders"] = getBorders(adjIdx, tiles);
+      });
+
+      return updates;
     },
   },
 ];

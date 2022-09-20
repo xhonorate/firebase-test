@@ -1,17 +1,26 @@
 import { Line } from "@react-three/drei";
 import { GroupProps } from "@react-three/fiber";
+import { intToBools } from "../../helpers/borders";
 import { cubeDirection, cubeToPos } from "../../helpers/hexGrid";
+import { tileSize } from "./Tile";
 
 export interface BorderProps extends GroupProps {
-  borders: boolean[];
+  borders: number;
   color: string;
 }
 
 export default function Borders({borders, color, ...props}: BorderProps) {
+  const distFromCenter = 0.5 * tileSize;
+  const lineWidth = distFromCenter - 0.01;
+  if (!borders) {
+    return null;
+  }
+
   return (
     <group {...props}> 
-      { borders.map((hasBorder, idx) => {
+      { intToBools(borders).map((hasBorder, idx) => {
         if (!hasBorder) return null;
+
         const edgePoint = cubeToPos(cubeDirection(idx));
         // Create line at edge, rotated by 90 degrees relative to direction towards edge
         return (
@@ -19,14 +28,14 @@ export default function Borders({borders, color, ...props}: BorderProps) {
             key={idx}            
             points={[
               [
-                0.57 * (edgePoint[0] + edgePoint[2] * 0.55),
+                distFromCenter * (edgePoint[0] + edgePoint[2] * lineWidth),
                 0,
-                0.57 * (edgePoint[2] - edgePoint[0] * 0.55),
+                distFromCenter * (edgePoint[2] - edgePoint[0] * lineWidth),
               ],
               [
-                0.57 * (edgePoint[0] - edgePoint[2] * 0.55),
+                distFromCenter * (edgePoint[0] - edgePoint[2] * lineWidth),
                 0,
-                0.57 * (edgePoint[2] + edgePoint[0] * 0.55),
+                distFromCenter * (edgePoint[2] + edgePoint[0] * lineWidth),
               ],
             ]}
             color={color}

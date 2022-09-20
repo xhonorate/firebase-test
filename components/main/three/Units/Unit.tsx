@@ -2,11 +2,17 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { UnitData } from "../../Units";
 import { motion } from "framer-motion-3d";
 import { useTarget } from "../../MouseEvents";
-import useAnimatedChar from "../gltfjsx/characters/useAnimatedChar";
+import useAnimatedChar, { Equipment } from "../gltfjsx/characters/useAnimatedChar";
 import { Transition } from "framer-motion";
 import { useRealtime } from "../../../realtimeDatabase/Hooks/useRealtime";
 import { indexToHex } from "../../helpers/hexGrid";
 import { tilePos } from "../Tiles/Tile";
+import AxeDoubleCommon from "../gltfjsx/items/axeDouble_common";
+import SwordCommon from '../gltfjsx/items/sword_common';
+import ShieldCommon from "../gltfjsx/items/shield_common";
+import StaffCommon from '../gltfjsx/items/staff_common';
+import CrossbowCommon from '../gltfjsx/items/crossbow_common';
+import QuiverFull from "../gltfjsx/items/quiver_full";
 
 interface UnitProps {
   id: string; //Id of room
@@ -17,13 +23,22 @@ function normalDistance(dx: number, dy: number): number {
   return Math.sqrt(dx ** 2 + dy ** 2);
 }
 
+// Fetch data from RTDB, only render once loaded
 export default function Unit({ id, uid }: UnitProps) {
   const { data } = useRealtime<UnitData>(`rooms/${id}/units/${uid}`);
 
+  if (!data) {
+    return null;
+  }
+
+  return <UnitGraphic {...data} />
+}
+
+function UnitGraphic({ uid, type, hp, actions, hexIdx }: UnitData) {
   // TODO: board height at pos...
   const [x, y, z] = useMemo(
-    () => tilePos(indexToHex(data.hexIdx), 0.5, false),
-    [data.hexIdx]
+    () => tilePos(indexToHex(hexIdx ?? 0), 0.5, false),
+    [hexIdx]
   );
 
   const prevData = useRef<
@@ -31,7 +46,8 @@ export default function Unit({ id, uid }: UnitProps) {
       x: number;
       y: number;
       z: number;
-      hp: number
+      hp: number;
+      actions: number
     }
   >(null);
   const transition = useRef<Transition>(null);
@@ -45,30 +61,32 @@ export default function Unit({ id, uid }: UnitProps) {
       rotateY: number;
     }>
   >({ x, y, z, rotateY: 0, opacity: 1 });
-  const { play, Model } = useAnimatedChar(data.type);
 
-  /*
-  useEffect(() => {
-    if (!prevData.current) {
-      // If not mounted yet, do not play animations
-      return;
+  const equitment: Equipment = useMemo(() => {
+    switch (type) {
+      case 'Barbarian':
+        return {
+          armRight: <AxeDoubleCommon />
+        }
+      case 'Knight':
+        return {
+          armRight: <SwordCommon />,
+          armLeft: <ShieldCommon />
+        }
+      case 'Rogue':
+        return {
+          armRight: <CrossbowCommon />,
+          body: <QuiverFull />
+        }
+      case 'Mage':
+        return {
+          armRight: <StaffCommon />
+        }
+      default:
+        return null;
     }
-    if (unit.hp) {
-      // Unit recieved damage, but not dead
-      //TODO: obviously this is a bad way to do this... need better way to chain
-      anim.play("Block", false, { anim: 'Idle', loop: true });
-    } else {
-      // Unit dying
-      anim.play("Defeat", false, null);
-      motionControls
-        .start(
-          {
-            opacity: 0,
-          },
-          { duration: 2, ease: "linear" }
-      )
-    }
-  }, [anim, motionControls, unit]); */
+  }, [type]);
+  const { play, Model } = useAnimatedChar(type, equitment);
 
   // On moving to a new hex, update position and rotation
   useEffect(() => {
@@ -80,23 +98,38 @@ export default function Unit({ id, uid }: UnitProps) {
       const deltaX = x - prevData.current.x;
       const deltaZ = z - prevData.current.z;
       const delta = normalDistance(deltaX, deltaZ);
-      if (data.hp !== prevData.current.hp) {
-        //TODO: probs set anims in db? idk
-        if (data.hp) {
-          // Unit recieved damage, but not dead
-          //TODO: obviously this is a bad way to do this... need better way to chain
-          play("Block", false, { anim: "Idle", loop: true });
+
+      if (hp !== prevData.current.hp) {
+        // If unit made an action (attack)
+        if (actions !== prevData.current.actions) {
+          const attackAnim = type === 'Barbarian' ? 'HeavyAttack' :
+            type === 'Knight' ? 'AttackCombo' :
+            type === 'Rogue' ? 'Shooting(1h)' :
+            type === 'Mage' ? 'Shooting(2h)' :
+            'Attack(1h)'
+          
+          play(attackAnim, false, { anim: "Idle", loop: true });
+          //TODO: apply update and move in here?
+          
         } else {
-          // Unit dying
-          play("Defeat", false, null);
-          transition.current = { duration: 1, ease: "linear" };
-          setMotionPos({
-            x: prevData.current.x,
-            y: prevData.current.y,
-            z: prevData.current.z,
-            opacity: 0,
-          });
+          //TODO: probs set anims in db? idk
+          if (hp) {
+            // Unit recieved damage, but not dead
+            //TODO: obviously this is a bad way to do this... need better way to chain
+            play("Block", false, { anim: "Idle", loop: true });
+          } else {
+            // Unit dying
+            play("Defeat", false, null);
+            transition.current = { duration: 1, ease: "linear" };
+            setMotionPos({
+              x: prevData.current.x,
+              y: prevData.current.y,
+              z: prevData.current.z,
+              opacity: 0,
+            });
+          }
         }
+        
       }
       // Check if position has actually changed
       if (delta > 0) {
@@ -122,8 +155,8 @@ export default function Unit({ id, uid }: UnitProps) {
         };
       }
     } // Update previous data
-    prevData.current = { x, y, z, hp: data.hp };
-  }, [play, x, y, z, data.hp]);
+    prevData.current = { x, y, z, hp, actions };
+  }, [play, x, y, z, hp, actions]);
 
   return (
     <motion.group

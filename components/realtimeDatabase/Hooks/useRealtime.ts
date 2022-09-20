@@ -114,7 +114,6 @@ export const useRealtime = <
     return () => {
       // clean up listener on unmount if it exists
       if (unsubscribeRef.current) {
-        console.log("unsub")
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }

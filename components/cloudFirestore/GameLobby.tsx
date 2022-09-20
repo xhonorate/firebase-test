@@ -8,7 +8,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import firebase from "firebase/app";
 import Room from "../main/RoomInstance";
 import { GameSettings, gameSettingOptions, SettingsForm } from './GameSettings';
-import { intitializeRoom } from "../realtimeDatabase/roomGeneration";
+import { deleteRoom, intitializeRoom } from "../realtimeDatabase/roomFunctions";
 
 export interface Participant {
   id: string,
@@ -69,6 +69,7 @@ const GameLobby = ({ userData }) => {
       // If the user leaving was the only user in the lobby, delete it
       try { 
         deleteDocument();
+        deleteRoom(userData?.active_game); // delete RTDB document
       } catch (e) {
         console.warn(e);
       }

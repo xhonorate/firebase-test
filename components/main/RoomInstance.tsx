@@ -6,17 +6,18 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Button, Box, useEventListener } from "@chakra-ui/react";
-import Board, { generateBoard, BoardState } from "./Board";
+import { Button, Box } from "@chakra-ui/react";
+import Board, { BoardState } from "./Board";
 import HostControl from "./HostControl";
 import HUD from "./hud";
-import { Participant, LobbyContext } from "../cloudFirestore/GameLobby";
+import { LobbyContext } from "../cloudFirestore/GameLobby";
 import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
-import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomGeneration";
+import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomFunctions";
 import FX from "./three/FX/FX";
-import { TargetContext, useTargetWrapper } from './MouseEvents';
+import { useTargetWrapper } from './MouseEvents';
+import HoverGrid from './three/FX/HoverGrid';
 
 export interface ResourceStates {
   wood: number;
@@ -68,7 +69,7 @@ export default function Room() {
   // TODO: remove hax...
   const [visible, setVisible] = useState(true);
   
-  const { target, hovered, TargetWrapper } = useTargetWrapper();
+  const { target, hovered, TargetWrapper } = useTargetWrapper(id);
 
   useHax([
     [
@@ -127,7 +128,7 @@ export default function Room() {
   }, [data, intitializeGame, loading, playerIndex, staticTiles]);
 */
   const board = useMemo(() => <Board id={id} size={settings.boardSize} />, [id, settings.boardSize]);
-  const units = useMemo(() => <Units />, []);
+  const units = useMemo(() => <Units id={id} />, [id]);
   return (
     <>
       {playerIndex === 0 && visible && (
@@ -155,6 +156,7 @@ export default function Room() {
             <TargetWrapper>
               {board}
               {units}
+              <HoverGrid id={id} playerIndex={playerIndex} hovered={hovered} target={target} />
             </TargetWrapper>
             <FX hovered={hovered} target={target} />
           </SceneWrapper>

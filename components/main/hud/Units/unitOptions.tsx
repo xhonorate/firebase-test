@@ -1,5 +1,6 @@
 import { TileData } from "../../three/Tiles/Tile";
 import { UnitData } from "../../Units";
+import { CharacterType } from '../../three/gltfjsx/characters/Parts/useParts';
 
 export type UnitAction = (
     unit: UnitData,
@@ -16,6 +17,8 @@ interface UnitOption {
   action: UnitAction; // action that occurs when built
 }
 
+
+const unitType = (type: CharacterType) => (unit: UnitData) => unit.type === type;
 const notResting = (unit: UnitData, tile: TileData) => !unit.resting;
 const hasActions = (unit: UnitData, tile: TileData) => unit.actions > 0;
 
@@ -34,5 +37,19 @@ export const unitOptions: UnitOption[] = [
 
       return updates;
     },
-  }
+  }, 
+  /*
+  {
+    name: "Upgrade Tile",
+    req: [unitType('Mage'), notResting],
+    action: (unit, tile) => {
+      const updates = {};
+      // Update selected tile (by index === target)
+      updates["/units/" + unit.uid + "/actions"] = 0;
+      updates["/units/" + unit.uid + "/targetIdx"] = null;
+      updates["/board/tiles/" + tile.index + "/type"] = randomChoice
+
+      return updates;
+    },
+  } */
 ]  

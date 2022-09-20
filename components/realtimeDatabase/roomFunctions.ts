@@ -3,6 +3,7 @@ import { Participant } from '../cloudFirestore/GameLobby';
 import { fuego } from '@nandorojo/swr-firestore';
 import { generateBoard } from '../main/Board';
 import { resourceTypes } from '../main/three/Tiles/Resource';
+import { getSnapshot } from './Hooks';
 
 // Generate new board and initialize user resources
 export async function intitializeRoom(id: string, settings: GameSettings, participants: Participant[]) {
@@ -29,7 +30,11 @@ export function deleteRoom(id: string) {
   fuego?.rtdb.ref(`rooms/${id}`).remove();
 }
 
-export function updateRoom(id: string, updates: object) {
+export function updateRoom(id: string, updates: object, relativePath = '') {
   //@ts-ignore
-  fuego?.rtdb.ref(`rooms/${id}`).update(updates);
+  fuego?.rtdb.ref(`rooms/${id}${relativePath}`).update(updates);
+}
+
+export function snapshot(id: string, relativePath = '') {
+  return getSnapshot(`rooms/${id}${relativePath}`);
 }
