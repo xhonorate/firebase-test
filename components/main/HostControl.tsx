@@ -186,7 +186,7 @@ export default function HostControl() {
       // Update state information -- tile procs and resources
       updateRoom(id, updates);
     })    
-  }, [settings.yieldFrequency, settings.pointsToWin]);
+  }, [id, settings.yieldFrequency, settings.pointsToWin]);
 
   // Mount ticking timer to perform server actions
   useEffect(() => {

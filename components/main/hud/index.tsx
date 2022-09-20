@@ -75,7 +75,7 @@ export default function HUD({target, ...props}: HUDProps) {
 
       update(updates).then(() => (hasPendingActions.current = false));
     },
-    [data?.board?.tiles, playerIndex, resources, target, update]
+    [data?.board?.tiles, data?.units, playerIndex, resources, target.type, target.val, update]
   );
 
   if (!data || playerIndex === -1) return null; // If loading or player not found in game lobby (playerIndex = -1)

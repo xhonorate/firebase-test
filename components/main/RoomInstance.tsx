@@ -89,7 +89,7 @@ export default function Room() {
     catch (e) {
       console.warn(e);
     }
-  }, []);
+  }, [paused, updateGame]);
 
   const returnToLobby = useCallback(() => {
     try {
@@ -100,7 +100,7 @@ export default function Room() {
     } catch (e) {
       console.warn(e);
     }
-  }, [updateGame]);
+  }, [id, updateGame]);
 
   /*
   // Pieces of tile data that do not change, pass down through context to prevent need to listen to all data

@@ -156,7 +156,7 @@ function UnitGraphic({ uid, type, hp, actions, hexIdx }: UnitData) {
       }
     } // Update previous data
     prevData.current = { x, y, z, hp, actions };
-  }, [play, x, y, z, hp, actions]);
+  }, [play, x, y, z, hp, actions, type]);
 
   return (
     <motion.group

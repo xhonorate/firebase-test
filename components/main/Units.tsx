@@ -132,7 +132,7 @@ export function Units({id}) {
     if (newUids.length !== uids.length || newUids.some(uid => !uids.includes(uid))) {
       setUids(newUids);
     }
-  }, [data])
+  }, [data, uids])
 
   // Board graphics
   return (

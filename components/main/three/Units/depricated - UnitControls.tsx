@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import React, { useCallback, useContext } from "react";
 import { GameContext } from "../../RoomInstance";
 import { UnitData } from "../../Units";

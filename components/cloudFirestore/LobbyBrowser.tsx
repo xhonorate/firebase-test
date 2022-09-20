@@ -156,6 +156,7 @@ const LobbyBrowser = ({userData}) => {
       add({
         created: new Date(),
         finished: false,
+        paused: false,
         started: false,
         settings: gameSettingOptions.reduce((prev, option) => { return { ...prev, [option.key]: option.default }}, {}) as GameSettings,
         name: name,

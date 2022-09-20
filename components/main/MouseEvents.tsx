@@ -85,7 +85,7 @@ export const useTargetWrapper = (id: string) => {
     } else {
       setTarget(newTarget);
     }
-  }, []);
+  }, [id]);
 
   // TODO: add pause menu
   // Deselect Tile on Escape key press
@@ -95,10 +95,13 @@ export const useTargetWrapper = (id: string) => {
     }
   });
 
-  const TargetWrapper = useMemo(() => ({children}) => (
+  const TargetWrapper = useMemo(() => {
+    const TargetWrapperInner = ({children}) => (
     <TargetContext.Provider value={{ onTarget, onHover }}>
       {children}
-    </TargetContext.Provider>), []);
+    </TargetContext.Provider>)
+    return TargetWrapperInner; // Avoid react displayname error
+  }, [onHover, onTarget]);
 
   return {
     target: target,

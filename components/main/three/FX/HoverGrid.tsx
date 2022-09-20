@@ -48,7 +48,8 @@ export default function HoverGrid({id, playerIndex, target, hovered}: HoverGridP
         }
       }
     }
-  }, [hovered, target]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hovered, playerIndex, target]);
   
   return (
     <Instances>

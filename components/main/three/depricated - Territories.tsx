@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from "three";
 import { BoardState } from '../Board';

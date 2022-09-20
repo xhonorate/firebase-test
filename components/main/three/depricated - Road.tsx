@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import * as THREE from "three";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Edges, Extrude } from "@react-three/drei";
