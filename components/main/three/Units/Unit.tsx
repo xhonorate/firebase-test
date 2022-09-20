@@ -35,9 +35,9 @@ export default function Unit({ id, uid }: UnitProps) {
 }
 
 function UnitGraphic({ uid, type, hp, actions, hexIdx }: UnitData) {
-  // TODO: board height at pos...
   const [x, y, z] = useMemo(
-    () => tilePos(indexToHex(hexIdx ?? 0), 0.5, false),
+    //TODO: tile height
+    () => tilePos(indexToHex(hexIdx ?? 0), 1, true),
     [hexIdx]
   );
 
