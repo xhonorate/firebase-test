@@ -17,7 +17,7 @@ import SceneWrapper from "./three/SceneWrapper";
 import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomFunctions";
 import FX from "./three/FX/FX";
 import { useTargetWrapper } from './MouseEvents';
-import HoverGrid from './three/FX/HoverGrid';
+import HoverGrid from './three/UI/HoverGrid';
 
 export interface ResourceStates {
   wood: number;
@@ -128,7 +128,7 @@ export default function Room() {
   }, [data, intitializeGame, loading, playerIndex, staticTiles]);
 */
   const board = useMemo(() => <Board id={id} size={settings.boardSize} />, [id, settings.boardSize]);
-  const units = useMemo(() => <Units id={id} />, [id]);
+  const units = useMemo(() => <Units id={id} playerIndex={playerIndex} />, [id, playerIndex]);
   return (
     <>
       {playerIndex === 0 && visible && (

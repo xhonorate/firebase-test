@@ -19,10 +19,6 @@ export function stepTowardsTarget (state: GameState, unit: UnitData): object {
 export function followPath (state: GameState, unit: UnitData, path: number[]): object {
   const updates = {};
 
-  if (unit?.resting) {
-    unit.resting = false;
-  }
-
   // If pathfinding to point is not possible, set target to null
   if (!path || path.length < 2) {
     unit.targetIdx = null;
@@ -36,9 +32,11 @@ export function followPath (state: GameState, unit: UnitData, path: number[]): o
       if (blocking) {
         // Fight target
         unit.actions -= 1;
-        initiateCombat(unit, blocking);
+        // Apply mutations to objects
+        const defIsUnit = 'uid' in blocking;
+        initiateCombat(unit, blocking, state.board.tiles[unit.hexIdx].hex, state.board.tiles[next].hex); 
 
-        if ('uid' in blocking) {
+        if (defIsUnit) {
           // If blocker was another unit
           //TODO: unit death
           updates["/units/" + blocking.uid] = blocking;

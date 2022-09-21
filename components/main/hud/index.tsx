@@ -14,7 +14,7 @@ import TileControls from "./Tiles/TileControls";
 import ResourceDisplay from "./ResourceDisplay";
 import TileInfo from "./Tiles/TileInfo";
 import { playerColors } from "../three/Tiles/Tile";
-import { Participant, LobbyContext } from '../../cloudFirestore/GameLobby';
+import { LobbyContext } from '../../cloudFirestore/GameLobby';
 import UnitInfo from "./Units/UnitInfo";
 import UnitControls from "./Units/UnitControls";
 import { useRealtime } from '../../realtimeDatabase/Hooks/useRealtime';
@@ -75,7 +75,7 @@ export default function HUD({target, ...props}: HUDProps) {
 
       update(updates).then(() => (hasPendingActions.current = false));
     },
-    [data?.board?.tiles, data?.units, playerIndex, resources, target.type, target.val, update]
+    [data?.board?.tiles, data?.units, playerIndex, resources, target, update]
   );
 
   if (!data || playerIndex === -1) return null; // If loading or player not found in game lobby (playerIndex = -1)

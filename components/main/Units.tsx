@@ -12,6 +12,8 @@ import Unit from "./three/Units/Unit";
 import { useRealtime } from "../realtimeDatabase/Hooks";
 import { snapshot, updateRoom } from "../realtimeDatabase/roomFunctions";
 
+export type UnitActions = 'attack' | 'defend' | 'rest' | 'attackVictory' | 'attackDefeat' | 'defendVictory' | 'defendDefeat';
+
 // Data to be stored in RTDB /units/
 export interface UnitData {
   uid: any;
@@ -19,11 +21,12 @@ export interface UnitData {
   type: CharacterType; // Barbarian, Knight, etc.
   level?: number; // Level up ammount
   moves: number; // Moves left, resets to default every tick
+  action?: UnitActions; // Action currently being performed ('attacking', 'defending', etc)
+  facing?: number; // Direction unit is facing (for combat)
   actions: number; // Actions left (generally just 1)
   range?: number; // Attack range (null for melee)
   hp: number; // Dies when hp reaches 0
   str: number; // combat strength
-  resting?: boolean;
   hexIdx: number; // Index of current hex position on board
   targetIdx?: number; // Array of steps to reach target
 }
@@ -65,12 +68,16 @@ const defaultStats: { [key in CharacterType | "default"]?: Partial<UnitData> } =
   };
 
 // Return default stats for building of given type
-export function getUnitStats(type: any): Partial<UnitData> {
+export function getUnitStats(type: CharacterType): Partial<UnitData> {
   if (type in defaultStats) {
     return defaultStats[type];
   } else {
     return defaultStats["default"];
   }
+}
+
+export function getMaxHp(type: CharacterType) {
+  return getUnitStats(type).hp;
 }
 
 // Create new document in RTDB for unit with set props
@@ -117,7 +124,7 @@ export function setUnitTarget(id: string, uid: string, target: Target) {
   });
 }
 
-export function Units({id}) {
+export function Units({id, playerIndex}) {
   const { data } = useRealtime(`rooms/${id}/units`);
   // uids of all units in list
   const [uids, setUids] = useState<string[]>([]);
@@ -141,6 +148,7 @@ export function Units({id}) {
         return (
           <Unit
             key={uid}
+            playerIndex={playerIndex}
             id={id}
             uid={uid}
           />

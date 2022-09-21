@@ -100,7 +100,7 @@ const GameLobby = ({ userData }) => {
     } catch (e) {
       console.warn(e);
     }
-  }, [data.id, data.participants, data.settings, updateGame]);
+  }, [data?.id, data?.participants, data?.settings, updateGame]);
 
   return (
     <VStack m={4} align={"start"}>

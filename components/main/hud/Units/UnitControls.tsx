@@ -18,25 +18,30 @@ export default function UnitControls({ unit, tile, resources, playerIndex, callb
   return (
     <>
       {unitOptions.map((option, idx) => {
+        let reqPassed = true;
         if (option.req) {
           // If option has requirements
           option.req.forEach((req) => {
             if (!req(unit, tile)) {
               // If any requirement is not met, do not return button
-              return null;
+              reqPassed = false;
             }
           });
         }
 
-        // All reqs have been met
-        return (
-          <CostButton
-            key={idx}
-            option={option}
-            resources={resources}
-            callback={callback}
-          />
-        );
+        if (reqPassed) {
+          // All reqs have been met
+          return (
+            <CostButton
+              key={idx}
+              option={option}
+              resources={resources}
+              callback={callback}
+            />
+          );          
+        } else {
+          return null;
+        }
       })}
     </>
   );

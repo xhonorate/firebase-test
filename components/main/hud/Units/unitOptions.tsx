@@ -1,6 +1,7 @@
 import { TileData } from "../../three/Tiles/Tile";
-import { UnitData } from "../../Units";
+import { getUnitStats, UnitData } from "../../Units";
 import { CharacterType } from '../../three/gltfjsx/characters/Parts/useParts';
+import { not } from "../Tiles/buildOptions";
 
 export type UnitAction = (
     unit: UnitData,
@@ -19,7 +20,8 @@ interface UnitOption {
 
 
 const unitType = (type: CharacterType) => (unit: UnitData) => unit.type === type;
-const notResting = (unit: UnitData, tile: TileData) => !unit.resting;
+const fullHp = (unit: UnitData) => !('hp' in unit) || unit.hp === getUnitStats(unit.type).hp;
+const notResting = (unit: UnitData, tile: TileData) => unit.action !== 'rest';
 const hasActions = (unit: UnitData, tile: TileData) => unit.actions > 0;
 
 // Resource cost to build
@@ -27,11 +29,11 @@ const hasActions = (unit: UnitData, tile: TileData) => unit.actions > 0;
 export const unitOptions: UnitOption[] = [
   {
     name: "Rest",
-    req: [hasActions, notResting],
+    req: [hasActions, notResting, not(fullHp)],
     action: (unit, tile) => {
       const updates = {};
       // Update selected tile (by index === target)
-      updates["/units/" + unit.uid + "/resting"] = true;
+      updates["/units/" + unit.uid + "/action"] = 'rest';
       updates["/units/" + unit.uid + "/actions"] = 0;
       updates["/units/" + unit.uid + "/targetIdx"] = null;
 

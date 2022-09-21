@@ -217,7 +217,7 @@ export function adjacentIndexes(index: number) {
 // Return the sector the hex is in (0 - 5) counter clockwise from right
 // To get relative direction of a hex pass cubeSubtract(a, b) instead
 // Return [ sector, indexInSector ]
-function getSector(hex: HexCoords) {
+export function getSector(hex: HexCoords) {
   const absQ = Math.abs(hex.q);
   const absR = Math.abs(hex.r);
   const absS = Math.abs(hex.s);

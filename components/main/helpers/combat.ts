@@ -1,6 +1,7 @@
 import { getUnitStats, UnitData } from "../Units";
 import { getBuildingStats, Obj } from "../three/Objects/Building";
 import { randomChoice } from "./random";
+import { indexToHex, cubeSubtract, HexCoords, cubeDirection, getSector } from './hexGrid';
 
 const hpWeight = 0.4; // How much unit hp affects strength (0 - 1)
 
@@ -54,7 +55,9 @@ function predictResult() {
 // Mutate data of both units
 export function initiateCombat(
   attacker: UnitData,
-  defender: UnitData | Obj
+  defender: UnitData | Obj,
+  attackerHex: HexCoords,
+  defenderHex: HexCoords,
 ): void {
   // Check if defending target is unit (as opposed to building)
   const defIsUnit = 'uid' in defender;
@@ -74,4 +77,12 @@ export function initiateCombat(
   const [atkHp2, defHp2] = fightUntilDeath(atkDmg, defDmg, attacker.hp, defender.hp);
   attacker.hp = atkHp2;
   defender.hp = defHp2;
+
+  const facing = getSector(cubeSubtract(attackerHex, defenderHex))[0];
+  attacker.facing = facing; // Face towards defender for combat
+  attacker.action = (attacker.hp > 0) ? (defender.hp > 0) ? 'attack' : 'attackVictory' : 'attackDefeat';
+  if (defIsUnit) {
+    defender.facing = (facing + 3) % 6; // Face towards attacker for combat
+    defender.action = (defender.hp > 0) ? (attacker.hp > 0) ? 'defend' : 'defendVictory' : 'defendDefeat';
+  }
 }

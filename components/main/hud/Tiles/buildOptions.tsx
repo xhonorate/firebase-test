@@ -11,7 +11,7 @@ import { getRoadType } from "../../helpers/road";
 import { getBorders } from "../../helpers/borders";
 
 //////////////////////// Requirement functions: ////////////////////////
-const not = (fn: (params?: any) => boolean) => (params?: any) => !fn(params);
+export const not = (fn: (params?: any) => boolean) => (params?: any) => !fn(params);
 
 const notOwned = (tile: TileData) => !("owner" in tile);
 const ownedByMe = (tile: TileData, playerIndex: number) => {

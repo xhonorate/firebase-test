@@ -1,10 +1,10 @@
 import React, { useEffect, useCallback, useContext } from "react";
-import { GameState } from './RoomInstance';
+import { GameState } from "./RoomInstance";
 import { resourceTypes } from "./three/Tiles/Resource";
 import findClosestSettlement from "./helpers/findClosestSettlement";
 import { getUnitStats } from "./Units";
 import { snapshot, updateRoom } from "../realtimeDatabase/roomFunctions";
-import { LobbyContext } from '../cloudFirestore/GameLobby';
+import { LobbyContext } from "../cloudFirestore/GameLobby";
 import { stepTowardsTarget } from "./helpers/pathfinding";
 
 // Return list of all updates needed for state (rather than updating entire state every proc)
@@ -100,73 +100,58 @@ function calcPoints(state: GameState, pointsToWin: number): object {
   return updates;
 }
 
-
-
-
-
 // TODO: let units update themselves individually! Just make sure no dupe updates (only let owner send updates?)
-
-
-
-
 
 // Auto-move units towards their targets - return update object
 function allUnitUpdates(state: GameState) {
   const updates = {};
   // If unit has pathfinding set
   Object.values(state?.units ?? {}).forEach((unit) => {
-    if (unit.hp === 0) {
-      // If unit is dying
-      updates["/units/" + unit.uid + "/hp"] = -1;
-    } else if (unit.hp === -1) {
-      // Play dying animation for one tick, then set unit to null;
-      updates["/units/" + unit.uid] = null;
-    } else {
-      if (unit.targetIdx && (unit.actions || unit.moves)) {
-        // If unit target and has actions / moves, perform pathfinding
-        Object.assign(updates, stepTowardsTarget(state, unit));
+    if (unit.targetIdx && (unit.actions || unit.moves)) {
+      // If unit target and has actions / moves, perform pathfinding
+      Object.assign(updates, stepTowardsTarget(state, unit));
+    }
+
+    const stats = getUnitStats(unit.type);
+
+    // If unit is resting
+    if (unit.action === 'rest') {
+      // Increase up to max hp
+      unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
+      if (updates["/units/" + unit.uid]) {
+        updates["/units/" + unit.uid].hp = unit.hp;
+      } else {
+        updates["/units/" + unit.uid + "/hp"] = unit.hp;
       }
-
-      const stats = getUnitStats(unit.type);
-
-      if (unit.resting) {
-        // Increase up to max hp
-        unit.hp = Math.min(stats.hp, unit.hp + 1 + Math.floor(stats.hp / 10));
+      if (unit.hp === stats.hp) {
+        // If unit reaches max hp
+        unit.action = null;
         if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].hp = unit.hp;
+          updates["/units/" + unit.uid].action = null;
         } else {
-          updates["/units/" + unit.uid + "/hp"] = unit.hp;
-        }
-        if (unit.hp === stats.hp) {
-          unit.resting = false;
-          if (updates["/units/" + unit.uid]) {
-            updates["/units/" + unit.uid].resting = false;
-          } else {
-            updates["/units/" + unit.uid + "/resting"] = false;
-          }
+          updates["/units/" + unit.uid + "/action"] = null;
         }
       }
+    }
 
-      // Reset unit movement range and actions - mutate unit object inside of update
-      if (unit.actions < stats.actions) {
-        if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].actions = stats.actions;
-        } else {
-          updates["/units/" + unit.uid + "/actions"] = stats.actions;
-        }
+    // Reset unit movement range and actions - mutate unit object inside of update
+    if (unit.actions < stats.actions) {
+      if (updates["/units/" + unit.uid]) {
+        updates["/units/" + unit.uid].actions = stats.actions;
+      } else {
+        updates["/units/" + unit.uid + "/actions"] = stats.actions;
       }
-      if (unit.moves < stats.moves) {
-        if (updates["/units/" + unit.uid]) {
-          updates["/units/" + unit.uid].moves = stats.moves;
-        } else {
-          updates["/units/" + unit.uid + "/moves"] = stats.moves;
-        }
+    }
+    if (unit.moves < stats.moves) {
+      if (updates["/units/" + unit.uid]) {
+        updates["/units/" + unit.uid].moves = stats.moves;
+      } else {
+        updates["/units/" + unit.uid + "/moves"] = stats.moves;
       }
     }
   });
   return updates;
 }
-
 
 export default function HostControl() {
   const { id, settings, paused } = useContext(LobbyContext);
@@ -182,10 +167,10 @@ export default function HostControl() {
         // Move Units that have targets set
         ...allUnitUpdates(state),
       };
-  
+
       // Update state information -- tile procs and resources
       updateRoom(id, updates);
-    })    
+    });
   }, [id, settings.yieldFrequency, settings.pointsToWin]);
 
   // Mount ticking timer to perform server actions
