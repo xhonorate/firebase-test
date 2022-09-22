@@ -80,6 +80,8 @@ export function followPath (state: GameState, unit: UnitData, path: number[]): o
         }
       }
     }
+    // Stop previous action / animation
+    unit.action = null;
   }
   
   updates["/units/" + unit.uid] = unit;

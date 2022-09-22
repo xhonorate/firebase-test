@@ -9,36 +9,32 @@ interface HealthBarProps extends BillboardProps {
   height?: number;
 }
 
-const HealthBar = ({ hp, maxHp, width = 2, height = 0.5, ...props }: HealthBarProps) => (
-  <Billboard
-    visible={(hp ?? maxHp) < maxHp /* only render if hp is set and less than max */}
-    {...props}
-  >
-    <Plane args={[width, height]}>
-      <meshBasicMaterial color={'black'} />
-    </Plane>
-    { /* <mesh>
-      <motion.planeGeometry
+const HealthBar = ({ hp, maxHp, width = 1, height = 0.2, ...props }: HealthBarProps) => {
+  return (
+    <Billboard
+      follow={true}
+      visible={(hp ?? maxHp) < maxHp /* only render if hp is set and less than max */}
+      {...props}
+    >
+      <Plane args={[width, height]}>
+        <meshBasicMaterial color={"black"} />
+      </Plane>
+      <motion.mesh
         initial={{
-          scale: 1
+          z: 0.1,
+          scaleX: 1,
+          x: 0
         }}
         animate={{
-          scale: hp / maxHp
+          scaleX: hp / maxHp,
+          x: -(width / 2) * (1 - hp / maxHp),
         }}
-        args={[width, height]}
-      />
-      <meshBasicMaterial>
-        <GradientTexture
-          center-x={0.5}
-          center-y={0.5}
-          rotation={Math.PI / 2}
-          stops={[0, 1]} // As many stops as you want
-          colors={["red", "green"]} // Colors need to match the number of stops
-          size={10} // Size is optional, default = 1024
-        />
-      </meshBasicMaterial>
-      </mesh> */}
-  </Billboard>
-);
+      >
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial color={'green'} />
+      </motion.mesh>
+    </Billboard>
+  );
+}
 
 export default HealthBar;

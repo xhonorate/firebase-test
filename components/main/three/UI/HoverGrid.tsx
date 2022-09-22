@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Instance, Instances } from "@react-three/drei";
-import { motion } from "framer-motion-3d";
 import { tileSize, tilePos } from "../Tiles/Tile";
 import { Target } from "../../MouseEvents";
 import { useRealtime } from "../../../realtimeDatabase/Hooks/useRealtime";
@@ -39,6 +38,7 @@ export default function HoverGrid({
         // Make sure unit still exists
         if (currentIdx === null) {
           setHighlighted([]);
+          setTargeted(null);
           return;
         }
         // Whichever tile is clicked on (pathfinding final goal)
@@ -52,9 +52,11 @@ export default function HoverGrid({
         } else {
           // TODO: pathfind to closest point, maybe highlight the issue?
           setHighlighted([]);
+          setTargeted(null);
           return;
         }
       } else {
+        setTargeted(null);
         setHighlighted([]);
       }
     }
@@ -64,11 +66,7 @@ export default function HoverGrid({
   return (
     <Instances>
       <circleGeometry args={[tileSize, 6]} />
-      <motion.meshStandardMaterial
-        whileHover={{
-          // TODO: Show attack / move / range attack icon
-          opacity: 1,
-        }}
+      <meshStandardMaterial
         depthTest={false}
         // depthWrite - Whether rendering this material has any effect on the depth buffer. Default is true.
         // When drawing 2D overlays it can be useful to disable the depth writing in order to layer several

@@ -259,6 +259,9 @@ function UnitGraphic({
     }
   }, [play, x, y, z, actions, action, facing, type, playCombatAnim, updateMotion, moveIn, deleteReference, isOwner]);
 
+  const HPBar = useMemo(() => 
+  <HealthBar position-y={2.2} hp={hp} maxHp={getMaxHp(type)} width={getMaxHp(type) / 40}/>, [hp, type]); 
+
   return (
     <motion.group
       {...useTarget({ type: "unit", val: uid })}
@@ -276,7 +279,7 @@ function UnitGraphic({
       onAnimationComplete={onMotionComplete.current}
     >
       {Model}
-      <HealthBar position-y={2.2} hp={hp} maxHp={getMaxHp(type)} />
+      {HPBar}
     </motion.group>
   );
 }

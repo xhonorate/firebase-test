@@ -11,6 +11,7 @@ import React, { useMemo } from "react";
 import Cloud from "../FX/Cloud";
 import Archeryrange from '../gltfjsx/objects/archeryrange';
 import Watchtower from "../gltfjsx/objects/watchtower";
+import HealthBar from "../UI/HealthBar";
 
 interface DefaultStats {
   hp: number;
@@ -24,6 +25,10 @@ export function getBuildingStats(type: ObjectType): DefaultStats {
   } else {
     return defaultStats['default'];
   }
+}
+
+function getMaxHp(type: ObjectType): number {
+  return getBuildingStats(type).hp;
 }
 
 const defaultStats: { [key in ObjectType | 'default']?: DefaultStats } = {
@@ -100,6 +105,13 @@ export default function Building({
     }
   }, [obj, props]);
 
+  const HPBar = useMemo(() => {
+    if (!obj?.hp || !obj.type) {
+      return null;
+    }
+    return <HealthBar position-y={2.2} hp={obj.hp} maxHp={getMaxHp(obj.type)} width={getMaxHp(obj.type) / 40}/>
+  }, [obj?.type, obj?.hp])
+
   return (
     <>
       {obj?.t2c && (
@@ -126,6 +138,7 @@ export default function Building({
         </Billboard>
       )}
       {buildingElem}
+      {HPBar}
     </>
   );
 }

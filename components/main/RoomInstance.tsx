@@ -1,11 +1,4 @@
-import React, {
-  Ref,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { Ref, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Button, Box } from "@chakra-ui/react";
 import Board, { BoardState } from "./Board";
 import HostControl from "./HostControl";
@@ -16,8 +9,8 @@ import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
 import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomFunctions";
 import FX from "./three/FX/FX";
-import { useTargetWrapper } from './MouseEvents';
-import HoverGrid from './three/UI/HoverGrid';
+import { useTargetWrapper, TargetContext } from "./MouseEvents";
+import HoverGrid from "./three/UI/HoverGrid";
 
 export interface ResourceStates {
   wood: number;
@@ -61,21 +54,17 @@ export const TilesContext = React.createContext<StaticTileData[]>(null);
 */
 
 export default function Room() {
-  const { id, settings, participants, playerIndex, paused, updateGame } =
-    useContext(LobbyContext);
+  const { id, settings, participants, playerIndex, paused, updateGame } = useContext(LobbyContext);
 
   // Konami code
   //useHax('arrowuparrowdownarrowuparrowdownarrowleftarrowrightarrowleftarrowrightba', () => console.log("AYYY"));
   // TODO: remove hax...
   const [visible, setVisible] = useState(true);
-  
+
   const { target, hovered, TargetWrapper } = useTargetWrapper(id);
 
   useHax([
-    [
-      "gimmegold",
-      () => updateRoom(id, { ["/players/" + playerIndex + "/resources/Gold"]: 9999 }),
-    ],
+    ["gimmegold", () => updateRoom(id, { ["/players/" + playerIndex + "/resources/Gold"]: 9999 })],
     ["h", () => setVisible(false)],
     ["s", () => setVisible(true)],
   ]);
@@ -83,10 +72,9 @@ export default function Room() {
   const togglePaused = useCallback(() => {
     try {
       updateGame({
-        paused: !paused
-      })
-    }
-    catch (e) {
+        paused: !paused,
+      });
+    } catch (e) {
       console.warn(e);
     }
   }, [paused, updateGame]);
@@ -102,33 +90,30 @@ export default function Room() {
     }
   }, [id, updateGame]);
 
-  /*
-  // Pieces of tile data that do not change, pass down through context to prevent need to listen to all data
-  const [staticTiles, setStaticTiles] = useState<StaticTileData[]>(null);
-  const boardRef = useRef(null);
+  // Memorise to prevent unneccessary re-renders on state changes
+  const MemoScene = useMemo(() => {
+    const SceneWrapperInner = ({ children }) => <SceneWrapper>{children}</SceneWrapper>;
+    return SceneWrapperInner;
+  }, []);
+  
+  const board = useMemo(
+    () => (
+      <TargetWrapper>
+        <Board id={id} size={settings.boardSize} />
+      </TargetWrapper>
+    ),
+    [TargetWrapper, id, settings.boardSize]
+  );
 
-  useEffect(() => {
-    /*
-    // If data was updated, disect into seperate providers
-    if (data) {
-      // Only set once if not yet set
-      if (!staticTiles && boardRef.current) {
-        setStaticTiles(data.board.tiles.map((tile: TileData, idx: number) => {
-          return {
-            index: idx,
-            hex: tile.hex,
-            height: tile.height,
-            biome: tile.biome,
-            adjIdxs: tile.adjIdxs, // Expensive, so only calculate here
-            ref: boardRef.current.children[idx],
-          }
-        }));
-      }
-    }
-  }, [data, intitializeGame, loading, playerIndex, staticTiles]);
-*/
-  const board = useMemo(() => <Board id={id} size={settings.boardSize} />, [id, settings.boardSize]);
-  const units = useMemo(() => <Units id={id} playerIndex={playerIndex} />, [id, playerIndex]);
+  const units = useMemo(
+    () => (
+      <TargetWrapper>
+        <Units id={id} playerIndex={playerIndex} />
+      </TargetWrapper>
+    ),
+    [TargetWrapper, id, playerIndex]
+  );
+
   return (
     <>
       {playerIndex === 0 && visible && (
@@ -136,9 +121,7 @@ export default function Room() {
         <>
           <Button onClick={returnToLobby}>Back to Lobby</Button>
           <Button onClick={() => intitializeRoom(id, settings, participants)}>Restart</Button>
-          <Button onClick={togglePaused}>
-            {paused ? "Unpause" : "Pause"}
-          </Button>
+          <Button onClick={togglePaused}>{paused ? "Unpause" : "Pause"}</Button>
           <HostControl />
         </>
       )}
@@ -152,14 +135,12 @@ export default function Room() {
       >
         <HUD w={"650px"} h={"650px"} target={target} />
         <Box w={"full"} h={"full"}>
-          <SceneWrapper>
-            <TargetWrapper>
-              {board}
-              {units}
-              <HoverGrid id={id} playerIndex={playerIndex} hovered={hovered} target={target} />
-            </TargetWrapper>
+          <MemoScene>
+            {board}
+            {units}
+            <HoverGrid id={id} playerIndex={playerIndex} hovered={hovered} target={target} />
             <FX hovered={hovered} target={target} />
-          </SceneWrapper>
+          </MemoScene>
         </Box>
       </Box>
     </>

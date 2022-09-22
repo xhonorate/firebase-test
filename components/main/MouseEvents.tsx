@@ -95,6 +95,7 @@ export const useTargetWrapper = (id: string) => {
     }
   });
 
+  
   const TargetWrapper = useMemo(() => {
     const TargetWrapperInner = ({children}) => (
     <TargetContext.Provider value={{ onTarget, onHover }}>
@@ -102,10 +103,11 @@ export const useTargetWrapper = (id: string) => {
     </TargetContext.Provider>)
     return TargetWrapperInner; // Avoid react displayname error
   }, [onHover, onTarget]);
+  
 
   return {
-    target: target,
-    hovered: hovered,
+    target,
+    hovered,
     TargetWrapper
   };
 };

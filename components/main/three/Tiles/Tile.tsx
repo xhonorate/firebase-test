@@ -161,16 +161,7 @@ export const biomeTypes: BiomeProps[] = [
   { name: "Snow", tile: null },
 ];
 
-export const playerColors = [
-  "red",
-  "blue",
-  "yellow",
-  "brown",
-  "purple",
-  "green",
-  "teal",
-  "orange",
-];
+export const playerColors = ["red", "blue", "yellow", "brown", "purple", "green", "teal", "orange"];
 
 export const heightScale = 0.1;
 export const tileSize = 1.16; // Diameter of "cylinder" of each tile
@@ -181,7 +172,7 @@ export interface TileData {
   type: number; // Yield type
   biome?: number;
   height?: number;
-  road?: { owner: number, type: number, orientation: number };
+  road?: { owner: number; type: number; orientation: number };
   transition?: { type: number; orientation: number }; // Which type of transition based on neighboring biomes
   hex: HexCoords;
   borders?: number; // array of sides of this tile touching unowed terrirory (as byte)
@@ -194,30 +185,26 @@ export interface TileData {
 // Get real world position of tile based on hex and height
 export function tilePos(hex: HexCoords, height: number = 0, onTop: boolean = false) {
   const pos = cubeToPos(
-    cubeScale(
-      hex,
-      tileSize - 0.01 /*scale for difference in size of hex mesh */
-    )
+    cubeScale(hex, tileSize - 0.01 /*scale for difference in size of hex mesh */)
   );
   //TODO: test this..
-  pos.splice(1, 1, height * heightScale + ( onTop ? 0.5 : 0 ));
+  pos.splice(1, 1, height * heightScale + (onTop ? 0.5 : 0));
   return pos;
 }
 
 interface TileProps {
-  id: string,
-  index: number,
+  id: string;
+  index: number;
 }
 
-export default function Tile({id, index}: TileProps) {
+export default function Tile({ id, index }: TileProps) {
   const { data } = useRealtime<TileData>(`rooms/${id}/board/tiles/${index}`);
 
   if (!data) {
     return null;
   }
 
-  return <TileGraphic index={index} {...data} />
-
+  return <TileGraphic index={index} {...data} />;
 }
 
 function TileGraphic(tile: TileData) {
@@ -239,51 +226,45 @@ function TileGraphic(tile: TileData) {
 
   const prevProcs = useRef(0);
 
-  const pos: [number, number, number] = useMemo(
-    () => tilePos(hex, height),
-    [hex, height]
-  );
+  const pos: [number, number, number] = useMemo(() => tilePos(hex, height), [hex, height]);
 
   // Randomly rotate each tile some multiple of 60 deg
   const rotation = useMemo(() => (randomInt(6) * Math.PI) / 3, []);
 
-  const TileMesh = useMemo(
-    () =>
+  const TileMesh = useMemo(() => {
+    const Mesh =
       transition !== null
         ? biomeTypes[biome].tile.transition[transition.type]
         : road !== null
         ? biomeTypes[biome].tile.road[road.type]
-        : biomeTypes[biome].tile.default,
-    [biome, road, transition]
-  );
+        : biomeTypes[biome].tile.default;
+
+    return (
+      <Mesh
+        rotation-y={(transition?.orientation ?? road?.orientation ?? 0) * (-Math.PI / 3)}
+        scale-y={0.5}
+      />
+    );
+  }, [biome, road, transition]);
 
   // If procs count just increased, display glow animation
   const justProcd = type !== 0 && procs > prevProcs.current;
   if (justProcd) {
     prevProcs.current = procs;
   }
-  
+
   useEffect(() => {
-    console.log('Tile Mount:', index);
+    console.log("Tile Mount:", index);
 
     return () => {
-        console.log("Tile Unmount", index)
+      console.log("Tile Unmount", index);
     };
   }, []);
-  
 
   return (
     <>
-      <group
-        position={pos}
-        dispose={null}
-        {...useTarget({type: 'tile', val: index})}
-      >
-        <Borders
-          borders={borders}
-          position={[0, 0.55, 0]}
-          color={playerColors[owner]}
-        />
+      <group position={pos} dispose={null} {...useTarget({ type: "tile", val: index })}>
+        <Borders borders={borders} position-y={0.55} color={playerColors[owner]} />
 
         {/* TODO: THIS CAUSES MEMORY LEAK!!! 
           Move to HoverBoard file, or just set hovered thingy here - let FX deal with it?
@@ -320,35 +301,17 @@ function TileGraphic(tile: TileData) {
         */}
 
         {/* Render tile resources */}
-        <Resource
-          type={type}
-          odds={odds}
-          position={[0, 0.5, 0]}
-          rotation={[0, rotation, 0]}
-        />
+        <Resource type={type} odds={odds} position-y={0.5} rotation-y={rotation} />
 
         {/* Render buildings */}
-        <Building
-          obj={obj}
-          rotation={[0, rotation, 0]}
-          position={[0, 0.5, 0]}
-          castShadow={true}
-        />
+        <Building obj={obj} rotation-y={rotation} position-y={0.5} castShadow={true} />
 
         {/* dirt underneath tile */}
         {height > 5 && (
-          <HexEmptyDetail
-            scale-y={height * heightScale * 2}
-            position-y={-height * heightScale}
-          />
+          <HexEmptyDetail scale-y={height * heightScale * 2} position-y={-height * heightScale} />
         )}
 
-        <TileMesh
-          rotation-y={
-            (transition?.orientation ?? road?.orientation ?? 0) * (-Math.PI / 3)
-          }
-          scale-y={0.5}
-        />
+        {TileMesh}
       </group>
     </>
   );
