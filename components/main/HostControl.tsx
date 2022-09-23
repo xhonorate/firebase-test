@@ -107,7 +107,7 @@ function allUnitUpdates(state: GameState) {
   const updates = {};
   // If unit has pathfinding set
   Object.values(state?.units ?? {}).forEach((unit) => {
-    if (unit.targetIdx && (unit.actions || unit.moves)) {
+    if (unit.targetIdx && (unit.actions || unit.moves) && unit.hp > 0) {
       // If unit target and has actions / moves, perform pathfinding
       Object.assign(updates, stepTowardsTarget(state, unit));
     }

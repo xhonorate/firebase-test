@@ -60,6 +60,7 @@ import { cubeScale, cubeToPos, HexCoords } from "../../helpers/hexGrid";
 import { randomInt } from "../../helpers/random";
 import { useTarget } from "../../MouseEvents";
 import { useRealtime } from "../../../realtimeDatabase/Hooks";
+import { meshBounds } from "@react-three/drei";
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -263,7 +264,7 @@ function TileGraphic(tile: TileData) {
 
   return (
     <>
-      <group position={pos} dispose={null} {...useTarget({ type: "tile", val: index })}>
+      <group raycast={meshBounds} position={pos} dispose={null} {...useTarget({ type: "tile", val: index })}>
         <Borders borders={borders} position-y={0.55} color={playerColors[owner]} />
 
         {/* TODO: THIS CAUSES MEMORY LEAK!!! 
@@ -304,7 +305,7 @@ function TileGraphic(tile: TileData) {
         <Resource type={type} odds={odds} position-y={0.5} rotation-y={rotation} />
 
         {/* Render buildings */}
-        <Building obj={obj} rotation-y={rotation} position-y={0.5} castShadow={true} />
+        <Building obj={obj} rotation-y={rotation} position-y={0.5} />
 
         {/* dirt underneath tile */}
         {height > 5 && (

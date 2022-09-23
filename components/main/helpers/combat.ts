@@ -79,11 +79,14 @@ export function initiateCombat(
   console.log(atkDmg, defDmg);
   // Apply damage to unit (will be updated outside of this function)
   const [atkHp2, defHp2] = fightUntilDeath(atkDmg, defDmg, attacker.hp, defender.hp);
-  attacker.hp = atkHp2;
-  defender.hp = defHp2;
+  attacker.hp = atkHp2 === Infinity ? 0 : atkHp2;
+  defender.hp = defHp2 === Infinity ? 0 : defHp2;
 
   const facing = getSector(cubeSubtract(attackerHex, defenderHex))[0];
   attacker.facing = facing; // Face towards defender for combat
+  if (!(attacker.hp > 0)) {
+    attacker.targetIdx = null;
+  }
   attacker.action =
     attacker.hp > 0 ? (defender.hp > 0 ? "attack" : "attackVictory") : "attackDefeat";
   if (defIsUnit) {

@@ -1,14 +1,17 @@
-import { MapControls, useContextBridge } from "@react-three/drei"
+import { AdaptiveEvents, MapControls } from "@react-three/drei"
 import { Canvas } from '@react-three/fiber';
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 // Wrapper for canvas, passes context to children inside of canvas
 export default function SceneWrapper({children}) {
   // bridge any number of contexts
   // Note: These contexts must be provided by something above this SceneWrapper component
   //       You cannot render the providers for these contexts inside this component
+  const [dpr, setDpr] = useState(1.5)
+
   return (
     <Canvas
+      dpr={dpr}
       orthographic={true}
       camera={{
         fov: 100,
@@ -25,6 +28,8 @@ export default function SceneWrapper({children}) {
       {children}
 
       {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
+      <AdaptiveEvents />
+
       <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
     </Canvas>
   )
