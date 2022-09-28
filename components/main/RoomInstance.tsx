@@ -1,5 +1,5 @@
-import React, { Ref, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Button, Box } from "@chakra-ui/react";
+import React, { useCallback, useContext, useMemo, useState } from "react";
+import { Button, Div } from "react-native-magnus";
 import Board, { BoardState } from "./Board";
 import HostControl from "./HostControl";
 import HUD from "./hud";
@@ -8,8 +8,8 @@ import { UnitData, Units } from "./Units";
 import useHax from "./helpers/useHax";
 import SceneWrapper from "./three/SceneWrapper";
 import { deleteRoom, intitializeRoom, updateRoom } from "../realtimeDatabase/roomFunctions";
-import FX from "./three/FX/FX";
-import { useTargetWrapper, TargetContext } from "./MouseEvents";
+// import FX from "./three/FX/FX";
+import { useTargetWrapper } from "./MouseEvents";
 import HoverGrid from "./three/UI/HoverGrid";
 
 export interface ResourceStates {
@@ -95,7 +95,7 @@ export default function Room() {
     const SceneWrapperInner = ({ children }) => <SceneWrapper>{children}</SceneWrapper>;
     return SceneWrapperInner;
   }, []);
-  
+
   const board = useMemo(
     () => (
       <TargetWrapper>
@@ -119,30 +119,27 @@ export default function Room() {
       {playerIndex === 0 && visible && (
         // Host only //
         <>
-          <Button onClick={returnToLobby}>Back to Lobby</Button>
-          <Button onClick={() => intitializeRoom(id, settings, participants)}>Restart</Button>
-          <Button onClick={togglePaused}>{paused ? "Unpause" : "Pause"}</Button>
+          <Div row>
+            <Button onPress={returnToLobby}>Back to Lobby</Button>
+            <Button onPress={() => intitializeRoom(id, settings, participants)}>Restart</Button>
+            <Button onPress={togglePaused}>{paused ? "Unpause" : "Pause"}</Button>
+          </Div>
           <HostControl />
         </>
       )}
-      <Box
-        w={"650px"}
-        h={"650px"}
-        visibility={visible ? "visible" : "hidden"}
-        border={"1px solid darkblue"}
-        bg={"gray.800"}
-        color={"gray.100"}
-      >
-        <HUD w={"650px"} h={"650px"} target={target} />
-        <Box w={"full"} h={"full"}>
-          <MemoScene>
-            {board}
-            {units}
-            <HoverGrid id={id} playerIndex={playerIndex} hovered={hovered} target={target} />
-            <FX hovered={hovered} target={target} />
-          </MemoScene>
-        </Box>
-      </Box>
+      {visible && (
+        <Div w={"100%"} h={"100%"} borderWidth={1} borderColor={"blue700"} bg={"gray800"}>
+          <HUD w={"100%"} h={"100%"} target={target} />
+          <Div w={"100%"} h={"100%"}>
+            <MemoScene>
+              {board}
+              {units}
+              <HoverGrid id={id} playerIndex={playerIndex} hovered={hovered} target={target} />
+              {/* <FX hovered={hovered} target={target} /> */}
+            </MemoScene>
+          </Div>
+        </Div>
+      )}
     </>
   );
 }

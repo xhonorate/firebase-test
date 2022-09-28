@@ -25,7 +25,7 @@ type GLTFResult = GLTF & {
 
 export default function MageHeadB(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/extra_heads/mageHeadB.gltf') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/mageHeadB.gltf')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube3535.geometry} material={materials.Brown} />
@@ -37,4 +37,4 @@ export default function MageHeadB(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/extra_heads/mageHeadB.gltf')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/mageHeadB.gltf')

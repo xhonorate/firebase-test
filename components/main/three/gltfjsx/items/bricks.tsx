@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function Bricks(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/bricks.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/bricks.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.bricks.geometry} material={materials.Stone} />
@@ -26,4 +26,4 @@ export default function Bricks(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/bricks.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/bricks.gltf.glb'))

@@ -22,7 +22,7 @@ type GLTFResult = GLTF & {
 
 export default function DetailForestA(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/detail_forestA.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/objects/gltf/detail_forestA.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder1301.geometry} material={materials.GreenDark} />
@@ -32,4 +32,4 @@ export default function DetailForestA(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/objects/gltf/detail_forestA.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/objects/gltf/detail_forestA.gltf.glb'))

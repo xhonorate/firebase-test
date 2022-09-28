@@ -1,6 +1,7 @@
-import { HStack, Text, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Switch, VStack, Box, Tooltip } from '@chakra-ui/react';
-import React, { useReducer, useState } from 'react'
+import React, { createRef, useReducer, useState } from 'react'
 import { indexToHex, hexToIndex, cubeDistance, adjacentIndexes } from '../components/main/helpers/hexGrid';
+import { Div, Text, Tooltip, Toggle, Icon, TooltipRef } from 'react-native-magnus';
+import NumberInput from '../styles/components/NumberInput';
 
 function cubeToPos (hex, scale, count) {
   return { 
@@ -8,7 +9,6 @@ function cubeToPos (hex, scale, count) {
     top: scale / 2.0 + (scale / (3* Math.sqrt(count))) * (3/2) * hex.r
   };
 }
-
 
 export default function Test () {
   const [indexInput, setIndexInput] = useState(0);
@@ -18,78 +18,71 @@ export default function Test () {
 
   const adj = adjacentIndexes(indexInput);
 
-  return <VStack align={'start'} p={5}>
-    <HStack>
-      <Text>{'Index: '}</Text>
-      <NumberInput min={0} w={'200px'} value={indexInput} onChange={(val) => {
-          setIndexInput(parseInt(val));
-          setHexInput(indexToHex(parseInt(val)));
-        }}>
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
-    </HStack>
+  return <Div>
+    <Div row m={4} alignItems={'center'}>
+      <Text variant={'heading'}>{'Index: '}</Text>
+      <NumberInput min={0} max={500} ms={4} value={indexInput} setValue={(val) => {
+        setIndexInput(val);
+        setHexInput(indexToHex(val));
+      }} />
+    </Div>
 
-    <HStack py={5}>
-      <Text>{'Hex: '}</Text>
-      <NumberInput w={'200px'} value={hexInput.q} onChange={(val) => {
+    <Div py={5} flexWrap={'wrap'} row alignItems={'center'}>
+      <Text variant={'heading'}>{'Hex: '}</Text>
+
+      <NumberInput min={0} max={50} ms={4} value={hexInput.q} setValue={(val) => {
           let newHex = {...hexInput, q: parseInt(val)};
           setHexInput(newHex);
           setIndexInput(hexToIndex(newHex));
-        }}>
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
-
-      <NumberInput w={'200px'} value={hexInput.r} onChange={(val) => {
+      }} />
+      <NumberInput min={0} max={50} ms={4} value={hexInput.r} setValue={(val) => {
           let newHex = {...hexInput, r: parseInt(val)};
           setHexInput(newHex);
           setIndexInput(hexToIndex(newHex));
-        }}>
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
+        }} />
 
-      <NumberInput w={'200px'} value={hexInput.s} onChange={(val) => {
+      <NumberInput min={0} max={50} ms={4} value={hexInput.s} setValue={(val) => {
           let newHex = {...hexInput, s: parseInt(val)};
           setHexInput(newHex);
           setIndexInput(hexToIndex(newHex));
-        }}>
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
-    </HStack>
+        }} />
+    </Div>
     
-    <Box>
+    <Text my={4} variant={'heading'}>
       R: {Math.max(Math.abs(hexInput.q), Math.abs(hexInput.r), Math.abs(hexInput.s))}
-    </Box>
+    </Text>
 
-    <Box>
+    <Text my={4} variant={'heading'}>
       hexToIndex: {hexToIndex(hexInput)}
-    </Box>
+    </Text>
 
-    <Box>
+    <Text my={4} variant={'heading'}>
       adjacentIndexes: {JSON.stringify(adj)}
-    </Box>
+    </Text>
 
-    <Box>View: <Switch isChecked={view} onChange={toggleView} /></Box>
-    { view && <Box w={'500px'} h={'500px'} position={'relative'}>
+    <Div my={4} row alignItems={'center'}>
+      <Text variant={'heading'}>
+        View:
+      </Text>
+      <Toggle 
+        circleBg={'blue500'}
+        activeBg={'blue700'}
+        h={20}
+        w={30}
+        onPress={toggleView}
+        on={view}
+      />
+    </Div>
+    { view && <Div w={'100%'} h={'100%'} p={10} ms={20} position={'relative'}>
       {[...Array(Math.max(...adj) + 1)].map((_,idx) => {
         let hex = indexToHex(idx);
-        return <Box position={'absolute'} {...cubeToPos(hex, 500, indexInput)} key={idx}><Tooltip label={hex.q + ',' + hex.r + ',' + hex.s}><Text color={idx === indexInput ? 'blue' : adj.includes(idx) ? 'orange' : 'unset'}>{idx}</Text></Tooltip></Box>
+        const tooltipRef = createRef<TooltipRef>();
+        return <Div position={'absolute'} {...cubeToPos(hex, 200, indexInput + 1)} key={idx}>
+            <Tooltip ref={tooltipRef} text={hex.q + ',' + hex.r + ',' + hex.s}>
+              <Text onPress={() => tooltipRef.current.show()}>{idx}</Text>
+            </Tooltip>
+        </Div>
       })}
-    </Box>}
-  </VStack>
+    </Div>}
+  </Div>
 }

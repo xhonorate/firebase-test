@@ -1,4 +1,3 @@
-import { useEventListener } from "@chakra-ui/hooks";
 import { ThreeEvent } from "@react-three/fiber";
 import React, {
   useRef,
@@ -6,7 +5,6 @@ import React, {
   createContext,
   useContext,
   useCallback,
-  Ref,
   useMemo,
   useEffect,
 } from "react";
@@ -38,7 +36,7 @@ export const TargetContext = createContext<TargetContextProps>({
 export function useTarget(newTarget: Target) {
   const ref = useRef();
   const { onTarget, onHover } = useContext(TargetContext);
-  
+
   // Hover Events
   const onPointerOver = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
@@ -70,44 +68,51 @@ export const useTargetWrapper = (id: string) => {
   const prevTarget = useRef<Target>(null);
   useEffect(() => {
     prevTarget.current = target;
-  }, [target])
+  }, [target]);
 
   //Recieve and handle updates from any objects with onHover / onTarget listeners
   const onHover = useCallback((newTarget: Target) => {
     setHovered(newTarget);
   }, []);
 
-  const onTarget = useCallback((newTarget: Target) => {
-    console.log(prevTarget.current);
-    // If a unit is already selected, do unit actions
-    if (prevTarget.current?.type === 'unit') {
-      setUnitTarget(id, prevTarget.current.val, newTarget);
-    } else {
-      setTarget(newTarget);
-    }
-  }, [id]);
+  const onTarget = useCallback(
+    (newTarget: Target) => {
+      console.log(prevTarget.current);
+      // If a unit is already selected, do unit actions
+      if (prevTarget.current?.type === "unit") {
+        setUnitTarget(id, prevTarget.current.val, newTarget);
+      } else {
+        setTarget(newTarget);
+      }
+    },
+    [id]
+  );
 
   // TODO: add pause menu
   // Deselect Tile on Escape key press
-  useEventListener("keyup", (e: KeyboardEvent) => {
-    if (["27", "Escape"].includes(String(e.key))) {
-      setTarget(null);
-    }
-  });
+  useEffect(() => {
+    const escListener = (e: KeyboardEvent) => {
+      if (["27", "Escape"].includes(String(e.key))) {
+        setTarget(null);
+      }
+    };
+    addEventListener("keyup", escListener);
 
-  
+    return () => {
+      removeEventListener("keyup", escListener);
+    };
+  }, []);
+
   const TargetWrapper = useMemo(() => {
-    const TargetWrapperInner = ({children}) => (
-    <TargetContext.Provider value={{ onTarget, onHover }}>
-      {children}
-    </TargetContext.Provider>)
+    const TargetWrapperInner = ({ children }) => (
+      <TargetContext.Provider value={{ onTarget, onHover }}>{children}</TargetContext.Provider>
+    );
     return TargetWrapperInner; // Avoid react displayname error
   }, [onHover, onTarget]);
-  
 
   return {
     target,
     hovered,
-    TargetWrapper
+    TargetWrapper,
   };
 };

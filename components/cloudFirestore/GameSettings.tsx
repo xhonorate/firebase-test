@@ -1,5 +1,6 @@
-import { chakra, Box, Text, FormControl, Heading, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Stack } from "@chakra-ui/react";
+import { Div, Box, Text, Button, Select, SelectRef } from "react-native-magnus";
 import React, { useEffect, useRef, useState } from "react";
+import NumberInput from "../../styles/components/NumberInput";
 
 export interface GameSettings {
   numPlayers: number; // Max players that can join room, also min players to start game
@@ -71,20 +72,14 @@ export const gameSettingOptions: {
   },
 ];
 
-
-export const SettingsForm = ({
-  settingsRecieved,
-  isHost,
-  onChange,
-  debounce = 200,
-}) => {
+export const SettingsForm = ({ settingsRecieved, isHost, onChange, debounce = 200 }) => {
   const [settings, setSettings] = useState<GameSettings>(settingsRecieved); // Default to settings from Database
 
   useEffect(() => {
     if (changeTimeout.current === null) {
       // If we are recieving changes, and do not have any pending, update settings state
       setSettings(settingsRecieved);
-    } 
+    }
   }, [settingsRecieved]);
 
   // Keep track of debounce
@@ -112,50 +107,83 @@ export const SettingsForm = ({
   };
 
   return (
-    <Box py={4}>
-      <Heading>Settings</Heading>
-      <Stack minW={300} dir={"column"} spacing={4} pt={2}>
+    <Box py={8}>
+      <Text variant={"heading"}>Settings</Text>
+      <Div minW={300} pt={2}>
         {gameSettingOptions.map((option) => {
           // Use default form value if not set in DB
-          const value = settings?.[option.key] ?? option.default;
+          const selectValue = settings?.[option.key] ?? option.default;
+          const selectRef = React.createRef<SelectRef>();
+
+          if (option.valueLabels) {
+            return (
+              <Div key={option.key}>
+                <Button
+                  disabled={!isHost}
+                  w={'100%'}
+                  borderWidth={1}
+                  bg="white"
+                  color="gray900"
+                  borderColor="gray300"
+                  onPress={() => {
+                    if (selectRef.current) {
+                      selectRef.current.open();
+                    }
+                  }}
+                >
+                  <Text>
+                    {option.label}
+                    {" - "}
+                    {option.valueLabels?.[
+                      Math.floor(
+                        ((selectValue - option.min) / (option.max - option.min)) *
+                          (option.valueLabels.length - 1)
+                      )
+                    ] ?? selectValue}
+                  </Text>
+                </Button>
+
+                <Select
+                  onSelect={(val) => handleChange([option.key, val])}
+                  ref={selectRef}
+                  value={selectValue}
+                  multiple={false}
+                  title={option.label}
+                  mt="md"
+                  pb="2xl"
+                  roundedTop="xl"
+                  data={option.valueLabels}
+                  renderItem={(item, index) => (
+                    <Select.Option
+                      value={Math.round(
+                        (index / (option.valueLabels.length - 1)) * (option.max - option.min) +
+                          option.min
+                      )}
+                      py="md"
+                      px={'lg'}
+                    >
+                      <Text>{item}</Text>
+                    </Select.Option>
+                  )}
+                />
+              </Div>
+            );
+          }
 
           return (
-            <FormControl key={option.key}>
-              <Stack dir={"row"}>
-                <Text>
-                  {option.label}
-                  {": "}
-                  {
-                    <chakra.span as={"b"}>
-                      {option?.valueLabels?.[
-                        Math.floor(
-                          ((value - option.min) / (option.max - option.min)) *
-                            (option.valueLabels.length - 1)
-                        )
-                      ] ?? value}
-                    </chakra.span>
-                  }
-                </Text>
-
-                <Slider
-                  isDisabled={!isHost}
-                  min={option.min}
-                  max={option.max}
-                  step={option?.step}
-                  value={value}
-                  aria-label="slider-ex-6"
-                  onChange={(val) => handleChange([option.key, val])}
-                >
-                  <SliderTrack h={2} w={"full"}>
-                    <SliderFilledTrack />
-                  </SliderTrack>
-                  <SliderThumb boxSize={5} />
-                </Slider>
-              </Stack>
-            </FormControl>
+            <NumberInput
+              w={'100%'}
+              pre={option.label + " - "}
+              key={option.key}
+              min={option.min}
+              max={option.max}
+              step={option.step ?? 1}
+              value={selectValue}
+              setValue={(val) => handleChange([option.key, val])}
+            />
           );
         })}
-      </Stack>
+      </Div>
     </Box>
   );
 };

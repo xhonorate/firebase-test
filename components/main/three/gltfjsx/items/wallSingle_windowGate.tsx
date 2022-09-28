@@ -22,7 +22,7 @@ type GLTFResult = GLTF & {
 
 export default function WallSingleWindowGate(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/wallSingle_windowGate.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/wallSingle_windowGate.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube4543.geometry} material={materials.Stone} />
@@ -32,4 +32,4 @@ export default function WallSingleWindowGate(props: JSX.IntrinsicElements['group
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/wallSingle_windowGate.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/wallSingle_windowGate.gltf.glb'))

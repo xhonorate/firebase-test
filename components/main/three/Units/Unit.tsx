@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { UnitData, getMaxHp } from '../../Units';
-import { motion } from "framer-motion-3d";
+//import { motion } from "framer-motion-3d";
 import { useTarget } from "../../MouseEvents";
 import useAnimatedChar, { Equipment } from "../gltfjsx/characters/useAnimatedChar";
 import { Transition } from "framer-motion";
@@ -263,7 +263,8 @@ function UnitGraphic({
   <HealthBar position-y={2.2} hp={hp} maxHp={getMaxHp(type)} width={getMaxHp(type) / 40}/>, [hp, type]); 
 
   return (
-    <motion.group
+    null
+    /* <motion.group
       {...useTarget({ type: "unit", val: uid })}
       scale={1}
       whileHover={{ scale: 1.2 }}
@@ -280,6 +281,6 @@ function UnitGraphic({
     >
       {Model}
       {HPBar}
-    </motion.group>
+    </motion.group> */
   );
 }

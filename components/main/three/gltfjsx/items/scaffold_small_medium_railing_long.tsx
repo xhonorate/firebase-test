@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function ScaffoldSmallMediumRailingLong(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/scaffold_small_medium_railing_long.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/scaffold_small_medium_railing_long.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.scaffold_small_medium_railing_long.geometry} material={materials.WoodDark} />
@@ -26,4 +26,4 @@ export default function ScaffoldSmallMediumRailingLong(props: JSX.IntrinsicEleme
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/scaffold_small_medium_railing_long.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/scaffold_small_medium_railing_long.gltf.glb'))

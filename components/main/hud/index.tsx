@@ -1,12 +1,9 @@
 import {
-  Flex,
   Text,
-  ChakraProps,
-  Box,
-  chakra,
-  Stack,
+  Div,
   Button,
-} from "@chakra-ui/react";
+  DivProps,
+} from "react-native-magnus";
 import { useContext, useRef, useMemo, useCallback } from "react";
 import { GameState } from '../RoomInstance';
 import { BuildAction } from "./Tiles/buildOptions";
@@ -22,22 +19,21 @@ import { UnitAction } from "./Units/unitOptions";
 import { Target } from "../MouseEvents";
 
 const HUDContainer = ({ children, ...props }) => (
-  <Flex
-    pointerEvents={"all"}
-    backdropFilter={"blur(10px) brightness(0.75);"}
-    borderBottom={"1px"}
+  <Div
+    //pointerEvents={"box-only"}
+    /* backdropFilter={"blur(10px) brightness(0.75);"} */
+    borderBottomWidth={1}
     borderColor={"whiteAlpha.500"}
-    background={"whiteAlpha.200"}
-    fontWeight={600}
+    bg={"gray700"/*"whiteAlpha.200"*/}
     py={2}
     justifyContent={"space-evenly"}
     {...props}
   >
     {children}
-  </Flex>
+  </Div>
 );
 
-export interface HUDProps extends ChakraProps {
+export interface HUDProps extends DivProps {
   target: Target;
 }
 
@@ -82,28 +78,25 @@ export default function HUD({target, ...props}: HUDProps) {
 
   if (paused) {
     return (
-      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
-        <Flex h={"full"} alignItems={"center"}>
+      <HUDContainer h={'100%'} position={"absolute"} w={'100%'} zIndex={999}>
+        <Div flex={1} h={"100%"} alignItems={"center"}>
           <Text fontSize={"4xl"}>{"Paused"}</Text>
-        </Flex>
+        </Div>
       </HUDContainer>
     );
   }
 
   if (!!data.winner) {
     return (
-      <HUDContainer h={"650px"} position={"absolute"} w={"650px"} zIndex={999}>
-        <Stack
-          direction={"column"}
-          align={"center"}
-          fontFamily={"heading"}
-          fontWeight={600}
+      <HUDContainer h={'100%'} position={"absolute"} w={'100%'} zIndex={999}>
+        <Div
+          alignItems={"center"}
         >
-          <Text fontSize={"6xl"}>
+          <Text fontSize={"6xl"} fontWeight={'bold'} >
             {data.winner.split("and").map((idx) => (
-              <chakra.span key={idx} color={playerColors[idx]}>
+              <Text key={idx} color={playerColors[idx]}>
                 {participants[idx]?.name}
-              </chakra.span>
+              </Text>
             ))}
             {" WINS!"}
           </Text>
@@ -113,36 +106,37 @@ export default function HUD({target, ...props}: HUDProps) {
           {data.players.map((player, idx) => {
             if (!participants[idx]) return null;
             return (
-              <Text key={idx} fontSize={"4xl"}>
-                <chakra.span color={playerColors[idx]}>
+              <Text key={idx} fontSize={"4xl"} fontWeight={'bold'}>
+                <Text color={playerColors[idx]}>
                   {participants[idx]?.name}
                   {": "}
-                </chakra.span>
+                </Text>
                 {player.points}
               </Text>
             );
           })}
-        </Stack>
+        </Div>
       </HUDContainer>
     );
   } else {
     return (
-      <Flex
-        userSelect={"none"}
-        pointerEvents={"none"}
+      <Div
+        w={'100%'}
+        h={'100%'}
+        // userSelect={"none"}
+        //pointerEvents={"none"}
         zIndex={999}
-        direction={"column"}
+        position={'absolute'}
         justifyContent={"space-between"}
-        position={"absolute"}
         {...props}
       >
-        <Box>
+        <Div>
           <HUDContainer>
             <ResourceDisplay {...resources} />
           </HUDContainer>
 
           {!!data?.turn && (
-            <Text align={"end"} pe={4}>
+            <Text selectable={false} textAlign={"right"} pr={4} color={'white'}>
               Turn: {data.turn}
             </Text>
           )}
@@ -150,23 +144,24 @@ export default function HUD({target, ...props}: HUDProps) {
             data.players.map((player, idx) => {
               if (!participants[idx]) return null;
               return (
-                <Text key={idx} align={"end"} fontWeight={600} pe={4}>
-                  <chakra.span color={playerColors[idx]}>
+                <Text selectable={false} key={idx} textAlign={"right"} color={'white'} fontWeight={'bold'} pr={4}>
+                  <Text selectable={false} color={playerColors[idx]}>
                     {participants[idx]?.name}
                     {": "}
-                  </chakra.span>
+                  </Text>
                   {player.points}
                 </Text>
               );
             })}
-        </Box>
+        </Div>
 
         {/* If tile or unit is currently selected, display info and actions */}
         {target !== null && ( 
-          <HUDContainer>
+          <HUDContainer w={'100%'} bottom={0} h={200}>
             {target.type === "tile" ? (
-              <>
+              <Div row h={'100%'}>
                 <TileInfo
+                  p={4}
                   tile={data.board.tiles[target.val]}
                   participants={participants}
                   maxW={"50%"}
@@ -178,7 +173,7 @@ export default function HUD({target, ...props}: HUDProps) {
                   tile={data.board.tiles[target.val]}
                   callback={updateCallback}
                 />
-              </>
+              </Div>
             ) : (
               <>
                 <UnitInfo 
@@ -197,7 +192,7 @@ export default function HUD({target, ...props}: HUDProps) {
             )}
           </HUDContainer>
         )}
-      </Flex>
+      </Div>
     );
   }
 }

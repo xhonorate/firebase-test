@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function CratePlatformSmall(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/cratePlatform_small.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/cratePlatform_small.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube4446.geometry} material={materials.WoodDark} />
@@ -29,4 +29,4 @@ export default function CratePlatformSmall(props: JSX.IntrinsicElements['group']
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/cratePlatform_small.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/cratePlatform_small.gltf.glb'))

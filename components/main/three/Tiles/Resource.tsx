@@ -5,6 +5,7 @@ import DetailForestB from '../gltfjsx/objects/detail_forestB';
 import DetailRocksSmall from '../gltfjsx/objects/detail_rocks_small';
 import Mountain from '../gltfjsx/objects/mountain';
 import Forest from '../gltfjsx/objects/forest';
+import React from "react";
 
 export function findResourceIndexByName(name: string) {
   return resourceTypes.findIndex((tile) => tile.name === name);

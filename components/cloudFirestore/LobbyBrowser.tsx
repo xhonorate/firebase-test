@@ -1,13 +1,10 @@
-
-import { LockIcon } from '@chakra-ui/icons';
-import { Text, Button, useDisclosure, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, 
-  AlertDialogHeader, AlertDialogOverlay, Input, FormControl, FormLabel, FormHelperText, FormErrorMessage } from '@chakra-ui/react'
-import { useCollection, update } from "@nandorojo/swr-firestore"
-import React, { useMemo, useCallback, useState, ChangeEvent, useEffect } from "react";
-import ReactTable from "../ReactTable"
-import firebase from 'firebase/app'
-import { gameSettingOptions, GameSettings } from './GameSettings';
-import { LobbyData } from './GameLobby';
+import { Text, Button, Input, Div, Icon, Modal } from "react-native-magnus";
+import { useCollection, update } from "@nandorojo/swr-firestore";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
+import ReactTable from "../ReactTable";
+import firebase from "firebase/app";
+import { gameSettingOptions, GameSettings } from "./GameSettings";
+import { LobbyData } from "./GameLobby";
 
 // browse existing games
 // buttons to host new game, join from list, or join from code (api endpoint meme)
@@ -15,142 +12,166 @@ import { LobbyData } from './GameLobby';
 // lobby passwords
 // on host -> create game function, state change will handle from there
 
-const CreateLobbyPopup = ({username, isOpen, onClose, onSubmit}) => {
-  const [name, setName] = useState((username ?? 'Guest') + '\'s Room');
-  const [password, setPassword] = useState('');
+const CreateLobbyPopup = ({ username, isOpen, onClose, onSubmit }) => {
+  const [name, setName] = useState((username ?? "Guest") + "'s Room");
+  const [password, setPassword] = useState("");
   const inputRef = React.useRef();
 
   return (
-    <>
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={inputRef}
-        onClose={onClose}
+    <Modal isVisible={isOpen}>
+      <Button
+        bg="gray400"
+        h={35}
+        w={35}
+        position="absolute"
+        top={50}
+        right={15}
+        rounded="circle"
+        zIndex={1000}
+        onPress={onClose}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              onSubmit({name: name, password: password});
-            }}>
-              <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                Host a Lobby
-              </AlertDialogHeader>
-
-              <AlertDialogBody>
-                <FormControl>
-                  <FormLabel>Room Name</FormLabel>
-                  <Input isRequired minLength={4} type={'text'} size={'lg'} value={name} onChange={e => setName(e.target.value)} ref={inputRef} />
-                </FormControl>
-                <FormControl mt={4}>
-                  <FormLabel>Password (optional)</FormLabel>
-                  <Input autoComplete={'current-password'} type={'password'} size={'lg'} value={password} onChange={e => setPassword(e.target.value)} />
-                </FormControl>
-              </AlertDialogBody>
-
-              <AlertDialogFooter>
-                <Button onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button type={'submit'} colorScheme='blue' onClick={onClose} ml={3}>
-                  Create
-                </Button>
-              </AlertDialogFooter>
-            </form>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </>
-  )  
-}
+        <Icon color="black900" name="close" />
+      </Button>
 
 
-const PasswordPrompt = ({lobbyName, target, isOpen, onClose, onSubmit}) => {
-  const [password, setPassword] = useState('');
+      <Div p={50}>
+        <Text mb={8} fontSize="2xl" fontWeight="bold">
+          Host a Lobby
+        </Text>
+
+        <Div mb={8}>
+          <Text mb={4}>Room Name</Text>
+          <Input
+            mb={8}
+            placeholder={"Room Name"}
+            value={name}
+            onChangeText={setName}
+            ref={inputRef}
+          />
+        </Div>
+        <Div mb={4}>
+          <Text>Password (optional)</Text>
+          <Input
+            mb={8}
+            placeholder={"Password"}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </Div>
+
+        <Div row>
+          <Button bg={"gray500"} onPress={onClose}>Cancel</Button>
+          <Button
+            bg="blue500"
+            onPress={() => {
+              onSubmit({ name: name, password: password });
+              onClose();
+            }}
+            ml={3}
+          >
+            Create
+          </Button>
+        </Div>
+      </Div>
+    </Modal>
+  );
+};
+
+const PasswordPrompt = ({ lobbyName, target, isOpen, onClose, onSubmit }) => {
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const inputRef = React.useRef();
 
   //TODO: Security: switch to hash, could use axios here to api call
-  const handleSubmit = useCallback((silent=false) => {
-    if (password === target) {
-      onSubmit();
-    } else if (!silent) {
-      setError("Wrong Password!");
-    }
-  }, [onSubmit, password, target]);
+  const handleSubmit = useCallback(
+    (silent = false) => {
+      if (password === target) {
+        onSubmit();
+      } else if (!silent) {
+        setError("Wrong Password!");
+      }
+    },
+    [onSubmit, password, target]
+  );
 
   useEffect(() => {
     if (!password) setError(null);
-  }, [password])
+  }, [password]);
 
   useEffect(() => {
     handleSubmit(true);
-  }, [password, handleSubmit])
+  }, [password, handleSubmit]);
 
   return (
-    <>
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={inputRef}
-        onClose={onClose}
+    <Modal isVisible={isOpen}>
+      <Button
+        bg="gray400"
+        h={35}
+        w={35}
+        position="absolute"
+        top={50}
+        right={15}
+        rounded="circle"
+        onPress={onClose}
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}>
-              <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                Join {lobbyName}
-              </AlertDialogHeader>
+        <Icon color="black900" name="close" />
+      </Button>
 
-              <AlertDialogBody>
-                <FormControl mt={4} isInvalid={!!error}>
-                  <FormLabel>Password</FormLabel>
-                  <Input ref={inputRef} autoComplete={'current-password'} size={'lg'} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  {!!error && <FormErrorMessage>{error}</FormErrorMessage> }
-                </FormControl>                
-              </AlertDialogBody>
+      <Text fontSize="lg" fontWeight="bold">
+          Join {lobbyName}
+      </Text>
 
-              <AlertDialogFooter>
-                <Button onClick={onClose}>
-                  Cancel
-                </Button>
-              </AlertDialogFooter>
-            </form>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </>
-  )  
-}
+      <Div>
+        <Div mt={4}>
+          <Text>Password (optional)</Text>
+          <Input
+            ref={inputRef}
+            value={password}
+            onChangeText={setPassword}
+          />
+        </Div>
+      </Div>
 
-const LobbyBrowser = ({userData}) => {
+      <Div>
+        <Button onPress={onClose}>Cancel</Button>
+      </Div>
+    </Modal>
+  );
+};
+
+const LobbyBrowser = ({ userData }) => {
   // Create room modal disclosure
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [createLobbyVisible, setCreateLobbyVisible] = useState(false);
   const [passwordPrompt, setPasswordPrompt] = useState(null);
 
   // TODO: fetch with pagination instead
   // use startafter / endbefore
-  const { data, add, unsubscribe } = useCollection<LobbyData>('games', {
-    parseDates: ['created'],
-    where: ['finished', '==', false],
+  const { data, add, unsubscribe } = useCollection<LobbyData>("games", {
+    parseDates: ["created"],
+    where: ["finished", "==", false],
     limit: 100,
-    listen: true
+    listen: true,
   });
 
   // TODO: add check for participants > row.original.settings.maxPlayers
   const joinLobby = useCallback(
     (id: string) => {
-      update('user_data/' + userData?.id, {active_game: id});
-      update('games/' + id, { participants: firebase.firestore.FieldValue.arrayUnion({id: userData.id, name: userData.username ?? null, connected: true})})
+      update("user_data/" + userData?.id, { active_game: id });
+      update("games/" + id, {
+        participants: firebase.firestore.FieldValue.arrayUnion({
+          id: userData.id,
+          name: userData.username ?? null,
+          connected: true,
+        }),
+      });
       unsubscribe();
     },
-    [userData, unsubscribe],
+    [userData, unsubscribe]
   );
 
   const createLobby = useCallback(
-    ({name, password}) => {
+    ({ name, password }) => {
       // Create new document file for game lobby
       //TODO: check for duplicate lobby names on creation
       add({
@@ -158,14 +179,16 @@ const LobbyBrowser = ({userData}) => {
         finished: false,
         paused: false,
         started: false,
-        settings: gameSettingOptions.reduce((prev, option) => { return { ...prev, [option.key]: option.default }}, {}) as GameSettings,
+        settings: gameSettingOptions.reduce((prev, option) => {
+          return { ...prev, [option.key]: option.default };
+        }, {}) as GameSettings,
         name: name,
         password: !!password ? password : null,
-        participants: []
+        participants: [],
       }).then((id) => {
-        console.log('New game lobby created!');
+        console.log("New game lobby created!");
         joinLobby(id);
-      })
+      });
     },
     [add, joinLobby]
   );
@@ -174,63 +197,78 @@ const LobbyBrowser = ({userData}) => {
   const columns = useMemo(
     () => [
       {
-        Header: 'Name',
-        accessor: 'name',
-        Cell: ({row}) => <Text>{row.original.name}{!!row.original.password && <LockIcon ms={2} mt={-1} />}</Text>
+        Header: "Name",
+        accessor: "name",
+        Cell: ({ row }) => (
+          <Text>
+            {row.original.name}
+            {!!row.original.password && <Icon name={'lock'} ms={2} mt={-1} />}
+          </Text>
+        ),
       },
       {
-        Header: 'Status',
-        accessor: 'started',
-        Cell: ({value}) => <Text>{value ? 'Started' : 'In Lobby'}</Text>
+        Header: "Status",
+        accessor: "started",
+        Cell: ({ value }) => <Text>{value ? "Started" : "In Lobby"}</Text>,
       },
       {
-        Header: 'Players',
-        accessor: 'participants',
-        Cell: ({value}) => <Text>{value.length}</Text>
+        Header: "Players",
+        accessor: "participants",
+        Cell: ({ value }) => <Text>{value.length}</Text>,
       },
       {
-        Header: 'Date',
-        accessor: 'created',
-        Cell: ({value}) => <Text>{value.toLocaleString('en-US')}</Text>,
-        sorttype: 'datetime'
+        Header: "Date",
+        accessor: "created",
+        Cell: ({ value }) => <Text>{value.toLocaleString("en-US")}</Text>,
+        sorttype: "datetime",
       },
       {
-        accessor: 'id',
-        Cell: ({value, row}) => <Button onClick={() => {
-          if (!!row.original.password) {
-            // Open password prompt if a password is set
-            setPasswordPrompt(row);
-          } else {
-            // TODO: eventually move this to an API function for security purposes, with password input sent in req
-            joinLobby(value);
-          }
-        }}>Join</Button>
+        accessor: "id",
+        Cell: ({ value, row }) => (
+          <Button
+            alignSelf={'flex-end'}
+            p={8}
+            onPress={() => {
+              if (!!row.original.password) {
+                // Open password prompt if a password is set
+                setPasswordPrompt(row);
+              } else {
+                // TODO: eventually move this to an API function for security purposes, with password input sent in req
+                joinLobby(value);
+              }
+            }}
+          >
+            Join
+          </Button>
+        ),
       },
     ],
-    [joinLobby],
-  )
-  
+    [joinLobby]
+  );
+
   return (
     <>
       {!!data && <ReactTable columns={columns} data={data} />}
-      <CreateLobbyPopup 
-        username={userData.username} 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        onSubmit={({name, password}) => {
-          createLobby({name, password});
-        }} 
+      <CreateLobbyPopup
+        username={userData.username}
+        isOpen={createLobbyVisible}
+        onClose={() => setCreateLobbyVisible(false)}
+        onSubmit={({ name, password }) => {
+          createLobby({ name, password });
+        }}
       />
-      <PasswordPrompt 
+      <PasswordPrompt
         lobbyName={passwordPrompt?.original.name}
         target={passwordPrompt?.original.password}
         isOpen={passwordPrompt !== null}
         onClose={() => setPasswordPrompt(null)}
         onSubmit={() => joinLobby(passwordPrompt?.original.id)}
       />
-      <Button my={4} onClick={() => onOpen()}>Host</Button>
+      <Button my={4} onPress={() => setCreateLobbyVisible(true)}>
+        Host
+      </Button>
     </>
-  )
-}
+  );
+};
 
-export default LobbyBrowser
+export default LobbyBrowser;

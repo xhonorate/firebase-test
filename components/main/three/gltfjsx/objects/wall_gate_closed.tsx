@@ -22,7 +22,7 @@ type GLTFResult = GLTF & {
 
 export default function WallGateClosed(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/wall_gate_closed.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/objects/gltf/wall_gate_closed.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube1025.geometry} material={materials.Stone} />
@@ -32,4 +32,4 @@ export default function WallGateClosed(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/objects/gltf/wall_gate_closed.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/objects/gltf/wall_gate_closed.gltf.glb'))

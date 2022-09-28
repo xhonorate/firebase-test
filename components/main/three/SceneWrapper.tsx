@@ -1,9 +1,11 @@
-import { AdaptiveEvents, DeviceOrientationControls, MapControls } from "@react-three/drei"
-import { Canvas } from '@react-three/fiber';
+import { MapControls } from "@react-three/drei/native"
+import { Canvas } from '@react-three/fiber/native';
 import React from "react";
+import { THREE } from 'expo-three';
 
 // Wrapper for canvas, passes context to children inside of canvas
 export default function SceneWrapper({children}) {
+  global.THREE = global.THREE || THREE;
   // bridge any number of contexts
   // Note: These contexts must be provided by something above this SceneWrapper component
   //       You cannot render the providers for these contexts inside this component
@@ -26,9 +28,9 @@ export default function SceneWrapper({children}) {
       {children}
 
       {/* <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
-      <AdaptiveEvents />
+      {/* <AdaptiveEvents /> */}
       {/* <DeviceOrientationControls /> */}
-      <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} />
+      {/* <MapControls target={[0, 0, 0]} maxZoom={100} minZoom={5} /> */}
     </Canvas>
   )
 }

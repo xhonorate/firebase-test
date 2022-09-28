@@ -111,4 +111,4 @@ export default function skeletonWarriorBrokenParts({ nodes, materials }: GLTFRes
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior_broken.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior_broken.gltf')

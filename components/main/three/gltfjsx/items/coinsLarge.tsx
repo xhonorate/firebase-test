@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function CoinsLarge(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/coinsLarge.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/coinsLarge.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.coinsLarge.geometry} material={materials.Gold} scale={0.1} />
@@ -26,4 +26,4 @@ export default function CoinsLarge(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/coinsLarge.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/coinsLarge.gltf.glb'))

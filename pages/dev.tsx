@@ -1,5 +1,5 @@
-import { Box } from '@chakra-ui/react';
+import { Div } from 'react-native-magnus';
 
 export default function Dev() {
-  return <Box border={'4px solid blue'} w={'100px'} h={'100px'}></Box>
+  return <Div borderWidth={2} borderColor={'blue500'} w={'100px'} h={'100px'}></Div>
 }

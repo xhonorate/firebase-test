@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function HexForestRoadL(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/tiles/hex/gltf/hex_forest_roadL.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/tiles/hex/gltf/hex_forest_roadL.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder970.geometry} material={materials.Green} />
@@ -29,4 +29,4 @@ export default function HexForestRoadL(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/tiles/hex/gltf/hex_forest_roadL.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/tiles/hex/gltf/hex_forest_roadL.gltf.glb'))

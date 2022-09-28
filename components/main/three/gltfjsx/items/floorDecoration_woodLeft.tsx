@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function FloorDecorationWoodLeft(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/floorDecoration_woodLeft.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/floorDecoration_woodLeft.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.floorDecoration_woodLeft.geometry} material={materials.WoodDark} />
@@ -26,4 +26,4 @@ export default function FloorDecorationWoodLeft(props: JSX.IntrinsicElements['gr
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/floorDecoration_woodLeft.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/floorDecoration_woodLeft.gltf.glb'))

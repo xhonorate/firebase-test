@@ -1,233 +1,225 @@
-
-import { 
-  Table, 
-  Thead, 
-  Tbody, 
-  Tr, 
-  Th, 
-  Td,
+import {
+  Div,
   Text,
   Checkbox,
   Input,
-  useColorModeValue, 
-  chakra, 
   Select,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Flex,
-  IconButton,
-  Stack,
+  Button,
   Tooltip,
-} from '@chakra-ui/react'
-import {
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  ChevronRightIcon,
-  ChevronLeftIcon,
-  TriangleDownIcon, 
-  TriangleUpIcon,
-} from "@chakra-ui/icons";
-import { useTable, useSortBy, usePagination, useGlobalFilter, useAsyncDebounce } from 'react-table'
-import React from "react"
+  SelectRef,
+  Icon,
+} from "react-native-magnus";
+import { useTable, useSortBy, usePagination, useGlobalFilter, useAsyncDebounce } from "react-table";
+import React, { createRef } from "react";
+import NumberInput from "../styles/components/NumberInput";
 
 // Define a default UI for filtering
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
-  const count = preGlobalFilteredRows.length
-  const [value, setValue] = React.useState(globalFilter)
-  const onChange = useAsyncDebounce(value => {
-    setGlobalFilter(value || undefined)
-  }, 200)
+function GlobalFilter({ preGlobalFilteredRows, globalFilter, setGlobalFilter }) {
+  const count = preGlobalFilteredRows.length;
+  const [value, setValue] = React.useState(globalFilter);
+  const onChange = useAsyncDebounce((value) => {
+    setGlobalFilter(value || undefined);
+  }, 200);
 
   return (
     <Input
-      variant={'flushed'}
+      variant={"flushed"}
       value={value || ""}
-      onChange={e => {
+      onChange={(e: any) => {
         setValue(e.target.value);
         onChange(e.target.value);
       }}
       placeholder={`Search ${count} records...`}
     />
-  )
+  );
 }
 
-const ReactTable = ({ columns, data, buttons=[] }) => {
-    // stored in memory for react-table (colors dep on darkmode / lightmode update)
-    const { 
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      prepareRow,
-      page, // Instead of using 'rows', we'll use page,
-      // which has only the rows for the active page
-      canPreviousPage,
-      canNextPage,
-      pageOptions,
-      pageCount,
-      gotoPage,
-      nextPage,
-      previousPage,
-      setPageSize,
-      preGlobalFilteredRows,
-      setGlobalFilter,
-      state: { pageIndex, pageSize, globalFilter }
-    } = useTable(
-      {
-        columns,
-        data,
-      },
-      useGlobalFilter,
-      useSortBy,
-      usePagination
-    )
-    const textColor = useColorModeValue("gray.700", "white");  
-
-    return (
-      <Stack direction={'column'} w={'100%'}>
-        { preGlobalFilteredRows.length > 1 &&
+const ReactTable = ({ columns, data }) => {
+  const selectRef = createRef<SelectRef>();
+  // stored in memory for react-table (colors dep on darkmode / lightmode update)
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page, // Instead of using 'rows', we'll use page,
+    // which has only the rows for the active page
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    preGlobalFilteredRows,
+    setGlobalFilter,
+    state: { pageIndex, pageSize, globalFilter },
+  } = useTable(
+    {
+      columns,
+      data,
+    },
+    useGlobalFilter,
+    useSortBy,
+    usePagination
+  );
+  return (
+    <Div m={10}>
+      {preGlobalFilteredRows.length > 1 && (
         <GlobalFilter
           preGlobalFilteredRows={preGlobalFilteredRows}
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}
-        /> }
-        <Table variant={'simple'} color={textColor} {...getTableProps()}>
-          <Thead>
-            {headerGroups.map((headerGroup, idx) => (
-              <Tr key={idx} my='.8rem' pl='0px' color='gray.400' {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column, idx) => (
-                  <Th
-                    color='gray.400' userSelect={'none'} key={idx}
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    isNumeric={column.isNumeric}
-                  >
-                    {column.render('Header')}
-                    { idx !== 0 && <chakra.span ps={2} pb={1}>
+        />
+      )}
+      <Div w={"100%"} variant={"simple"} color={"gray700"} {...getTableProps()}>
+        <Div w={"100%"} row>
+          {headerGroups.map((headerGroup, idx) => (
+            <Div
+              w={"100%"}
+              row
+              key={idx}
+              pl={0}
+              color="gray.400"
+              {...headerGroup.getHeaderGroupProps()}
+            >
+              {headerGroup.headers.map((column, idx) => (
+                <Div
+                  row
+                  minH={20}
+                  alignItems={"center"}
+                  borderBottomWidth={1}
+                  pb={4}
+                  borderBottomColor={"gray.700"}
+                  w={column.width}
+                  color="gray.400"
+                  userSelect={"none"}
+                  key={idx}
+                  {...column.getHeaderProps(column.getSortByToggleProps())}
+                  isNumeric={column.isNumeric}
+                >
+                  <Text fontWeight={"bold"}>{column.render("Header")}</Text>
+                  {idx !== 0 && (
+                    <Div ps={2} pb={1}>
                       {column.isSorted ? (
                         column.isSortedDesc ? (
-                          <TriangleDownIcon mb={'1px'} aria-label='sorted descending' />
+                          <Icon name={"caretdown"} ms={2} aria-label="sorted descending" />
                         ) : (
-                          <TriangleUpIcon mb={'1px'} aria-label='sorted ascending' />
+                          <Icon name={"caretup"} ms={2} mt={4} aria-label="sorted ascending" />
                         )
                       ) : null}
-                    </chakra.span> }
-                  </Th>
+                    </Div>
+                  )}
+                </Div>
+              ))}
+            </Div>
+          ))}
+        </Div>
+        <Div {...getTableBodyProps()}>
+          {page.map((row, i) => {
+            prepareRow(row);
+            return (
+              <Div row my={8} flex={1} alignItems={'center'} key={row.getRowProps().key}>
+                {row.cells.map((cell, idx) => (
+                  <Div
+                    key={idx}
+                    w={cell.column.width}
+                    {...cell.getCellProps()}
+                    isNumeric={cell.column.isNumeric}
+                  >
+                    {cell.render("Cell")}
+                  </Div>
                 ))}
-                { buttons.length > 0 && <Th />}
-              </Tr>
-            ))}
-          </Thead>
-          <Tbody {...getTableBodyProps()}>
-            {page.map((row, i) => {
-              prepareRow(row)
-              return (
-                <React.Fragment key={row.getRowProps().key}>
-                  <Tr>
-                    {row.cells.map((cell, idx) => (
-                      <Td key={idx} {...cell.getCellProps()} isNumeric={cell.column.isNumeric}>
-                        {cell.render('Cell')}
-                      </Td>
-                    ))}
-                    { buttons.length > 0 && <Td>{ /* <MagicMenuButton buttons={buttons(row.original)} />*/ }</Td> }
-                  </Tr>
-                </React.Fragment>
-              )
-            })}
-          </Tbody>
-        </Table>
+              </Div>
+            );
+          })}
+        </Div>
+      </Div>
 
-        { (pageCount > 1 || pageSize > 10) && 
-        <Flex pt={2} justifyContent="space-between" m={4} alignItems="center">
-          <Flex>
-            <Tooltip label="First Page">
-              <IconButton
-                aria-label={'First Page'}
-                onClick={() => gotoPage(0)}
-                isDisabled={!canPreviousPage}
-                icon={<ArrowLeftIcon h={3} w={3} />}
-                mr={4}
-              />
-            </Tooltip>
-            <Tooltip label="Previous Page">
-              <IconButton
-                aria-label={'Previous Page'}
-                onClick={previousPage}
-                isDisabled={!canPreviousPage}
-                icon={<ChevronLeftIcon h={6} w={6} />}
-              />
-            </Tooltip>
-          </Flex>
-          <Flex alignItems="center">
-            <Text flexShrink="0" mr={8}>
-              Page{" "}
-              <Text fontWeight="bold" as="span">
-                {pageIndex + 1}
-              </Text>{" "}
-              of{" "}
-              <Text fontWeight="bold" as="span">
-                {pageOptions.length}
-              </Text>
+      {(pageCount > 1 || pageSize > 10) && (
+        <Div row flex={1} justifyContent="space-between" m={4} alignItems="center">
+          <Div flex={1}>
+            <Button
+              aria-label={"First Page"}
+              onPress={() => gotoPage(0)}
+              disabled={!canPreviousPage}
+              mr={4}
+            >
+              <Icon name={"doubleleft"} h={3} w={3} />
+            </Button>
+            <Button aria-label={"Previous Page"} onPress={previousPage} disabled={!canPreviousPage}>
+              <Icon name={"left"} h={6} w={6} />
+            </Button>
+          </Div>
+          <Div flex={1} alignItems="center">
+            <Text mr={8}>
+              Page <Text fontWeight="bold">{pageIndex + 1}</Text> of{" "}
+              <Text fontWeight="bold">{pageOptions.length}</Text>
             </Text>
-            <Text flexShrink="0">Go to page:</Text>{" "}
+            <Text>Go to page:</Text>{" "}
             <NumberInput
               ml={2}
               mr={8}
               w={28}
-              defaultValue={pageIndex + 1} 
+              value={pageIndex + 1}
               min={1}
               max={pageCount ? pageCount : 1}
-              onChange={val => {
-                gotoPage(val ? parseInt(val) - 1 : 0)
-              }}>
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-            <Select
-              w={32}
-              value={pageSize}
-              onChange={e => {
-                setPageSize(Number(e.target.value))
+              setValue={(val) => {
+                gotoPage(val ? parseInt(val) - 1 : 0);
+              }}
+            />
+            <Button
+              flex={1}
+              block
+              borderWidth={1}
+              bg="white"
+              color="gray900"
+              borderColor="gray300"
+              onPress={() => {
+                if (selectRef.current) {
+                  selectRef.current.open();
+                }
               }}
             >
-              {[10, 25, 50, 100, 250].map(pageSize => (
-                <option key={pageSize} value={pageSize}>
-                  Show {pageSize}
-                </option>
-              ))}
-            </Select>
-          </Flex>
+              {pageSize}
+            </Button>
+            <Select
+              onSelect={(e) => setPageSize(e.target.value)}
+              ref={selectRef}
+              value={pageSize}
+              title="This is your title"
+              mt="md"
+              w={32}
+              pb="2xl"
+              message="This is the long message used to set some context"
+              roundedTop="xl"
+              data={[10, 25, 50, 100, 250]}
+              renderItem={(item, index) => (
+                <Select.Option value={item} py="md" px="xl">
+                  <Text>Show {item}</Text>
+                </Select.Option>
+              )}
+            />
+          </Div>
 
-          <Flex>
-            <Tooltip label="Next Page">
-              <IconButton
-                aria-label={'Next Page'}
-                onClick={nextPage}
-                isDisabled={!canNextPage}
-                icon={<ChevronRightIcon h={6} w={6} />}
-              />
-            </Tooltip>
-            <Tooltip label="Last Page">
-              <IconButton
-                aria-label={'Last Page'}
-                onClick={() => gotoPage(pageCount - 1)}
-                isDisabled={!canNextPage}
-                icon={<ArrowRightIcon h={3} w={3} />}
-                ml={4}
-              />
-            </Tooltip>
-          </Flex>
-        </Flex>}
-      </Stack>
-    )
-}
+          <Div flex={1}>
+            <Button aria-label={"Next Page"} onPress={nextPage} disabled={!canNextPage}>
+              <Icon name={"right"} h={6} w={6} />
+            </Button>
+            <Button
+              aria-label={"Last Page"}
+              onPress={() => gotoPage(pageCount - 1)}
+              disabled={!canNextPage}
+              ml={4}
+            >
+              <Icon name={"doubleright"} h={3} w={3} />
+            </Button>
+          </Div>
+        </Div>
+      )}
+    </Div>
+  );
+};
 
 export default ReactTable;

@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function Stool(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/stool.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/stool.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.stool.geometry} material={materials.BrownDark} />
@@ -26,4 +26,4 @@ export default function Stool(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/stool.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/stool.gltf.glb'))

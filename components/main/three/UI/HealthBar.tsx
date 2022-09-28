@@ -1,5 +1,5 @@
 import { Billboard, BillboardProps, GradientTexture, Plane } from "@react-three/drei";
-import { motion } from "framer-motion-3d";
+//import { motion } from "framer-motion-3d";
 import React from "react";
 
 interface HealthBarProps extends BillboardProps {
@@ -19,7 +19,7 @@ const HealthBar = ({ hp, maxHp, width = 1, height = 0.2, ...props }: HealthBarPr
       <Plane args={[width, height]}>
         <meshBasicMaterial color={"black"} />
       </Plane>
-      <motion.mesh
+      {/* <motion.mesh
         initial={{
           z: 0.1,
           scaleX: 1,
@@ -32,7 +32,7 @@ const HealthBar = ({ hp, maxHp, width = 1, height = 0.2, ...props }: HealthBarPr
       >
         <planeGeometry args={[width, height]} />
         <meshBasicMaterial color={'green'} />
-      </motion.mesh>
+      </motion.mesh> */}
     </Billboard>
   );
 }

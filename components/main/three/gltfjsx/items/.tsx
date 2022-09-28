@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function (props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/shield_uncommonassets/kaykit/Models/items/.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('/shield_uncommonassets/kaykit/Models/items/.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube4504.geometry} material={materials.Metal} />
@@ -29,4 +29,4 @@ export default function (props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/shield_uncommonassets/kaykit/Models/items/.gltf.glb')
+//useGLTF.preload(require('/shield_uncommonassets/kaykit/Models/items/.gltf.glb'))

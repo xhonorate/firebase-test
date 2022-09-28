@@ -22,9 +22,16 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "components/ambient_bg/components/Aurora.js", "components/ambient_bg/components/Aurora.js", "components/ambient_bg/components/Aurora.js", "components/ambient_bg/components/CanvasBackground.jsx", "pages/api/app.js", "firebase/components/auth/StyledFirebaseAuth.js"  ],
+    "**/*.tsx",
+    "components/ambient_bg/components/Aurora.js",
+    "components/ambient_bg/components/Aurora.js",
+    "components/ambient_bg/components/Aurora.js",
+    "components/ambient_bg/components/CanvasBackground.jsx",
+    "pages/api/app.js",
+    "firebase/components/auth/StyledFirebaseAuth.js"
+, "pages/test2.tsx"  ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

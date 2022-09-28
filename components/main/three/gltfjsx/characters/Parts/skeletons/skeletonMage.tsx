@@ -96,4 +96,4 @@ export default function skeletonMageParts({ nodes, materials }: GLTFResult) {
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_mage.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage.gltf')

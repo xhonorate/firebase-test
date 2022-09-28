@@ -43,7 +43,7 @@ type GLTFResult = GLTF & {
 
 export default function CharacterSkeletonArcher(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube7661.geometry} material={nodes.Cube7661.material} />
@@ -101,4 +101,4 @@ export default function CharacterSkeletonArcher(props: JSX.IntrinsicElements['gr
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf')

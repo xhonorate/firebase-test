@@ -81,9 +81,7 @@ export default function useAnimatedChar(
 
   const parts = useParts(character);
 
-  const { scene, animations } = useGLTF(
-    "/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb"
-  ) as any as GLTFResult;
+  const { scene, animations } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb')) as any as GLTFResult;
 
   // Clone skeleton (https://codesandbox.io/s/react-three-fiber-wildlife-nrbnq?file=/src/Model.js)
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -202,4 +200,4 @@ export default function useAnimatedChar(
   };
 }
 
-useGLTF.preload("/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb");
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/AnimatedCharacter.gltf.glb'));

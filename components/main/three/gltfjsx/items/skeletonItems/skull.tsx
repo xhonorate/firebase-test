@@ -23,7 +23,7 @@ type GLTFResult = GLTF & {
 
 export default function Skull(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/skull.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('/skull.glb') as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh
@@ -46,4 +46,4 @@ export default function Skull(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/skull.glb')
+//useGLTF.preload(require('/skull.glb')

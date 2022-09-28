@@ -24,7 +24,7 @@ type GLTFResult = GLTF & {
 
 export default function SkeletonStaff(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/skeleton_items/skeleton_staff.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/skeleton_items/skeleton_staff.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube030.geometry} material={materials.ForestGreen} />
@@ -35,4 +35,4 @@ export default function SkeletonStaff(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/skeleton_items/skeleton_staff.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/skeleton_items/skeleton_staff.gltf.glb'))

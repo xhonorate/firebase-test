@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function ScaffoldLowCornerRight(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/scaffold_low_cornerRight.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/scaffold_low_cornerRight.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.scaffold_low_cornerRight.geometry} material={materials.WoodDark} />
@@ -26,4 +26,4 @@ export default function ScaffoldLowCornerRight(props: JSX.IntrinsicElements['gro
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/scaffold_low_cornerRight.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/scaffold_low_cornerRight.gltf.glb'))

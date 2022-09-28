@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function HexForestWaterCEmpty(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/tiles/hex/gltf/hex_forest_waterC_empty.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/tiles/hex/gltf/hex_forest_waterC_empty.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.hex_forest_waterC_empty.geometry} material={materials.Green} />
@@ -26,4 +26,4 @@ export default function HexForestWaterCEmpty(props: JSX.IntrinsicElements['group
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/tiles/hex/gltf/hex_forest_waterC_empty.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/tiles/hex/gltf/hex_forest_waterC_empty.gltf.glb'))

@@ -118,4 +118,4 @@ export default function skeletonMageBrokenParts({ nodes, materials }: GLTFResult
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_mage_broken.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage_broken.gltf')

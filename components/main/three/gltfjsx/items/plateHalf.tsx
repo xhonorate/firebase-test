@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function PlateHalf(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/plateHalf.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/plateHalf.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder281.geometry} material={materials.Mud} />
@@ -29,4 +29,4 @@ export default function PlateHalf(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/plateHalf.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/plateHalf.gltf.glb'))

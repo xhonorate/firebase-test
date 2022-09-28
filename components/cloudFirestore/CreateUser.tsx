@@ -1,4 +1,4 @@
-import { Button, Input } from '@chakra-ui/react';
+import { Button, Input, Text } from 'react-native-magnus';
 import { useDocument } from '@nandorojo/swr-firestore';
 import { useState } from 'react'
 
@@ -19,9 +19,11 @@ export const defaultUserData: UserData = {
 const CreateUser = ({ id, isAnonymous }) => {
   const [name, setName] = useState(isAnonymous ? 'Guest' : 'User')
   const { set } = useDocument(`user_data/${id}`)
-
-  async function onSubmit(e: any) {
-    e.preventDefault();
+  async function onSubmit() {
+    if (name.length < 1) {
+      //TODO: Throw error
+      return;
+    }
 
     await set({...defaultUserData, username: name})
       .then(() => console.log('New user data created!'))
@@ -31,10 +33,10 @@ const CreateUser = ({ id, isAnonymous }) => {
   }
 
   return (
-      <form onSubmit={onSubmit}>
-        <Input minLength={3} value={name} onChange={e => setName(e.target.value)} />
-        <Button type={'submit'}>Submit</Button>
-      </form>
+      <>
+        <Input value={name} onChangeText={setName} />
+        <Button onPress={onSubmit}>Submit</Button>
+      </>
   )
 }
 

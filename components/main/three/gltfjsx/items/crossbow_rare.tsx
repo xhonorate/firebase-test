@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function CrossbowRare(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/crossbow_rare.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/crossbow_rare.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube4448.geometry} material={materials.White} />
@@ -29,4 +29,4 @@ export default function CrossbowRare(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/crossbow_rare.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/crossbow_rare.gltf.glb'))

@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function FloorDecorationTilesSmall(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/floorDecoration_tilesSmall.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/floorDecoration_tilesSmall.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh
@@ -30,4 +30,4 @@ export default function FloorDecorationTilesSmall(props: JSX.IntrinsicElements['
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/floorDecoration_tilesSmall.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/floorDecoration_tilesSmall.gltf.glb'))

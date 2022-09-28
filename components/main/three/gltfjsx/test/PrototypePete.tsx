@@ -20,8 +20,8 @@ type GLTFResult = GLTF & {
 }
 
 export default function PrototypePete({bones}: any) {
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/PrototypePete.gltf') as unknown as GLTFResult
-  console.log(bones);
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/PrototypePete.gltf')) as unknown as GLTFResult
+  //console.log(bones);
   return (
     <group>
       <primitive object={bones.Body}>
@@ -58,4 +58,4 @@ export default function PrototypePete({bones}: any) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/PrototypePete.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/PrototypePete.gltf'))

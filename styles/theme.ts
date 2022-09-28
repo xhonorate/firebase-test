@@ -1,10 +1,31 @@
-import { extendTheme } from '@chakra-ui/react'
+// this is our custom theme
+const theme: any = {
+  colors: {
+    violet100: "#e1e1e1",
+  },
+  fontSize: {
+    bigText100: 32,
+  },
+  spacing: {
+    'none': 0,
+    xs: 2,
+    '5xl': 64
+  },
+  // components defaults can also be customized
+  components: {
+    Text: {
+      color: 'gray800',
+      variants: {
+        heading: {
+          fontSize: 'xl'
+        } 
+      }
+    }
+  }
+};
 
-// Extend Chakra UI theme to include custom colors, fonts, etc
-const fonts = {
-  body: "Open Sans, system-ui, sans-serif",
-  heading: "Raleway, sans-serif",
-  mono: "Menlo, monospace",
-}
 
-export default extendTheme({fonts});
+//TODO: export seperate light/dark themes, useState to switch between them in App.tsx
+
+
+export default theme;

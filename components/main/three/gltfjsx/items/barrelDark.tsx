@@ -22,7 +22,7 @@ type GLTFResult = GLTF & {
 
 export default function BarrelDark(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/barrelDark.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/barrelDark.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder272.geometry} material={materials.WoodDark} />
@@ -32,4 +32,4 @@ export default function BarrelDark(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/barrelDark.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/barrelDark.gltf.glb'))

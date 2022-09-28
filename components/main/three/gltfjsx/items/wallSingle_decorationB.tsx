@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function WallSingleDecorationB(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/wallSingle_decorationB.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/wallSingle_decorationB.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube4539.geometry} material={materials.Stone} />
@@ -29,4 +29,4 @@ export default function WallSingleDecorationB(props: JSX.IntrinsicElements['grou
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/wallSingle_decorationB.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/wallSingle_decorationB.gltf.glb'))

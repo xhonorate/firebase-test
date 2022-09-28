@@ -26,7 +26,7 @@ type GLTFResult = GLTF & {
 
 export default function Lumbermill(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/lumbermill.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/objects/gltf/lumbermill.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube1020.geometry} material={materials.Brown} />
@@ -38,4 +38,4 @@ export default function Lumbermill(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/objects/gltf/lumbermill.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/objects/gltf/lumbermill.gltf.glb'))

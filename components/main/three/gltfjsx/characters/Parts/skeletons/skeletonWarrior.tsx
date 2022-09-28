@@ -101,4 +101,4 @@ export default function skeletonWarriorParts({ nodes, materials }: GLTFResult) {
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior.gltf')

@@ -4,6 +4,7 @@ import React from "react";
 import { BuildAction, buildOptions } from "./buildOptions";
 import { adjacentIndexes, hexToIndex } from "../../helpers/hexGrid";
 import CostButton from "./CostButton";
+import { Div } from "react-native-magnus";
 
 interface TileControlProps {
   tiles: TileData[];
@@ -78,7 +79,7 @@ export default function TileControls({
     }
   });
 
-  return (<>
+  return (<Div w={'100%'} h={'100%'} >
     {options.map((option, idx) => {
       option.cost = option.cost ?? {};
       
@@ -90,5 +91,5 @@ export default function TileControls({
 
       return <CostButton key={idx} option={option} resources={resources} callback={callback}/>
     })}
-  </>)
+  </Div>)
 }

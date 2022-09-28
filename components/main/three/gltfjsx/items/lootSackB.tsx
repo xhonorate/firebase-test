@@ -20,7 +20,7 @@ type GLTFResult = GLTF & {
 
 export default function LootSackB(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/lootSackB.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/lootSackB.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Sphere005.geometry} material={materials.Beige} />
@@ -29,4 +29,4 @@ export default function LootSackB(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/lootSackB.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/lootSackB.gltf.glb'))

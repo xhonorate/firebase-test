@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function TileBrickBLargeCrackedA(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/tileBrickB_largeCrackedA.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/tileBrickB_largeCrackedA.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.tileBrickB_largeCrackedA.geometry} material={materials.Stone} />
@@ -26,4 +26,4 @@ export default function TileBrickBLargeCrackedA(props: JSX.IntrinsicElements['gr
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/tileBrickB_largeCrackedA.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/tileBrickB_largeCrackedA.gltf.glb'))

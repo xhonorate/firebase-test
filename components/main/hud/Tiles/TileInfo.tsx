@@ -1,11 +1,11 @@
-import { Text, Stack, chakra, StackProps, Progress, Box } from "@chakra-ui/react";
+import { Text, Div, DivProps } from "react-native-magnus";
 import { TileData, playerColors } from "../../three/Tiles/Tile";
 import { resourceTypes } from "../../three/Tiles/Resource";
 import { Participant } from "../../../cloudFirestore/GameLobby";
 import React from "react";
 import { getBuildingStats } from "../../three/Objects/Building";
 
-interface TileInfoProps extends StackProps {
+interface TileInfoProps extends DivProps {
   tile: TileData;
   participants: Participant[];
 }
@@ -19,10 +19,10 @@ export default function TileInfo({
   const tileType = resourceTypes[tile.type];
 
   return (
-    <Stack direction={"column"} spacing={1} {...props}>
+    <Div {...props} w={'50%'} h={'100%'}>
       {"obj" in tile && (
         <>
-          <Text fontSize={"lg"}>
+          <Text color={'gray200'} fontSize={"lg"}>
             {tile.obj.type === "Settlement" && tile.obj?.level > 1
               ? tile.obj?.level === 2
                 ? "City"
@@ -30,42 +30,42 @@ export default function TileInfo({
               : tile.obj.type}
           </Text>
           {"hp" in tile.obj && (
-            <Box whiteSpace={"nowrap"}>
-              HP:{" "}
-              <Progress
+            <Div row>
+              <Text color={'gray100'}>HP:{" "}{(100 * tile.obj.hp) / (getBuildingStats(tile.obj.type).hp)}</Text>
+              { /* <Progress
                 ms={1}
                 display={"inline-flex"}
                 colorScheme="green"
                 size="md"
-                w={"full"}
+                w={"100%"}
                 value={Math.round(
                   (100 * tile.obj.hp) / (getBuildingStats(tile.obj.type).hp)
                 )}
-              />
-            </Box>
+                /> */ }
+            </Div>
           )}
         </>
       )}
 
-      <Text>
+      <Text color={'gray100'}>
         Resource:{" "}
-        {<chakra.span color={tileType.color}>{tileType.name}</chakra.span>}
+        {<Text color={tileType.color}>{tileType.name}</Text>}
       </Text>
 
-      <Text>Yield Rate: {[...Array(tile.odds)].map(() => "★")}</Text>
+      <Text color={'gray100'}>Yield Rate: {[...Array(tile.odds)].map(() => "★")}</Text>
       {"owner" in tile && (
-        <Text>
+        <Text color={'gray100'}>
           Owner:{" "}
           {
-            <chakra.span color={playerColors[tile.owner]}>
+            <Text color={playerColors[tile.owner]}>
               {participants[tile.owner]?.name ?? "None"}
-            </chakra.span>
+            </Text>
           }
         </Text>
       )}
 
       {tile?.obj?.t2c && (
-        <Text>
+        <Text color={'gray100'}>
           {"Complete in "}
           {tile.obj.t2c}
           {" Turns"}
@@ -76,6 +76,6 @@ export default function TileInfo({
         Has been rolled {tile?.procs ?? 0} time{tile.procs !== 1 && "s"}
       </Text>
       */}
-    </Stack>
+    </Div>
   );
 }

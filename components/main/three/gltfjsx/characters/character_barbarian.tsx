@@ -45,7 +45,7 @@ type GLTFResult = GLTF & {
 
 export default function CharacterBarbarian(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/character_barbarian.gltf') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/character_barbarian.gltf')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <group position={[0, 1.4, 0]}>
@@ -81,4 +81,4 @@ export default function CharacterBarbarian(props: JSX.IntrinsicElements['group']
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/character_barbarian.gltf')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/character_barbarian.gltf'))

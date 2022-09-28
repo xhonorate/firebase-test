@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
 
 export default function SkeletonHoodMasked(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/items/skeleton_items/skeleton_hood_masked.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/items/skeleton_items/skeleton_hood_masked.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.skeleton_hood_masked.geometry} material={materials.PurpleDark} />
@@ -26,4 +26,4 @@ export default function SkeletonHoodMasked(props: JSX.IntrinsicElements['group']
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/items/skeleton_items/skeleton_hood_masked.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/items/skeleton_items/skeleton_hood_masked.gltf.glb'))

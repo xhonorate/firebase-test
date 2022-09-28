@@ -102,4 +102,4 @@ export default function skeletonArcherParts({ nodes, materials }: GLTFResult) {
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf'))

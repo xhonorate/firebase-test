@@ -22,7 +22,7 @@ type GLTFResult = GLTF & {
 
 export default function BarbarianHeadB(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/extra_heads/barbarianHeadB.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/barbarianHeadB.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube3996.geometry} material={materials.Brown} />
@@ -32,4 +32,4 @@ export default function BarbarianHeadB(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/extra_heads/barbarianHeadB.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/barbarianHeadB.gltf.glb'))

@@ -28,7 +28,7 @@ type GLTFResult = GLTF & {
 
 export default function Mill(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/objects/gltf/mill.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/objects/gltf/mill.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cylinder756.geometry} material={nodes.Cylinder756.material} />
@@ -44,4 +44,4 @@ export default function Mill(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/objects/gltf/mill.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/objects/gltf/mill.gltf.glb'))

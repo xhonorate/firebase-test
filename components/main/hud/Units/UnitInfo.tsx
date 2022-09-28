@@ -1,17 +1,14 @@
 import {
   Text,
-  Stack,
-  chakra,
-  StackProps,
-  Progress,
-  Box,
-} from "@chakra-ui/react";
+  Div,
+  DivProps,
+} from "react-native-magnus";
 import { playerColors } from "../../three/Tiles/Tile";
 import { Participant } from "../../../cloudFirestore/GameLobby";
 import { getUnitStats, UnitData } from "../../Units";
 import React from "react";
 
-interface UnitInfoProps extends StackProps {
+interface UnitInfoProps extends DivProps {
   unit: UnitData;
   participants: Participant[];
 }
@@ -23,7 +20,7 @@ export default function UnitInfo({
   ...props
 }: UnitInfoProps) {
   return (
-    <Stack direction={"column"} spacing={1} {...props}>
+    <Div {...props}>
       { /* <Text>{JSON.stringify(unit)}</Text> */ }
       <Text fontSize={"lg"}>{unit.type}</Text>
 
@@ -31,26 +28,26 @@ export default function UnitInfo({
         <Text>Level: {[...Array(unit.level)].map(() => "★")}</Text>
       )}
 
-      <Box whiteSpace={"nowrap"}>
-        HP:{" "}
-        <Progress
+      <Div row>
+        HP:{" "}{Math.round((100 * unit.hp) / getUnitStats(unit.type).hp)}
+        { /* <Progress
           ms={1}
           display={"inline-flex"}
           colorScheme="green"
           size="md"
-          w={"full"}
+          w={"100%"}
           value={Math.round((100 * unit.hp) / getUnitStats(unit.type).hp)}
-        />
-      </Box>
+        /> */ }
+      </Div>
 
       <Text>
         Owner:{" "}
         {
-          <chakra.span color={playerColors[unit.owner]}>
+          <Text color={playerColors[unit.owner]}>
             {participants[unit.owner]?.name ?? "None"}
-          </chakra.span>
+          </Text>
         }
       </Text>
-    </Stack>
+    </Div>
   );
 }

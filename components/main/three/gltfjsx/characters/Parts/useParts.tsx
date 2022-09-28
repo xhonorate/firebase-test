@@ -14,6 +14,49 @@ import skeletonMinionBrokenParts from './skeletons/skeletonMinionBroken';
 import skeletonWarriorParts from './skeletons/skeletonWarrior';
 import skeletonWarriorBrokenParts from './skeletons/skeletonWarriorBroken';
 
+//@ts-ignore
+import barbarianGLTF from '../../../../../../public/assets/kaykit/Models/characters/character_barbarian.gltf';
+//@ts-ignore
+import knightGLTF from '../../../../../../public/assets/kaykit/Models/characters/character_knight.gltf';
+//@ts-ignore
+import rogueGLTF from '../../../../../../public/assets/kaykit/Models/characters/character_rogue.gltf';
+//@ts-ignore
+import mageGLTF from '../../../../../../public/assets/kaykit/Models/characters/character_mage.gltf';
+//@ts-ignore
+import skeletonArcherGLTF from '../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf';
+/*
+SkeletonArcherBroken: {
+parts: skeletonArcherBrokenParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer_broken.gltf')
+},
+SkeletonMage: {
+parts: skeletonMageParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage.gltf')
+},
+SkeletonMageBroken: {
+parts: skeletonMageBrokenParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage_broken.gltf')
+},
+SkeletonMinion: {
+parts: skeletonMinionParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_minion.gltf')
+},
+SkeletonMinionBroken: {
+parts: skeletonMinionBrokenParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_minion_broken.gltf')
+},
+SkeletonWarrior: {
+parts: skeletonWarriorParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior.gltf')
+},
+SkeletonWarriorBroken: {
+parts: skeletonWarriorBrokenParts,
+gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior_broken.gltf')
+},*/
+//@ts-ignore
+import prototypePeteGLTF from '../../../../../../public/assets/kaykit/Models/characters/PrototypePete.gltf';
+
+
 export interface CharacterParts {
   body: JSX.Element,
   head: JSX.Element,
@@ -41,55 +84,55 @@ type partsFunction = (gltf: any) => CharacterParts;
 export const characterParts: { [x in CharacterType | 'default']?: { parts: partsFunction, gltf: string }} = {
   Barbarian: {
     parts: barbarianParts,
-    gltf: '/assets/kaykit/Models/characters/character_barbarian.gltf'
+    gltf: barbarianGLTF
   },
   Knight: {
     parts: knightParts,
-    gltf: '/assets/kaykit/Models/characters/character_knight.gltf'
+    gltf: knightGLTF
   },
   Rogue: {
     parts: rogueParts,
-    gltf: '/assets/kaykit/Models/characters/character_rogue.gltf'
+    gltf: rogueGLTF
   },
   Mage: {
     parts: mageParts,
-    gltf: '/assets/kaykit/Models/characters/character_mage.gltf'
-  },
+    gltf: mageGLTF
+  },/*
   SkeletonArcher: {
     parts: skeletonArcherParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer.gltf')
   },
   SkeletonArcherBroken: {
     parts: skeletonArcherBrokenParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_archer_broken.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer_broken.gltf')
   },
   SkeletonMage: {
     parts: skeletonMageParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_mage.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage.gltf')
   },
   SkeletonMageBroken: {
     parts: skeletonMageBrokenParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_mage_broken.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_mage_broken.gltf')
   },
   SkeletonMinion: {
     parts: skeletonMinionParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_minion.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_minion.gltf')
   },
   SkeletonMinionBroken: {
     parts: skeletonMinionBrokenParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_minion_broken.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_minion_broken.gltf')
   },
   SkeletonWarrior: {
     parts: skeletonWarriorParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior.gltf'
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior.gltf')
   },
   SkeletonWarriorBroken: {
     parts: skeletonWarriorBrokenParts,
-    gltf: '/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior_broken.gltf'
-  },
+    gltf: ('../../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_warrior_broken.gltf')
+  },*/
   default: {
     parts: prototypePeteParts,
-    gltf: '/assets/kaykit/Models/characters/PrototypePete.gltf'
+    gltf: prototypePeteGLTF
   }
 }
 

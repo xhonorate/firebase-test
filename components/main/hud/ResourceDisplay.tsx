@@ -1,10 +1,10 @@
-import { Text, Box, BoxProps } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { Text, Div, DivProps } from "react-native-magnus";
+//import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { ResourceStates } from "../RoomInstance";
 import { resourceTypes } from '../three/Tiles/Resource';
 
-const MotionBox = motion<Omit<BoxProps, "transition">>(Box);
+//const MotionBox = motion<Omit<DivProps, "transition">>(Div);
 
 // Show current counts of all resources owned by player
 export default function ResourceDisplay(resources: ResourceStates) {
@@ -13,7 +13,7 @@ export default function ResourceDisplay(resources: ResourceStates) {
   const [popups, setPopups] = useState({}); // Updates on resource change, keeps prev anims not yet done and adds for new changes
 
   // On change, display animation for resources added
-  useEffect(() => {
+  /* useEffect(() => {
     if (prevValues.current) {
       let valuesChanged = false;
       const deltas = {...anims.current};
@@ -38,30 +38,30 @@ export default function ResourceDisplay(resources: ResourceStates) {
     } else {
       prevValues.current = resources;
     }
-  }, [resources, popups]);
+  }, [resources, popups]); */
 
   if (!resources) return null;
 
   return (
-    <>
+    <Div alignItems={'flex-end'} row px={4} justifyContent={'space-between'} >
       {resourceTypes.map(({name, color}, idx) => {
         if (name === "None") return null;
         return (
           <Text
-            as={'div'}
-            fontWeight={700}
+            h={'100%'}
+            selectable={false}
+            fontWeight={'700'}
             key={idx}
             color={color}
           >
             {name + ": " + resources[name]}
 
             {!!popups?.[name] && popups[name].map((val: number, idx: number) => (
-              <Box key={idx} position={'relative'} w={'full'}>
-                <MotionBox
+              <Div key={idx} position={'relative'} w={'100%'}>
+                <Div
                   position={'absolute'}
-                  textAlign={'center'}
-                  w={'full'}
-                  animate={{
+                  w={'100%'}
+                  /* animate={{
                     opacity: [0, 1, 1, 0],
                     y: [0, 10, 14],
                     scale: [1, 1.2]
@@ -69,14 +69,14 @@ export default function ResourceDisplay(resources: ResourceStates) {
                   transition={{
                     duration: 3,
                   }}
-                  onAnimationComplete={(e) => anims.current[name].pop()} /* remove played animation */
+                  onAnimationComplete={(e) => anims.current[name].pop() } /* remove played animation */
                 >
-                  {(val > 0 ? '+' : '') + val}
-                </MotionBox>
-              </Box>
+                  <Text textAlign={'center'}>{(val > 0 ? '+' : '') + val}</Text>
+                </Div>
+              </Div>
             ))}
           </Text> )
         })}
-    </>
+    </Div>
   );
 }

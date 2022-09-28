@@ -80,4 +80,4 @@ export default function skeletonMinionParts({ nodes, materials }: GLTFResult) {
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_minion.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_minion.gltf')

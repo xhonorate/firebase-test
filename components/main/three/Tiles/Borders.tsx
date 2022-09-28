@@ -3,6 +3,7 @@ import { GroupProps } from "@react-three/fiber";
 import { intToBools } from "../../helpers/borders";
 import { cubeDirection, cubeToPos } from "../../helpers/hexGrid";
 import { tileSize } from "./Tile";
+import React from "react";
 
 export interface BorderProps extends GroupProps {
   borders: number;

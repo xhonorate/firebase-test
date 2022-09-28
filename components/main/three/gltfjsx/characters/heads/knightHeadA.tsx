@@ -21,7 +21,7 @@ type GLTFResult = GLTF & {
 
 export default function KnightHeadA(props: JSX.IntrinsicElements['group']) {
   const group = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/extra_heads/knightHeadA.gltf.glb') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/knightHeadA.gltf.glb')) as unknown as GLTFResult
   return (
     <group ref={group} {...props} dispose={null}>
       <mesh geometry={nodes.Cube3998.geometry} material={materials.BrownDark} />
@@ -31,4 +31,4 @@ export default function KnightHeadA(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/extra_heads/knightHeadA.gltf.glb')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/extra_heads/knightHeadA.gltf.glb'))

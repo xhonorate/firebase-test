@@ -113,4 +113,4 @@ export default function skeletonArcherBrokenParts({ nodes, materials }: GLTFResu
   }
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/skeletons/character_skeleton_archer_broken.gltf')
+////useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/skeletons/character_skeleton_archer_broken.gltf')

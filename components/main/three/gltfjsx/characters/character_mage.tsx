@@ -43,7 +43,7 @@ type GLTFResult = GLTF & {
 
 export default function CharacterMage(props: JSX.IntrinsicElements['group']) {
   const ref = useRef<THREE.Group>()
-  const { nodes, materials } = useGLTF('/assets/kaykit/Models/characters/character_mage.gltf') as unknown as GLTFResult
+  const { nodes, materials } = useGLTF(require('../../../../../public/assets/kaykit/Models/characters/character_mage.gltf')) as unknown as GLTFResult
   return (
     <group ref={ref} {...props} dispose={null}>
       <group position={[0, 1.49, -0.02]}>
@@ -79,4 +79,4 @@ export default function CharacterMage(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('/assets/kaykit/Models/characters/character_mage.gltf')
+//useGLTF.preload(require('../../../../../public/assets/kaykit/Models/characters/character_mage.gltf'))

@@ -1,55 +1,18 @@
-import { useUser } from '../components/auth/useUser'
-import NextLink from 'next/link'
-import CreateUser from '../components/cloudFirestore/CreateUser';
-import { useDocument } from '@nandorojo/swr-firestore'
-import { Button } from '@chakra-ui/react';
+import { Button, Div, Text } from 'react-native-magnus';
 import LobbyBrowser from '../components/cloudFirestore/LobbyBrowser';
 import GameLobby from '../components/cloudFirestore/GameLobby';
+import { useContext } from 'react';
+import { UserContext } from './auth';
 
 export default function Home() {
-  // TODO: Should use SWR or fuego somehow for auth...
-  const { user, logout } = useUser();
+  const { data, update } = useContext(UserContext);
 
-  // SWR to pull user data
-  const { data: userData, update, error } = useDocument(`user_data/${user?.id}`, {
-    parseDates: ['created'],
-    listen: true,
-    onError: console.error
-  })
-
-  if (user) {
-    if (!userData) {
-      return <div>loading...</div>
-    } else {
-      return (
-        <div>     
-          { userData.exists ?
-            userData['active_game'] ?
-              <>
-                  {/* check if game exists -> check exists -> check finished -> check started (not in lobby) -> check age -> 
-                  rejoin or throw err message and update user */}
-                <GameLobby userData={userData} />
-              </>
-              :
-              // we can worry about host migration in the future...
-              <>
-                <h1>Select from list:</h1>
-                <h5><LobbyBrowser userData={userData} /></h5>
-              </>
-            :
-            // If user account is not set up, prompt them with a form to set username, etc.
-            <CreateUser id={user.id} isAnonymous={user.isAnonymous} />
-          }
-          <Button onClick={() => logout()}>Log Out</Button>
-        </div>
-      )
-    }
-  }
-  else {
-    return (
-      <div>
-        <p><NextLink href="/auth"><a>Log In!</a></NextLink></p>
-      </div>
-    )
+  if (data['active_game']) {
+    return <GameLobby userData={data} />
+  } else {
+    return <>
+      <Text>Select from list:</Text>
+      <LobbyBrowser userData={data} />
+    </>
   }
 }

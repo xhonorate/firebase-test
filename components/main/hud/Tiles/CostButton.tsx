@@ -1,4 +1,5 @@
-import { Button, chakra, Flex, Text } from "@chakra-ui/react";
+import { Pressable } from "react-native";
+import { Button, Div, Text } from "react-native-magnus";
 import { findResourceTypeByName, resourceTypes } from "../../three/Tiles/Resource";
 
 //TODO: gold per resource
@@ -26,44 +27,44 @@ export default function CostButton({option, resources, callback}) {
   // If we do not have enough gold to cover the goldcost, disable button
   return (
     <Button
-      zIndex={1000}
-      colorScheme={"blackAlpha"}
-      h={"min-content"}
-      cursor={"pointer"}
-      isDisabled={
+      bg={'gray600'}
+      //h={"min-content"}
+      disabled={
         goldCost > resources["Gold"] /* if user cannot afford, disable button */
       }
-      onClick={() =>
+      onPress={() => {
+        console.log("AYYY")
         callback(option.action, { ...option.cost, Gold: goldCost })
       }
+      }
     >
-      <Flex direction={"column"}>
-        <Text color={"white"} fontWeight={600}>
+      <Div>
+        <Text color={"white"} fontWeight={'600'}>
           {option.name}
         </Text>
         {costText.map(([key, value, amtMissing]) => (
           <Text key={key}>
-            <chakra.span color={findResourceTypeByName(key).color}>
+            <Text color={findResourceTypeByName(key).color}>
               {key}
-            </chakra.span>
+            </Text>
             {": "}
-            <chakra.span
-              as={!!amtMissing ? "del" : null}
+            <Text
+              textDecorLine={!!amtMissing ? "line-through" : "none"}
               color={!!amtMissing ? "red" : "white"}
             >
               {value}
-            </chakra.span>
+            </Text>
             {!!amtMissing && (
               <>
                 {!!(value - amtMissing) && " " + (value - amtMissing)}
-                <chakra.span color={findResourceTypeByName("Gold").color}>
+                <Text color={findResourceTypeByName("Gold").color}>
                   {" +" + amtMissing * goldPerResource + "g"}
-                </chakra.span>
+                </Text>
               </>
             )}
           </Text>
         ))}
-      </Flex>
+      </Div>
     </Button>
   );
 }
